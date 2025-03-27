@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PowerAlert - Sign Up</title>
+    <link rel="icon" type="image/x-icon" href="assets/logo.jpg">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Inter Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Toastify CSS -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    
+    <style>
+        * {
+            font-family: 'Inter', -apple-system, sans-serif;
+        }
+        
+        .window-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        
+        .dot-red { background-color: #FF5F56; }
+        .dot-yellow { background-color: #FFBD2E; }
+        .dot-green { background-color: #27C93F; }
+        
+        .footer-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #D1D5DB;
+        }
+        
+        .footer-dot.active {
+            background-color: #4361ee;
+        }
+        
+        .required::after {
+            content: "*";
+            color: #4361ee;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: #4361ee;
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
+        }
+        
+        @media (max-width: 768px) {
+            body {
+                padding: 0;
+                background: white;
+            }
+            
+            .app-container {
+                min-height: 100vh;
+                border-radius: 0;
+                box-shadow: none;
+            }
+        }
+    </style>
+</head>
+
+<body class="flex items-center justify-center min-h-screen p-3 bg-blue-50">
+    <div class="app-container bg-white w-full max-w-[1040px] min-h-[640px] rounded-xl shadow-sm relative py-6 overflow-hidden">
+        <!-- Window Controls -->
+        <div class="absolute top-4 left-4 flex gap-1.5">
+            <div class="window-dot dot-red"></div>
+            <div class="window-dot dot-yellow"></div>
+            <div class="window-dot dot-green"></div>
+        </div>
+
+        <!-- Brand Logo -->
+        <a href="#" class="absolute top-12 left-[-5px] flex items-center gap-2 no-underline pl-8">
+            <span class="text-lg font-semibold text-blue-600">PowerAlert ⚡</span>
+        </a>
+
+        <!-- Main Content -->
+        <div class="flex pt-[30px] px-8 gap-20 mt-12">
+            <!-- Left Side - Steps -->
+            <div class="flex-shrink-0 w-60">
+                <!-- Step 1 -->
+                <div class="flex gap-3 mb-6 text-gray-500">
+                    <div class="flex items-center justify-center flex-shrink-0 w-5 h-5 text-xs text-white bg-blue-600 border-2 border-blue-600 rounded-full">1</div>
+                    <div class="flex flex-col gap-1">
+                        <div class="text-sm font-medium text-gray-900">Account Creation</div>
+                        <div class="text-sm text-gray-500">Enter your details</div>
+                    </div>
+                </div>
+                
+                <!-- Step 2 -->
+                <div class="flex gap-3 mb-6 text-gray-500">
+                    <div class="flex items-center justify-center flex-shrink-0 w-5 h-5 text-xs text-gray-500 border-2 border-gray-300 rounded-full">2</div>
+                    <div class="flex flex-col gap-1">
+                        <div class="text-sm font-medium text-gray-900">Verification</div>
+                        <div class="text-sm text-gray-500">Confirm your email</div>
+                    </div>
+                </div>
+                
+                <!-- Step 3 -->
+                <div class="flex gap-3 mb-6 text-gray-500">
+                    <div class="flex items-center justify-center flex-shrink-0 w-5 h-5 text-xs text-gray-500 border-2 border-gray-300 rounded-full">3</div>
+                    <div class="flex flex-col gap-1">
+                        <div class="text-sm font-medium text-gray-900">Setup Complete</div>
+                        <div class="text-sm text-gray-500">Ready to monitor</div>
+                    </div>
+                </div>
+
+                <!-- Info box -->
+                <div class="p-4 mt-12 border border-blue-100 rounded-lg bg-blue-50">
+                    <h3 class="mb-2 text-sm font-medium text-gray-900">Why join PowerAlert?</h3>
+                    <ul class="space-y-2 text-xs text-gray-600">
+                        <li class="flex items-start gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-blue-600 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span>Real-time power consumption monitoring</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-blue-600 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span>Smart alerts for irregular usage patterns</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-blue-600 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span>Energy-saving recommendations</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-blue-600 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span>Detailed usage reports and analytics</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Right Side - Form -->
+            <div class="flex-grow max-w-[640px] pr-12 md:pr-6 sm:pr-0 sm:max-w-[400px] sm:mx-auto sm:w-full">
+                <!-- Form Header -->
+                <div class="mb-6">
+                    <h1 class="mb-2 text-2xl font-semibold text-gray-900">Create your account</h1>
+                    <p class="text-sm text-gray-500">Join PowerAlert to start monitoring your power consumption</p>
+                </div>
+
+                <!-- Registration Form -->
+                <form id="registerForm" class="w-full" onsubmit="return false;">
+                    <div class="flex flex-col gap-4 mb-4">
+                        <!-- Username Field -->
+                        <div>
+                            <label class="flex items-center gap-1 text-sm font-medium text-gray-900 required">Username</label>
+                            <input 
+                                type="text" 
+                                id="username" 
+                                class="w-full py-2.5 px-3.5 mt-1 text-sm border border-gray-300 rounded-lg text-gray-900" 
+                                placeholder="Choose a username" 
+                                required
+                            >
+                            <p class="mt-1 text-xs text-gray-500">Use only letters, numbers, dots, underscores, and hyphens (3-50 characters)</p>
+                        </div>
+                        
+                        <!-- Email Field -->
+                        <div>
+                            <label class="flex items-center gap-1 text-sm font-medium text-gray-900 required">Email</label>
+                            <input 
+                                type="email" 
+                                id="email" 
+                                class="w-full py-2.5 px-3.5 mt-1 text-sm border border-gray-300 rounded-lg text-gray-900" 
+                                placeholder="Enter your email address" 
+                                required
+                            >
+                        </div>
+                        
+                        <!-- Phone Number Field -->
+                        <div>
+                            <label class="flex items-center gap-1 text-sm font-medium text-gray-900 required">Phone Number</label>
+                            <div class="flex mt-1">
+                                <div class="flex-shrink-0 w-20">
+                                    <input 
+                                        type="text" 
+                                        id="countryCode" 
+                                        class="w-full py-2.5 px-3.5 text-sm border border-gray-300 rounded-l-lg text-gray-900 bg-gray-50" 
+                                        value="+94" 
+                                        readonly
+                                    >
+                                </div>
+                                <input 
+                                    type="tel" 
+                                    id="phoneNumberInput" 
+                                    class="w-full py-2.5 px-3.5 text-sm border border-gray-300 border-l-0 rounded-r-lg text-gray-900" 
+                                    placeholder="701234567" 
+                                    required
+                                >
+                            </div>
+                        </div>
+                        
+                        <!-- Password Field -->
+                        <div>
+                            <label class="flex items-center gap-1 text-sm font-medium text-gray-900 required">Password</label>
+                            <div class="relative">
+                                <input 
+                                    type="password" 
+                                    id="password" 
+                                    class="w-full py-2.5 px-3.5 mt-1 text-sm border border-gray-300 rounded-lg text-gray-900" 
+                                    placeholder="Create a strong password" 
+                                    required
+                                >
+                                <button type="button" id="toggle-password" class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                    </svg>
+                                </button>
+                            </div>
+                            <p class="mt-2 text-xs text-gray-500">Password must contain at least 8 characters, including uppercase, lowercase, number, and special character.</p>
+                        </div>
+                        
+                        <!-- Confirm Password Field -->
+                        <div>
+                            <label class="flex items-center gap-1 text-sm font-medium text-gray-900 required">Confirm Password</label>
+                            <div class="relative">
+                                <input 
+                                    type="password" 
+                                    id="confirmPassword" 
+                                    class="w-full py-2.5 px-3.5 mt-1 text-sm border border-gray-300 rounded-lg text-gray-900" 
+                                    placeholder="Confirm your password" 
+                                    required
+                                >
+                                <button type="button" id="toggle-confirm-password" class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Language Preference -->
+                        <div>
+                            <label class="text-sm font-medium text-gray-900">Preferred Language</label>
+                            <select 
+                                id="preferredLanguage" 
+                                class="w-full py-2.5 px-3.5 mt-1 text-sm border border-gray-300 rounded-lg text-gray-900 appearance-none bg-white"
+                            >
+                                <option value="si" selected>Sinhala</option>
+                                <option value="en">English</option>
+                                <option value="ta">Tamil</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Terms & Conditions -->
+                    <div class="mt-4">
+                        <label class="inline-flex items-start cursor-pointer">
+                            <input type="checkbox" class="w-4 h-4 mt-1 text-blue-600 border-gray-300 rounded focus:ring-blue-500" id="termsAgreed" required>
+                            <span class="ml-2 text-sm text-gray-600">I agree to the <a href="#" class="text-blue-600">Terms of Service</a> and <a href="#" class="text-blue-600">Privacy Policy</a>. I understand that my personal data will be processed as described in the Privacy Policy.</span>
+                        </label>
+                    </div>
+
+                    <!-- Sign up Button -->
+                    <button type="button" id="registerBtn" class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white border-none rounded-lg text-sm font-medium cursor-pointer mt-6">Create Account</button>
+
+                    <!-- Sign in Link -->
+                    <div class="mt-4 text-sm text-center text-gray-500">
+                        Already have an account?
+                        <a href="index.html" class="font-medium text-blue-600 no-underline">Sign in</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="absolute left-0 right-0 flex items-center justify-between px-8 text-sm text-gray-500 bottom-6 sm:relative sm:mt-12 sm:px-6 sm:flex-col sm:gap-4 sm:text-center">
+            <span>© 2025 PowerAlert. All rights reserved.</span>
+            <span>support@poweralert.com</span>
+            <div class="flex gap-2 sm:order-first sm:mb-2">
+                <div class="footer-dot active"></div>
+                <div class="footer-dot"></div>
+                <div class="footer-dot"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <script>
+        $(document).ready(function() {
+            // Toggle password visibility
+            $('#toggle-password').on('click', function(e) {
+                e.preventDefault();
+                const passwordField = document.getElementById('password');
+                
+                if (passwordField.type === 'password') {
+                    passwordField.type = 'text';
+                    $(this).find('svg').html('<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />');
+                } else {
+                    passwordField.type = 'password';
+                    $(this).find('svg').html('<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />');
+                }
+            });
+            
+            // Toggle confirm password visibility
+            $('#toggle-confirm-password').on('click', function(e) {
+                e.preventDefault();
+                const passwordField = document.getElementById('confirmPassword');
+                
+                if (passwordField.type === 'password') {
+                    passwordField.type = 'text';
+                    $(this).find('svg').html('<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />');
+                } else {
+                    passwordField.type = 'password';
+                    $(this).find('svg').html('<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />');
+                }
+            });
+            
+            // Register button click handler
+            $('#registerBtn').on('click', function() {
+                // Get form data
+                const username = $('#username').val().trim();
+                const email = $('#email').val().trim();
+                const countryCode = $('#countryCode').val().trim();
+                const phoneNumberInput = $('#phoneNumberInput').val().trim();
+                const password = $('#password').val();
+                const confirmPassword = $('#confirmPassword').val();
+                const preferredLanguage = $('#preferredLanguage').val();
+                
+                // Form validation
+                if (!username || !email || !phoneNumberInput || !password || !confirmPassword) {
+                    showToast("Please fill in all required fields", "error");
+                    return;
+                }
+                
+                if (password !== confirmPassword) {
+                    showToast("Passwords do not match", "error");
+                    return;
+                }
+                
+                if (!$('#termsAgreed').is(':checked')) {
+                    showToast("Please agree to the Terms of Service and Privacy Policy", "error");
+                    return;
+                }
+                
+                // Password validation (matching server requirements)
+                const passwordRegex = /^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=])(?=\S+$).{8,}$/;
+                if (!passwordRegex.test(password)) {
+                    showToast("Password must be at least 8 characters long and include uppercase, lowercase, number, and special character", "error");
+                    return;
+                }
+                
+                // Show loading state
+                $(this).html('<svg class="inline-block w-4 h-4 mr-2 -ml-1 text-white animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Creating Account...').addClass('opacity-90').prop('disabled', true);
+                
+                // Create full phone number
+                const fullPhoneNumber = countryCode + phoneNumberInput;
+                
+                // Prepare request data
+                const requestData = {
+                    username: username,
+                    email: email,
+                    phoneNumber: fullPhoneNumber,
+                    password: password,
+                    preferredLanguage: preferredLanguage,
+                    role: "USER"
+                };
+                
+                // Use plain XMLHttpRequest for maximum control over headers
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', 'http://localhost:8080/api/auth/register', true);
+                xhr.setRequestHeader('Content-Type', 'application/json');
+                
+                xhr.onload = function() {
+                    if (xhr.status >= 200 && xhr.status < 300) {
+                        // Parse response
+                        const response = JSON.parse(xhr.responseText);
+                        
+                        // Store token if provided
+                        if (response.data && response.data.token) {
+                            localStorage.setItem('auth_token', response.data.token);
+                            localStorage.setItem('user_role', response.data.role);
+                            localStorage.setItem('username', response.data.username);
+                        }
+                        
+                        // Show success message
+                        showToast("Account created successfully!", "success");
+                        
+                        // Redirect after a short delay
+                        setTimeout(function() {
+                            window.location.href = 'index.html';
+                        }, 1500);
+                    } else {
+                        // Handle error
+                        handleRegistrationError(xhr);
+                    }
+                };
+                
+                xhr.onerror = function() {
+                    // Reset button state
+                    $('#registerBtn').text('Create Account').removeClass('opacity-90').prop('disabled', false);
+                    
+                    // Network error
+                    showToast("Network error. Please check your connection", "error");
+                };
+                
+                // Send the request
+                xhr.send(JSON.stringify(requestData));
+            });
+            
+            // Helper function to show toast notifications
+            function showToast(message, type) {
+                const background = type === 'success' ? '#4ade80' : '#f87171';
+                
+                Toastify({
+                    text: message,
+                    duration: type === 'success' ? 3000 : 5000,
+                    close: true,
+                    gravity: "top",
+                    position: "right",
+                    style: {
+                        background: background,
+                        borderRadius: "8px",
+                        boxShadow: "0 3px 6px rgba(0,0,0,0.16)",
+                        fontFamily: "'Inter', sans-serif"
+                    }
+                }).showToast();
+            }
+            
+            // Helper function to handle registration errors
+            function handleRegistrationError(xhr) {
+                // Reset button state
+                $('#registerBtn').text('Create Account').removeClass('opacity-90').prop('disabled', false);
+                
+                let errorMsg = 'An error occurred. Please try again.';
+                
+                if (xhr.status === 409) {
+                    errorMsg = 'This email is already registered.';
+                } else if (xhr.responseText) {
+                    try {
+                        const errorResponse = JSON.parse(xhr.responseText);
+                        if (errorResponse.message) {
+                            errorMsg = errorResponse.message;
+                        }
+                    } catch (e) {
+                        // If JSON parsing fails, use the default error message
+                        console.error('Error parsing response:', e);
+                    }
+                }
+                
+                showToast(errorMsg, "error");
+            }
+        });
+    </script>
+</body>
+</html>

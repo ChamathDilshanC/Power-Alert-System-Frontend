@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PowerAlert - Reset Password</title>
+    <link rel="icon" type="image/x-icon" href="assets/logo.jpg">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Inter Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Toastify CSS -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+
+    <style>
+        * {
+            font-family: 'Inter', -apple-system, sans-serif;
+        }
+
+        .window-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .dot-red { background-color: #FF5F56; }
+        .dot-yellow { background-color: #FFBD2E; }
+        .dot-green { background-color: #27C93F; }
+
+        .footer-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #D1D5DB;
+        }
+
+        .footer-dot.active {
+            background-color: #4361ee;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #4361ee;
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
+        }
+
+        .strength-meter {
+            height: 4px;
+            background-color: #E5E7EB;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .strength-meter-fill {
+            height: 100%;
+            border-radius: 2px;
+            transition: width 0.3s ease;
+        }
+
+        .strength-weak {
+            width: 25%;
+            background-color: #EF4444;
+        }
+
+        .strength-fair {
+            width: 50%;
+            background-color: #F59E0B;
+        }
+
+        .strength-good {
+            width: 75%;
+            background-color: #10B981;
+        }
+
+        .strength-strong {
+            width: 100%;
+            background-color: #10B981;
+        }
+
+        .requirement-item svg {
+            min-width: 16px;
+        }
+
+        .verification-input {
+            width: 3rem;
+            height: 3rem;
+            font-size: 1.5rem;
+            text-align: center;
+            border-radius: 0.5rem;
+            border: 1px solid #D1D5DB;
+        }
+
+        .verification-input:focus {
+            border-color: #4361ee;
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 0;
+                background: white;
+            }
+
+            .app-container {
+                min-height: 100vh;
+                border-radius: 0;
+                box-shadow: none;
+            }
+        }
+    </style>
+</head>
+
+<body class="flex items-center justify-center min-h-screen p-3 bg-blue-50">
+<div class="app-container bg-white w-full max-w-[1040px] min-h-[640px] rounded-xl shadow-sm relative py-6 overflow-hidden">
+    <!-- Window Controls -->
+    <div class="absolute top-4 left-4 flex gap-1.5">
+        <div class="window-dot dot-red"></div>
+        <div class="window-dot dot-yellow"></div>
+        <div class="window-dot dot-green"></div>
+    </div>
+
+    <!-- Brand Logo -->
+    <a href="#" class="absolute top-12 left-[-5px] flex items-center gap-2 no-underline pl-8">
+        <span class="text-lg font-semibold text-blue-600">PowerAlert ⚡</span>
+    </a>
+
+    <!-- Main Content -->
+    <div class="flex flex-col justify-center items-center h-full pt-[30px] px-8 pb-8 mt-[75px]">
+        <div class="w-full max-w-md">
+            <!-- Email Input Form -->
+            <div id="emailForm" class="transition-opacity duration-300">
+                <div class="mb-8 text-center">
+                    <h1 class="mb-2 text-2xl font-semibold text-gray-900">Verify your email</h1>
+                    <p class="text-sm text-gray-500">Enter your email to continue with password reset</p>
+                </div>
+
+                <form id="emailVerificationForm" class="w-full" onsubmit="return false;">
+                    <div class="mb-6">
+                        <label class="block mb-1 text-sm font-medium text-gray-700" for="email">Email</label>
+                        <input
+                                type="email"
+                                id="email"
+                                class="w-full py-2.5 px-3.5 text-sm border border-gray-300 rounded-lg text-gray-900"
+                                placeholder="Enter your email address"
+                                required
+                        >
+                        <input type="hidden" id="storedEmail" value="">
+                    </div>
+
+                    <button
+                            type="button"
+                            id="verifyEmailBtn"
+                            class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white border-none rounded-lg text-sm font-medium cursor-pointer mt-4"
+                    >
+                        Continue
+                    </button>
+
+                    <div class="mt-4 text-center">
+                        <a href="index.html" class="text-sm text-blue-600 hover:text-blue-800">Return to login</a>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Verification Code Form -->
+            <div id="verificationForm" class="hidden transition-opacity duration-300">
+                <div class="mb-8 text-center">
+                    <h1 class="mb-2 text-2xl font-semibold text-gray-900">Enter verification code</h1>
+                    <p class="text-sm text-gray-500">We've sent a 6-digit code to <span id="userEmail" class="font-medium"></span></p>
+                </div>
+
+                <form id="codeVerificationForm" class="w-full" onsubmit="return false;">
+                    <div class="mb-6">
+                        <label class="block mb-1 text-sm font-medium text-gray-700">Verification Code</label>
+                        <div class="flex justify-between gap-2 mt-2">
+                            <input type="text" maxlength="1" class="verification-input" id="code1" inputmode="numeric" pattern="[0-9]" required>
+                            <input type="text" maxlength="1" class="verification-input" id="code2" inputmode="numeric" pattern="[0-9]" required>
+                            <input type="text" maxlength="1" class="verification-input" id="code3" inputmode="numeric" pattern="[0-9]" required>
+                            <input type="text" maxlength="1" class="verification-input" id="code4" inputmode="numeric" pattern="[0-9]" required>
+                            <input type="text" maxlength="1" class="verification-input" id="code5" inputmode="numeric" pattern="[0-9]" required>
+                            <input type="text" maxlength="1" class="verification-input" id="code6" inputmode="numeric" pattern="[0-9]" required>
+                        </div>
+                        <p class="mt-2 text-xs text-gray-500">Enter the 6-digit code from your email</p>
+                    </div>
+
+                    <button
+                            type="button"
+                            id="verifyCodeBtn"
+                            class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white border-none rounded-lg text-sm font-medium cursor-pointer mt-4"
+                    >
+                        Verify Code
+                    </button>
+
+                    <div class="mt-4 text-center">
+                        <p class="text-sm text-gray-600">
+                            Didn't receive the code?
+                            <button id="resendCodeBtn" class="text-blue-600 hover:text-blue-800">Resend</button>
+                        </p>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Reset Password Form -->
+            <div id="resetForm" class="hidden transition-opacity duration-300">
+                <div class="mb-8 text-center">
+                    <h1 class="mb-2 text-2xl font-semibold text-gray-900">Reset your password</h1>
+                    <p class="text-sm text-gray-500">Create a new password for your account</p>
+                </div>
+
+                <form id="newPasswordForm" class="w-full" onsubmit="return false;">
+                    <!-- New Password Field -->
+                    <div class="mb-5">
+                        <label class="block mb-1 text-sm font-medium text-gray-700" for="newPassword">New Password</label>
+                        <div class="relative">
+                            <input
+                                    type="password"
+                                    id="newPassword"
+                                    class="w-full py-2.5 px-3.5 text-sm border border-gray-300 rounded-lg text-gray-900"
+                                    placeholder="Enter your new password"
+                                    required
+                            >
+                            <button type="button" id="toggleNewPassword" class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                </svg>
+                            </button>
+                        </div>
+
+                        <!-- Password Strength Meter -->
+                        <div class="mt-2 strength-meter">
+                            <div id="strengthMeter" class="strength-meter-fill" style="width: 0%"></div>
+                        </div>
+                        <p id="strengthText" class="mt-1 text-xs text-gray-500">Password strength</p>
+                    </div>
+
+                    <!-- Password Requirements -->
+                    <div class="p-3 mb-4 rounded-lg bg-gray-50">
+                        <p class="mb-2 text-xs font-medium text-gray-700">Your password must have:</p>
+                        <ul class="text-xs text-gray-600 space-y-1.5">
+                            <li id="req-length" class="flex items-center requirement-item">
+                                <svg class="h-4 w-4 text-gray-400 mr-1.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                At least 8 characters
+                            </li>
+                            <li id="req-lowercase" class="flex items-center requirement-item">
+                                <svg class="h-4 w-4 text-gray-400 mr-1.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                One lowercase letter (a-z)
+                            </li>
+                            <li id="req-uppercase" class="flex items-center requirement-item">
+                                <svg class="h-4 w-4 text-gray-400 mr-1.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                One uppercase letter (A-Z)
+                            </li>
+                            <li id="req-number" class="flex items-center requirement-item">
+                                <svg class="h-4 w-4 text-gray-400 mr-1.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                One number (0-9)
+                            </li>
+                            <li id="req-special" class="flex items-center requirement-item">
+                                <svg class="h-4 w-4 text-gray-400 mr-1.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                One special character (@#$%^&+=)
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Confirm Password Field -->
+                    <div class="mb-6">
+                        <label class="block mb-1 text-sm font-medium text-gray-700" for="confirmPassword">Confirm Password</label>
+                        <div class="relative">
+                            <input
+                                    type="password"
+                                    id="confirmPassword"
+                                    class="w-full py-2.5 px-3.5 text-sm border border-gray-300 rounded-lg text-gray-900"
+                                    placeholder="Confirm your new password"
+                                    required
+                            >
+                            <button type="button" id="toggleConfirmPassword" class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <button
+                            type="button"
+                            id="submitBtn"
+                            class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white border-none rounded-lg text-sm font-medium cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                            disabled
+                    >
+                        Reset Password
+                    </button>
+                </form>
+            </div>
+
+            <!-- Success Message -->
+            <div id="successMessage" class="hidden text-center">
+                <div class="flex flex-col items-center mb-6">
+                    <div class="flex items-center justify-center w-16 h-16 mb-4 bg-green-100 rounded-full">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                    </div>
+                    <h2 class="mb-2 text-2xl font-semibold text-gray-900">Password Reset Complete</h2>
+                    <p class="mb-6 text-sm text-gray-500">
+                        Your password has been reset successfully. You can now log in with your new password.
+                    </p>
+                </div>
+
+                <div>
+                    <a
+                            href="index.html"
+                            class="block w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-center border-none rounded-lg text-sm font-medium cursor-pointer"
+                    >
+                        Go to Login
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="absolute left-0 right-0 flex items-center justify-between px-8 text-sm text-gray-500 bottom-6 sm:relative sm:mt-12 sm:px-6 sm:flex-col sm:gap-4 sm:text-center">
+        <span>© 2025 PowerAlert. All rights reserved.</span>
+        <span>support@poweralert.com</span>
+        <div class="flex gap-2 sm:order-first sm:mb-2">
+            <div class="footer-dot active"></div>
+            <div class="footer-dot"></div>
+            <div class="footer-dot"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Scripts -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+<script>
+    $(document).ready(function() {
+        // Handle verification code input fields
+        $(".verification-input").on('input', function(e) {
+            const val = $(this).val();
+
+            // Allow only numeric values
+            if (val && !/^\d+$/.test(val)) {
+                $(this).val('');
+                return;
+            }
+
+            // Move to next input
+            if (val && $(this).next('.verification-input').length) {
+                $(this).next('.verification-input').focus();
+            }
+        });
+
+        // Handle backspace in verification code inputs
+        $(".verification-input").on('keydown', function(e) {
+            const val = $(this).val();
+
+            // On backspace, clear current field and move to previous field
+            if (e.key === 'Backspace' && !val && $(this).prev('.verification-input').length) {
+                $(this).prev('.verification-input').focus().val('');
+            }
+        });
+
+        // Toggle password visibility for new password
+        $('#toggleNewPassword').on('click', function(e) {
+            e.preventDefault();
+            const passwordField = document.getElementById('newPassword');
+
+            if (passwordField.type === 'password') {
+                passwordField.type = 'text';
+                $(this).find('svg').html('<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />');
+            } else {
+                passwordField.type = 'password';
+                $(this).find('svg').html('<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />');
+            }
+        });
+
+        // Toggle password visibility for confirm password
+        $('#toggleConfirmPassword').on('click', function(e) {
+            e.preventDefault();
+            const passwordField = document.getElementById('confirmPassword');
+
+            if (passwordField.type === 'password') {
+                passwordField.type = 'text';
+                $(this).find('svg').html('<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />');
+            } else {
+                passwordField.type = 'password';
+                $(this).find('svg').html('<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />');
+            }
+        });
+
+        // Handle email verification button click
+        $('#verifyEmailBtn').on('click', function() {
+            const email = $('#email').val().trim();
+
+            // Validate email
+            if (!email) {
+                showToast("Please enter your email address", "error");
+                return;
+            }
+
+            // Show loading state
+            $(this).html('<svg class="inline-block w-4 h-4 mr-2 -ml-1 text-white animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Sending...').addClass('opacity-90').prop('disabled', true);
+
+            // Send password reset request
+            sendResetRequest(email);
+        });
+
+        // Handle verification code button click
+        $('#verifyCodeBtn').on('click', function() {
+            // Get the verification code
+            const code1 = $('#code1').val();
+            const code2 = $('#code2').val();
+            const code3 = $('#code3').val();
+            const code4 = $('#code4').val();
+            const code5 = $('#code5').val();
+            const code6 = $('#code6').val();
+
+            // Combine the digits
+            const verificationCode = code1 + code2 + code3 + code4 + code5 + code6;
+
+            // Validate code
+            if (verificationCode.length !== 6 || !/^\d+$/.test(verificationCode)) {
+                showToast("Please enter a valid 6-digit verification code", "error");
+                return;
+            }
+
+            // Get the email
+            const email = $('#storedEmail').val();
+
+            // Show loading state
+            $(this).html('<svg class="inline-block w-4 h-4 mr-2 -ml-1 text-white animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Verifying...').addClass('opacity-90').prop('disabled', true);
+
+            // Verify the code
+            verifyCode(email, verificationCode);
+        });
+
+        // Resend code button
+        $('#resendCodeBtn').on('click', function() {
+            const email = $('#storedEmail').val();
+
+            // Disable the button temporarily
+            $(this).prop('disabled', true).text('Sending...');
+
+            // Resend the code
+            sendResetRequest(email, true);
+        });
+
+        // Password strength checker
+        $('#newPassword').on('input', function() {
+            const password = $(this).val();
+            updatePasswordStrength(password);
+            validateForm();
+        });
+
+        // Confirm password validation
+        $('#confirmPassword').on('input', function() {
+            validateForm();
+        });
+
+        // Submit button handler for final password reset
+        $('#submitBtn').on('click', function() {
+            const email = $('#storedEmail').val();
+            const newPassword = $('#newPassword').val();
+            const confirmPassword = $('#confirmPassword').val();
+
+            // Get the verification code
+            const code1 = $('#code1').val();
+            const code2 = $('#code2').val();
+            const code3 = $('#code3').val();
+            const code4 = $('#code4').val();
+            const code5 = $('#code5').val();
+            const code6 = $('#code6').val();
+            const verificationCode = code1 + code2 + code3 + code4 + code5 + code6;
+
+            // Final validation
+            if (!validatePassword(newPassword)) {
+                showToast("Please meet all password requirements", "error");
+                return;
+            }
+
+            if (newPassword !== confirmPassword) {
+                showToast("Passwords do not match", "error");
+                return;
+            }
+
+            // Show loading state
+            $(this).html('<svg class="inline-block w-4 h-4 mr-2 -ml-1 text-white animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Resetting...').addClass('opacity-90').prop('disabled', true);
+
+            // Send password reset request
+            resetPassword(email, verificationCode, newPassword);
+        });
+
+        // Function to send reset request
+        function sendResetRequest(email, isResend = false) {
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', 'http://localhost:8080/api/auth/forgot-password', true);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+
+            xhr.onload = function() {
+                if (xhr.status >= 200 && xhr.status < 300) {
+                    if (isResend) {
+                        // Just show a success message for resend
+                        $('#resendCodeBtn').prop('disabled', false).text('Resend');
+                        showToast("Verification code has been resent", "success");
+                    } else {
+                        // Store the email and move to verification step
+                        $('#storedEmail').val(email);
+                        $('#userEmail').text(email);
+
+                        // Show verification form and hide email form
+                        $('#emailForm').addClass('hidden');
+                        $('#verificationForm').removeClass('hidden');
+
+                        // Focus on first verification input
+                        $('#code1').focus();
+                    }
+                } else {
+                    // Reset button states
+                    if (isResend) {
+                        $('#resendCodeBtn').prop('disabled', false).text('Resend');
+                    } else {
+                        $('#verifyEmailBtn').text('Continue').removeClass('opacity-90').prop('disabled', false);
+                    }
+
+                    // Show error message
+                    let errorMsg = 'An error occurred. Please try again.';
+                    if (xhr.responseText) {
+                        try {
+                            const errorResponse = JSON.parse(xhr.responseText);
+                            if (errorResponse.message) {
+                                errorMsg = errorResponse.message;
+                            }
+                        } catch (e) {
+                            console.error('Error parsing response:', e);
+                        }
+                    }
+
+                    showToast(errorMsg, "error");
+                }
+            };
+
+            xhr.onerror = function() {
+                // Reset button states
+                if (isResend) {
+                    $('#resendCodeBtn').prop('disabled', false).text('Resend');
+                } else {
+                    $('#verifyEmailBtn').text('Continue').removeClass('opacity-90').prop('disabled', false);
+                }
+
+                // Network error
+                showToast("Network error. Please check your connection", "error");
+            };
+
+            // Send the request
+            xhr.send(JSON.stringify({ email: email }));
+        }
+
+        // Function to verify code
+        function verifyCode(email, code) {
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', 'http://localhost:8080/api/auth/verify-reset-code', true);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    // Code verified, show reset password form
+                    $('#verificationForm').addClass('hidden');
+                    $('#resetForm').removeClass('hidden');
+                } else {
+                    // Reset button state
+                    $('#verifyCodeBtn').text('Verify Code').removeClass('opacity-90').prop('disabled', false);
+
+                    // Handle error
+                    let errorMsg = 'Invalid or expired verification code';
+
+                    if (xhr.responseText) {
+                        try {
+                            const errorResponse = JSON.parse(xhr.responseText);
+                            if (errorResponse.message) {
+                                errorMsg = errorResponse.message;
+                            }
+                        } catch (e) {
+                            console.error('Error parsing response:', e);
+                        }
+                    }
+
+                    showToast(errorMsg, "error");
+                }
+            };
+
+            xhr.onerror = function() {
+                // Reset button state
+                $('#verifyCodeBtn').text('Verify Code').removeClass('opacity-90').prop('disabled', false);
+
+                // Network error
+                showToast("Network error. Please check your connection", "error");
+            };
+
+            // Send the request
+            xhr.send(JSON.stringify({
+                email: email,
+                code: code
+            }));
+        }
+
+        // Function to reset password
+        function resetPassword(email, code, newPassword) {
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', 'http://localhost:8080/api/auth/reset-password', true);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    // Password reset successful
+                    $('#resetForm').addClass('hidden');
+                    $('#successMessage').removeClass('hidden');
+                } else {
+                    // Reset button state
+                    $('#submitBtn').text('Reset Password').removeClass('opacity-90').prop('disabled', false);
+
+                    // Handle error
+                    let errorMsg = 'An error occurred. Please try again.';
+
+                    if (xhr.status === 400) {
+                        errorMsg = 'Invalid or expired verification code. Please request a new code.';
+
+                        // Show email form and hide reset form
+                        $('#resetForm').addClass('hidden');
+                        $('#emailForm').removeClass('hidden');
+                        $('#verifyEmailBtn').text('Continue').removeClass('opacity-90').prop('disabled', false);
+                    } else if (xhr.responseText) {
+                        try {
+                            const errorResponse = JSON.parse(xhr.responseText);
+                            if (errorResponse.message) {
+                                errorMsg = errorResponse.message;
+                            }
+                        } catch (e) {
+                            console.error('Error parsing response:', e);
+                        }
+                    }
+
+                    showToast(errorMsg, "error");
+                }
+            };
+
+            xhr.onerror = function() {
+                // Reset button state
+                $('#submitBtn').text('Reset Password').removeClass('opacity-90').prop('disabled', false);
+
+                // Network error
+                showToast("Network error. Please check your connection", "error");
+            };
+
+            // Send the request
+            xhr.send(JSON.stringify({
+                email: email,
+                code: code,
+                newPassword: newPassword
+            }));
+        }
+
+        // Function to update password strength
+        function updatePasswordStrength(password) {
+            const strengthMeter = $('#strengthMeter');
+            const strengthText = $('#strengthText');
+
+            // Reset requirements
+            $('#req-length svg, #req-lowercase svg, #req-uppercase svg, #req-number svg, #req-special svg')
+                .removeClass('text-green-500')
+                .addClass('text-gray-400');
+
+            let strength = 0;
+
+            // Check length
+            const hasMinLength = password.length >= 8;
+            if (hasMinLength) {
+                strength++;
+                $('#req-length svg').removeClass('text-gray-400').addClass('text-green-500');
+            }
+
+            // Check lowercase
+            const hasLowercase = /[a-z]/.test(password);
+            if (hasLowercase) {
+                strength++;
+                $('#req-lowercase svg').removeClass('text-gray-400').addClass('text-green-500');
+            }
+
+            // Check uppercase
+            const hasUppercase = /[A-Z]/.test(password);
+            if (hasUppercase) {
+                strength++;
+                $('#req-uppercase svg').removeClass('text-gray-400').addClass('text-green-500');
+            }
+
+            // Check number
+            const hasNumber = /[0-9]/.test(password);
+            if (hasNumber) {
+                strength++;
+                $('#req-number svg').removeClass('text-gray-400').addClass('text-green-500');
+            }
+
+            // Check special character
+            const hasSpecial = /[@#$%^&+=]/.test(password);
+            if (hasSpecial) {
+                strength++;
+                $('#req-special svg').removeClass('text-gray-400').addClass('text-green-500');
+            }
+
+            // Update strength meter
+            strengthMeter.removeClass('strength-weak strength-fair strength-good strength-strong');
+
+            if (password === '') {
+                strengthMeter.css('width', '0%');
+                strengthText.text('Password strength');
+                strengthText.removeClass('text-red-500 text-yellow-500 text-green-500');
+            } else if (strength < 2) {
+                strengthMeter.addClass('strength-weak');
+                strengthText.text('Weak');
+                strengthText.removeClass('text-yellow-500 text-green-500').addClass('text-red-500');
+            } else if (strength < 4) {
+                strengthMeter.addClass('strength-fair');
+                strengthText.text('Fair');
+                strengthText.removeClass('text-red-500 text-green-500').addClass('text-yellow-500');
+            } else if (strength < 5) {
+                strengthMeter.addClass('strength-good');
+                strengthText.text('Good');
+                strengthText.removeClass('text-red-500 text-yellow-500').addClass('text-green-500');
+            } else {
+                strengthMeter.addClass('strength-strong');
+                strengthText.text('Strong');
+                strengthText.removeClass('text-red-500 text-yellow-500').addClass('text-green-500');
+            }
+        }
+
+        // Function to validate password
+        function validatePassword(password) {
+            // Use same regex as backend
+            const passwordRegex = /^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=])(?=\S+$).{8,}$/;
+            return passwordRegex.test(password);
+        }
+
+        // Function to validate the form
+        function validateForm() {
+            const password = $('#newPassword').val();
+            const confirmPassword = $('#confirmPassword').val();
+
+            // Enable submit button only if all criteria are met
+            if (validatePassword(password) && password === confirmPassword && password !== '') {
+                $('#submitBtn').prop('disabled', false);
+            } else {
+                $('#submitBtn').prop('disabled', true);
+            }
+        }
+
+        // Helper function to show toast notifications
+        function showToast(message, type) {
+            const background = type === 'success' ? '#4ade80' : '#f87171';
+
+            Toastify({
+                text: message,
+                duration: type === 'success' ? 3000 : 5000,
+                close: true,
+                gravity: "top",
+                position: "right",
+                style: {
+                    background: background,
+                    borderRadius: "8px",
+                    boxShadow: "0 3px 6px rgba(0,0,0,0.16)",
+                    fontFamily: "'Inter', sans-serif"
+                }
+            }).showToast();
+        }
+    });
+</script>
+</body>
+</html>
