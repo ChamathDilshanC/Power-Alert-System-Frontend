@@ -92,13 +92,6 @@ PowerAlert is designed as a Progressive Web App, offering:
 - Push notifications (where supported)
 - Fast loading times with service workers
 
-## 🧪 Testing
-
-Run the test suite to ensure everything is working correctly:
-
-```bash
-npm run test
-```
 
 ## 🤝 Contributing
 
