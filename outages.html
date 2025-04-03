@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PowerAlert - Admin Outage Management</title>
+    <link rel="icon" type="image/x-icon" href="https://i.pinimg.com/736x/3f/bf/40/3fbf4075b391e07eaa00ec5a87647cb5.jpg">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Inter Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Toastify CSS -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+
+    <!-- Mapbox GL JS -->
+    <script src='https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.js'></script>
+    <link href='https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.css' rel='stylesheet' />
+
+    <!-- Mapbox Geocoder Plugin -->
+    <script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v5.0.0/mapbox-gl-geocoder.min.js"></script>
+    <link rel="stylesheet" href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v5.0.0/mapbox-gl-geocoder.css" type="text/css">
+
+    <!-- Date picker -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+    <style>
+        * {
+            font-family: 'Inter', -apple-system, sans-serif;
+        }
+
+        .window-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .dot-red { background-color: #FF5F56; }
+        .dot-yellow { background-color: #FFBD2E; }
+        .dot-green { background-color: #27C93F; }
+
+        .tab-active {
+            border-bottom: 2px solid #4361ee;
+            color: #4361ee;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #4361ee;
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 3px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #a1a1a1;
+        }
+
+        .mapboxgl-ctrl-geocoder {
+            width: 100% !important;
+            max-width: none !important;
+            font-family: 'Inter', -apple-system, sans-serif !important;
+        }
+
+        /* Marker styling */
+        .outage-marker {
+            position: relative;
+        }
+
+        .outage-marker-icon {
+            width: 36px;
+            height: 36px;
+            background-color: rgba(255, 0, 0, 0.6);
+            border: 2px solid rgba(255, 0, 0, 0.9);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.8);
+        }
+
+        .outage-marker-icon.scheduled {
+            background-color: rgba(246, 158, 11, 0.6);
+            border: 2px solid rgba(246, 158, 11, 0.9);
+        }
+
+        .outage-marker-icon.ongoing {
+            background-color: rgba(220, 38, 38, 0.6);
+            border: 2px solid rgba(220, 38, 38, 0.9);
+        }
+
+        .outage-marker-icon.completed {
+            background-color: rgba(16, 185, 129, 0.6);
+            border: 2px solid rgba(16, 185, 129, 0.9);
+        }
+
+        .outage-marker-icon.cancelled {
+            background-color: rgba(107, 114, 128, 0.6);
+            border: 2px solid rgba(107, 114, 128, 0.9);
+        }
+
+        /* Override flatpickr styles to match our design */
+        .flatpickr-calendar {
+            border-radius: 8px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            font-family: 'Inter', -apple-system, sans-serif !important;
+        }
+
+        .flatpickr-day.selected {
+            background: #4361ee !important;
+            border-color: #4361ee !important;
+        }
+
+        .flatpickr-day.selected:hover {
+            background: #3651cf !important;
+            border-color: #3651cf !important;
+        }
+
+        .flatpickr-day:hover {
+            background: rgba(67, 97, 238, 0.1) !important;
+        }
+
+        /* Custom checkbox styles */
+        .custom-checkbox input[type="checkbox"] {
+            position: absolute;
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .custom-checkbox .checkbox-label {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            transition: all 0.2s;
+            background-color: #f3f4f6;
+            border: 1px solid #e5e7eb;
+        }
+
+        .custom-checkbox input[type="checkbox"]:checked + .checkbox-label {
+            background-color: rgba(67, 97, 238, 0.1);
+            border-color: #4361ee;
+            color: #4361ee;
+        }
+
+        .custom-checkbox .checkbox-label::before {
+            content: '';
+            display: inline-block;
+            width: 1rem;
+            height: 1rem;
+            margin-right: 0.5rem;
+            border: 2px solid #d1d5db;
+            border-radius: 0.25rem;
+            transition: all 0.2s;
+        }
+
+        .custom-checkbox input[type="checkbox"]:checked + .checkbox-label::before {
+            background-color: #4361ee;
+            border-color: #4361ee;
+            background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3e%3c/svg%3e");
+            background-size: 100% 100%;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 h-screen flex flex-col">
+<!-- Navigation Bar -->
+<nav class="bg-white shadow-sm">
+    <div class="max-w-full px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between h-16">
+            <div class="flex">
+                <div class="flex-shrink-0 flex items-center">
+                    <a href="#" class="text-lg font-semibold text-blue-600 flex items-center">
+                        PowerAlert ⚡ <span class="ml-2 text-sm text-gray-500 font-normal">Admin Dashboard</span>
+                    </a>
+                </div>
+            </div>
+            <div class="flex items-center">
+                <button class="p-1 border-2 border-transparent text-gray-500 rounded-full hover:text-blue-600 focus:outline-none">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                    </svg>
+                </button>
+                <div class="ml-3 relative">
+                    <div>
+                        <button class="flex text-sm rounded-full focus:outline-none" id="user-menu" aria-expanded="false" aria-haspopup="true">
+                            <div class="h-8 w-8 rounded-full bg-blue-200 flex items-center justify-center text-blue-600 font-semibold">A</div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- Main Content -->
+<div class="flex flex-1 overflow-hidden">
+    <!-- Sidebar -->
+    <div class="w-64 h-full bg-white shadow-md flex-shrink-0">
+        <div class="h-full flex flex-col">
+            <div class="p-4 border-b">
+                <div class="text-sm font-medium text-gray-500">ADMIN PANEL</div>
+            </div>
+            <div class="flex-1 overflow-y-auto p-2 custom-scrollbar">
+                <nav class="space-y-1">
+                    <a href="#" class="group flex items-center px-3 py-2 text-sm font-medium rounded-md bg-blue-50 text-blue-600">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="mr-3 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
+                        Outage Management
+                    </a>
+                    <a href="#" class="group flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-700 hover:bg-gray-50">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="mr-3 h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                        </svg>
+                        User Management
+                    </a>
+                    <a href="#" class="group flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-700 hover:bg-gray-50">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="mr-3 h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                        </svg>
+                        Analytics & Reports
+                    </a>
+                    <a href="#" class="group flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-700 hover:bg-gray-50">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="mr-3 h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" />
+                        </svg>
+                        Notifications
+                    </a>
+                    <a href="#" class="group flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-700 hover:bg-gray-50">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="mr-3 h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        Settings
+                    </a>
+                </nav>
+            </div>
+            <div class="p-4 border-t">
+                <a href="#" class="flex items-center space-x-2 text-sm text-red-600 hover:text-red-800">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                    </svg>
+                    <span>Logout</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="flex-1 flex flex-col overflow-hidden">
+        <!-- Tabs -->
+        <div class="bg-white shadow-sm">
+            <div class="px-6 border-b">
+                <nav class="-mb-px flex space-x-6">
+                    <a href="#" class="tab-active whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+                        Dashboard
+                    </a>
+                    <a href="#" class="whitespace-nowrap py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                        Manage Outages
+                    </a>
+                    <a href="#" class="whitespace-nowrap py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                        Outage History
+                    </a>
+                    <a href="#" class="whitespace-nowrap py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                        Area Management
+                    </a>
+                </nav>
+            </div>
+        </div>
+
+        <!-- Dashboard Content -->
+        <div class="flex-1 overflow-y-auto bg-gray-50 p-6 custom-scrollbar">
+            <!-- Page Header -->
+            <div class="flex justify-between items-center mb-6">
+                <h1 class="text-2xl font-semibold text-gray-900">Outage Management Dashboard</h1>
+                <button id="create-outage-btn" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                    </svg>
+                    Create New Outage
+                </button>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 mb-6">
+                <!-- Total Active Outages -->
+                <div class="bg-white overflow-hidden shadow rounded-lg">
+                    <div class="px-4 py-5 sm:p-6">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0 bg-blue-100 rounded-md p-3">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                </svg>
+                            </div>
+                            <div class="ml-5 w-0 flex-1">
+                                <dl>
+                                    <dt class="text-sm font-medium text-gray-500 truncate">Active Outages</dt>
+                                    <dd class="flex items-baseline">
+                                        <div class="text-2xl font-semibold text-gray-900">24</div>
+                                        <div class="ml-2 flex items-baseline text-sm font-semibold text-green-600">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 self-center" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18" />
+                                            </svg>
+                                            <span class="sr-only">Increased by</span>
+                                            8%
+                                        </div>
+                                    </dd>
+                                </dl>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Scheduled Outages -->
+                <div class="bg-white overflow-hidden shadow rounded-lg">
+                    <div class="px-4 py-5 sm:p-6">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0 bg-yellow-100 rounded-md p-3">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </div>
+                            <div class="ml-5 w-0 flex-1">
+                                <dl>
+                                    <dt class="text-sm font-medium text-gray-500 truncate">Scheduled Outages</dt>
+                                    <dd class="flex items-baseline">
+                                        <div class="text-2xl font-semibold text-gray-900">16</div>
+                                    </dd>
+                                </dl>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Ongoing Outages -->
+                <div class="bg-white overflow-hidden shadow rounded-lg">
+                    <div class="px-4 py-5 sm:p-6">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0 bg-red-100 rounded-md p-3">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                </svg>
+                            </div>
+                            <div class="ml-5 w-0 flex-1">
+                                <dl>
+                                    <dt class="text-sm font-medium text-gray-500 truncate">Ongoing Outages</dt>
+                                    <dd class="flex items-baseline">
+                                        <div class="text-2xl font-semibold text-gray-900">8</div>
+                                    </dd>
+                                </dl>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Affected Users -->
+                <div class="bg-white overflow-hidden shadow rounded-lg">
+                    <div class="px-4 py-5 sm:p-6">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0 bg-indigo-100 rounded-md p-3">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                                </svg>
+                            </div>
+                            <div class="ml-5 w-0 flex-1">
+                                <dl>
+                                    <dt class="text-sm font-medium text-gray-500 truncate">Affected Users</dt>
+                                    <dd class="flex items-baseline">
+                                        <div class="text-2xl font-semibold text-gray-900">42.5K</div>
+                                    </dd>
+                                </dl>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Map and Active Outages Section -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Map View -->
+                <div class="lg:col-span-2 bg-white shadow rounded-lg p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-lg font-medium text-gray-900">Live Outage Map</h2>
+                        <div class="flex space-x-2">
+                            <button class="inline-flex items-center px-2.5 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                                </svg>
+                                Filter
+                            </button>
+                            <button class="inline-flex items-center px-2.5 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                </svg>
+                                Refresh
+                            </button>
+                        </div>
+                    </div>
+                    <div id="outage-map" class="h-96 w-full bg-gray-100 rounded-lg relative mb-4"></div>
+                    <div class="flex justify-center space-x-6 text-sm">
+                        <div class="flex items-center">
+                            <div class="w-4 h-4 rounded-full bg-yellow-500 mr-2"></div>
+                            <span>Scheduled</span>
+                        </div>
+                        <div class="flex items-center">
+                            <div class="w-4 h-4 rounded-full bg-red-600 mr-2"></div>
+                            <span>Ongoing</span>
+                        </div>
+                        <div class="flex items-center">
+                            <div class="w-4 h-4 rounded-full bg-green-500 mr-2"></div>
+                            <span>Completed</span>
+                        </div>
+                        <div class="flex items-center">
+                            <div class="w-4 h-4 rounded-full bg-gray-500 mr-2"></div>
+                            <span>Cancelled</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Active Outages List -->
+                <div class="bg-white shadow rounded-lg flex flex-col">
+                    <div class="p-6 border-b">
+                        <div class="flex justify-between items-center">
+                            <h2 class="text-lg font-medium text-gray-900">Active Outages</h2>
+                            <div class="relative">
+                                <select id="outage-filter" class="rounded-md border-gray-300 py-2 pl-3 pr-10 text-sm focus:outline-none">
+                                    <option value="all">All Types</option>
+                                    <option value="ELECTRICITY">Electricity</option>
+                                    <option value="WATER">Water</option>
+                                    <option value="GAS">Gas</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex-1 overflow-y-auto custom-scrollbar p-2">
+                        <ul class="divide-y divide-gray-200">
+                            <!-- Outage Item 1 -->
+                            <li class="py-3 px-4 hover:bg-gray-50 rounded-md cursor-pointer">
+                                <div class="flex justify-between">
+                                    <div class="flex items-center">
+                                        <div class="h-10 w-10 flex-shrink-0 bg-red-100 rounded-md flex items-center justify-center">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                            </svg>
+                                        </div>
+                                        <div class="ml-3">
+                                            <p class="text-sm font-medium text-gray-900">Electricity Outage</p>
+                                            <p class="text-xs text-gray-500">Colombo District</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <span class="px-2 py-1 text-xs rounded-full bg-red-100 text-red-800">Ongoing</span>
+                                    </div>
+                                </div>
+                                <div class="mt-2">
+                                    <p class="text-xs text-gray-500">Affecting 2,534 users</p>
+                                    <div class="mt-1 flex justify-between">
+                                        <p class="text-xs text-gray-500">Start: <span class="font-medium">30 Mar, 09:00</span></p>
+                                        <p class="text-xs text-gray-500">Est. End: <span class="font-medium">30 Mar, 17:00</span></p>
+                                    </div>
+                                </div>
+                            </li>
+
+                            <!-- Outage Item 2 -->
+                            <li class="py-3 px-4 hover:bg-gray-50 rounded-md cursor-pointer">
+                                <div class="flex justify-between">
+                                    <div class="flex items-center">
+                                        <div class="h-10 w-10 flex-shrink-0 bg-blue-100 rounded-md flex items-center justify-center">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+                                            </svg>
+                                        </div>
+                                        <div class="ml-3">
+                                            <p class="text-sm font-medium text-gray-900">Water Outage</p>
+                                            <p class="text-xs text-gray-500">Gampaha District</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <span class="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800">Scheduled</span>
+                                    </div>
+                                </div>
+                                <div class="mt-2">
+                                    <p class="text-xs text-gray-500">Affecting 1,876 users</p>
+                                    <div class="mt-1 flex justify-between">
+                                        <p class="text-xs text-gray-500">Start: <span class="font-medium">31 Mar, 08:00</span></p>
+                                        <p class="text-xs text-gray-500">Est. End: <span class="font-medium">31 Mar, 14:00</span></p>
+                                    </div>
+                                </div>
+                            </li>
+
+                            <!-- Outage Item 3 -->
+                            <li class="py-3 px-4 hover:bg-gray-50 rounded-md cursor-pointer">
+                                <div class="flex justify-between">
+                                    <div class="flex items-center">
+                                        <div class="h-10 w-10 flex-shrink-0 bg-yellow-100 rounded-md flex items-center justify-center">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z" />
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.879 16.121A3 3 0 1012.015 11L11 14H9c0 .768.293 1.536.879 2.121z" />
+                                            </svg>
+                                        </div>
+                                        <div class="ml-3">
+                                            <p class="text-sm font-medium text-gray-900">Gas Supply Maintenance</p>
+                                            <p class="text-xs text-gray-500">Kalutara District</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <span class="px-2 py-1 text-xs rounded-full bg-red-100 text-red-800">Ongoing</span>
+                                    </div>
+                                </div>
+                                <div class="mt-2">
+                                    <p class="text-xs text-gray-500">Affecting 968 users</p>
+                                    <div class="mt-1 flex justify-between">
+                                        <p class="text-xs text-gray-500">Start: <span class="font-medium">30 Mar, 10:30</span></p>
+                                        <p class="text-xs text-gray-500">Est. End: <span class="font-medium">30 Mar, 18:30</span></p>
+                                    </div>
+                                </div>
+                            </li>
+
+                            <!-- Outage Item 4 -->
+                            <li class="py-3 px-4 hover:bg-gray-50 rounded-md cursor-pointer">
+                                <div class="flex justify-between">
+                                    <div class="flex items-center">
+                                        <div class="h-10 w-10 flex-shrink-0 bg-red-100 rounded-md flex items-center justify-center">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                            </svg>
+                                        </div>
+                                        <div class="ml-3">
+                                            <p class="text-sm font-medium text-gray-900">Electricity Maintenance</p>
+                                            <p class="text-xs text-gray-500">Kandy District</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <span class="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800">Scheduled</span>
+                                    </div>
+                                </div>
+                                <div class="mt-2">
+                                    <p class="text-xs text-gray-500">Affecting 3,241 users</p>
+                                    <div class="mt-1 flex justify-between">
+                                        <p class="text-xs text-gray-500">Start: <span class="font-medium">1 Apr, 09:00</span></p>
+                                        <p class="text-xs text-gray-500">Est. End: <span class="font-medium">1 Apr, 15:00</span></p>
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="p-4 border-t">
+                        <button class="w-full text-center py-2 text-sm text-blue-600 font-medium hover:text-blue-700 focus:outline-none">
+                            View All Outages
+                        </button>
+                    </div>

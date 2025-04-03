@@ -1,0 +1,991 @@
+<!DOCTYPE>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Power Alert Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            200: '#c7d2fe',
+                            300: '#a5b4fc',
+                            400: '#818cf8',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                            800: '#3730a3',
+                            900: '#312e81',
+                        },
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'nav': '0 4px 12px rgba(0, 0, 0, 0.05)',
+                        'card': '0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025)',
+                        'button': '0 4px 6px -1px rgba(99, 102, 241, 0.2)',
+                    },
+                }
+            }
+        }
+    </script>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --sidebar-width: 70px;
+            --sidebar-expanded-width: 240px;
+            --primary-color: #4f46e5;
+            --hover-color: rgba(99, 102, 241, 0.1);
+            --active-color: #4f46e5;
+            --active-text: white;
+            --text-color: #374151;
+            --border-color: #e5e7eb;
+            --bg-color: #f9fafb;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f9fafb;
+            color: #374151;
+        }
+
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: var(--sidebar-width);
+            background-color: white;
+            border-right: 1px solid var(--border-color);
+            z-index: 100;
+            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            border-radius: 0 12px 12px 0;
+        }
+
+        .sidebar:hover {
+            width: var(--sidebar-expanded-width);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            padding: 18px 12px;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 8px;
+        }
+
+        .logo-icon {
+            min-width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, #4f46e5, #4338ca);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(79, 70, 229, 0.25);
+        }
+
+        .logo-text {
+            margin-left: 12px;
+            white-space: nowrap;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .sidebar:hover .logo-text {
+            opacity: 1;
+        }
+
+        .nav-container {
+            height: calc(100% - 73px - 60px);
+            overflow-y: auto;
+            padding: 10px 0;
+        }
+
+        .nav-section {
+            margin-bottom: 8px;
+        }
+
+        .nav-section-title {
+            padding: 8px 16px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: #6b7280;
+            opacity: 0;
+            white-space: nowrap;
+            transition: opacity 0.2s ease;
+            letter-spacing: 0.05em;
+        }
+
+        .sidebar:hover .nav-section-title {
+            opacity: 1;
+        }
+
+        .nav-item {
+            padding: 10px 14px;
+            margin: 3px 8px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            white-space: nowrap;
+            color: var(--text-color);
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            text-decoration: none;
+        }
+
+        .nav-item:hover {
+            background-color: var(--hover-color);
+        }
+
+        .nav-item.active {
+            background-color: var(--active-color);
+            color: var(--active-text);
+            box-shadow: 0 3px 8px rgba(79, 70, 229, 0.25);
+        }
+
+        .nav-item i {
+            min-width: 26px;
+            display: flex;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .nav-item-text {
+            margin-left: 8px;
+            font-size: 14px;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            font-weight: 500;
+        }
+
+        .sidebar:hover .nav-item-text {
+            opacity: 1;
+        }
+
+        .submenu {
+            margin-left: 30px;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .submenu.expanded {
+            max-height: 500px;
+            max-width: 100%;
+        }
+
+        .submenu-item {
+            padding: 8px 12px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            white-space: nowrap;
+            color: var(--text-color);
+            border-radius: 6px;
+            margin: 3px 8px 3px 0;
+            font-size: 13px;
+            opacity: 0;
+            transition: all 0.2s ease;
+            text-decoration: none;
+        }
+
+        .sidebar:hover .submenu-item {
+            opacity: 1;
+        }
+
+        .submenu-item:hover {
+            background-color: var(--hover-color);
+        }
+
+        .submenu-item.active {
+            color: var(--active-color);
+            font-weight: 500;
+            background-color: rgba(79, 70, 229, 0.08);
+        }
+
+        .submenu-item i {
+            font-size: 14px;
+            margin-right: 6px;
+        }
+
+        .user-avatar {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            padding: 16px 12px;
+            display: flex;
+            align-items: center;
+            border-top: 1px solid var(--border-color);
+            background: white;
+        }
+
+        .avatar-circle {
+            min-width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, #4f46e5, #4338ca);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: 600;
+            color: white;
+            border: 2px solid rgba(79, 70, 229, 0.1);
+        }
+
+        .avatar-text {
+            margin-left: 10px;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .avatar-name {
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .avatar-role {
+            font-size: 11px;
+            color: #6b7280;
+        }
+
+        .sidebar:hover .avatar-text {
+            opacity: 1;
+        }
+
+        .main-content {
+            margin-left: var(--sidebar-width);
+            padding: 24px;
+            transition: margin-left 0.3s ease;
+        }
+
+        .content-card {
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .content-card:hover {
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+            transform: translateY(-2px);
+        }
+
+        .dropdown-icon {
+            margin-left: auto;
+            transform: rotate(0deg);
+            transition: transform 0.3s ease;
+            font-size: 16px;
+        }
+
+        .dropdown-icon.open {
+            transform: rotate(180deg);
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                border-radius: 0;
+                transform: translateX(-100%);
+            }
+
+            .sidebar.mobile-open {
+                transform: translateX(0);
+                width: var(--sidebar-expanded-width);
+            }
+
+            .sidebar.mobile-open .logo-text,
+            .sidebar.mobile-open .nav-item-text,
+            .sidebar.mobile-open .nav-section-title,
+            .sidebar.mobile-open .submenu-item,
+            .sidebar.mobile-open .avatar-text {
+                opacity: 1;
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 24px 16px;
+            }
+
+            .mobile-toggle {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                position: fixed;
+                top: 15px;
+                left: 15px;
+                z-index: 101;
+                background: white;
+                border: none;
+                border-radius: 8px;
+                width: 40px;
+                height: 40px;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+                color: var(--primary-color);
+                cursor: pointer;
+            }
+        }
+
+        @media (min-width: 769px) {
+            .mobile-toggle {
+                display: none;
+            }
+        }
+
+        /* Custom scrollbar */
+        .nav-container::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .nav-container::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .nav-container::-webkit-scrollbar-thumb {
+            background-color: rgba(0, 0, 0, 0.1);
+            border-radius: 20px;
+        }
+
+        /* Firefox */
+        .nav-container {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(0, 0, 0, 0.1) transparent;
+        }
+
+        .gap {
+            height: 20px;
+        }
+
+        /* Top navigation bar */
+        .top-navbar {
+            height: 64px;
+            background-color: white;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            margin-left: var(--sidebar-width);
+            transition: margin-left 0.3s ease;
+        }
+
+        @media (max-width: 768px) {
+            .top-navbar {
+                margin-left: 0;
+                padding: 0 16px 0 64px;
+            }
+        }
+
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            font-size: 14px;
+        }
+
+        .breadcrumb-item {
+            color: #6b7280;
+        }
+
+        .breadcrumb-item.active {
+            color: #111827;
+            font-weight: 500;
+        }
+
+        .breadcrumb-separator {
+            color: #d1d5db;
+            margin: 0 8px;
+        }
+
+        .notification-bell {
+            position: relative;
+            color: #6b7280;
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+
+        .notification-bell:hover {
+            color: #4f46e5;
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: #ef4444;
+            color: white;
+            border-radius: 50%;
+            font-size: 10px;
+            width: 16px;
+            height: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Dashboard cards */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 24px;
+            margin-top: 24px;
+        }
+
+        .dashboard-card {
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            padding: 20px;
+            transition: all 0.2s ease;
+        }
+
+        .dashboard-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .card-title {
+            font-size: 14px;
+            font-weight: 500;
+            color: #6b7280;
+        }
+
+        .card-icon {
+            width: 36px;
+            height: 36px;
+            background-color: rgba(79, 70, 229, 0.1);
+            color: #4f46e5;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .card-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 5px;
+        }
+
+        .card-trend {
+            display: flex;
+            align-items: center;
+            font-size: 12px;
+        }
+
+        .trend-up {
+            color: #10b981;
+        }
+
+        .trend-down {
+            color: #ef4444;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+<!-- Mobile Toggle Button -->
+<button id="mobile-toggle-btn" class="mobile-toggle">
+    <i class='bx bx-menu text-xl'></i>
+</button>
+
+<!-- Sidebar -->
+<div id="sidebar-main" class="sidebar">
+    <!-- Logo -->
+    <div id="logo-container" class="logo">
+        <div id="logo-icon" class="logo-icon">
+            <i class='bx bxs-bolt text-xl'></i>
+        </div>
+        <div id="logo-text" class="logo-text">
+            <div id="brand-name" class="font-medium text-sm">Power Alert</div>
+            <div id="brand-url" class="text-xs text-gray-500">admin.poweralert.lk</div>
+        </div>
+    </div>
+
+    <!-- Navigation Items -->
+    <div id="nav-container" class="nav-container">
+        <!-- Main Section -->
+        <div id="nav-section-main" class="nav-section">
+            <div id="section-title-main" class="nav-section-title">Main</div>
+
+            <a href="dashboard.html" id="nav-dashboard" class="nav-item" data-page="dashboard">
+                <i class='bx bxs-dashboard'></i>
+                <span class="nav-item-text">Dashboard</span>
+            </a>
+
+            <a href="#" id="nav-outages" class="nav-item" data-page="outages" data-has-submenu="true">
+                <i class='bx bxs-error-alt'></i>
+                <span class="nav-item-text">Outages</span>
+                <i id="outages-dropdown" class='bx bx-chevron-down dropdown-icon'></i>
+            </a>
+
+            <div id="outages-submenu" class="submenu">
+                <a href="outages/view.html" id="outages-view" class="submenu-item">
+                    <i class='bx bx-list-ul'></i>
+                    <span>View All Outages</span>
+                </a>
+                <a href="outages/create.html" id="outages-create" class="submenu-item active">
+                    <i class='bx bx-plus'></i>
+                    <span>Create Outage</span>
+                </a>
+                <a href="outages/edit.html" id="outages-edit" class="submenu-item">
+                    <i class='bx bx-edit'></i>
+                    <span>Edit Outage</span>
+                </a>
+                <a href="outages/history.html" id="outages-history" class="submenu-item">
+                    <i class='bx bx-history'></i>
+                    <span>Outage History</span>
+                </a>
+            </div>
+
+            <a href="#" id="nav-areas" class="nav-item" data-page="areas" data-has-submenu="true">
+                <i class='bx bxs-map'></i>
+                <span class="nav-item-text">Areas</span>
+                <i id="areas-dropdown" class='bx bx-chevron-down dropdown-icon'></i>
+            </a>
+
+            <div id="areas-submenu" class="submenu">
+                <a href="areas/view.html" id="areas-view" class="submenu-item">
+                    <i class='bx bx-list-ul'></i>
+                    <span>View All Areas</span>
+                </a>
+                <a href="areas/create.html" id="areas-create" class="submenu-item">
+                    <i class='bx bx-plus'></i>
+                    <span>Add New Area</span>
+                </a>
+                <a href="areas/edit.html" id="areas-edit" class="submenu-item">
+                    <i class='bx bx-edit'></i>
+                    <span>Edit Area</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- User Management Section -->
+        <div id="nav-section-users" class="nav-section">
+            <div id="section-title-users" class="nav-section-title">User Management</div>
+
+            <a href="#" id="nav-users" class="nav-item" data-page="users" data-has-submenu="true">
+                <i class='bx bxs-user'></i>
+                <span class="nav-item-text">Users</span>
+                <i id="users-dropdown" class='bx bx-chevron-down dropdown-icon'></i>
+            </a>
+
+            <div id="users-submenu" class="submenu">
+                <a href="users/view.html" id="users-view" class="submenu-item">
+                    <i class='bx bx-list-ul'></i>
+                    <span>View All Users</span>
+                </a>
+                <a href="users/create.html" id="users-create" class="submenu-item">
+                    <i class='bx bx-plus'></i>
+                    <span>Add New User</span>
+                </a>
+                <a href="users/edit.html" id="users-edit" class="submenu-item">
+                    <i class='bx bx-edit'></i>
+                    <span>Edit User</span>
+                </a>
+            </div>
+
+            <a href="#" id="nav-providers" class="nav-item" data-page="providers" data-has-submenu="true">
+                <i class='bx bxs-building'></i>
+                <span class="nav-item-text">Providers</span>
+                <i id="providers-dropdown" class='bx bx-chevron-down dropdown-icon'></i>
+            </a>
+
+            <div id="providers-submenu" class="submenu">
+                <a href="providers/view.html" id="providers-view" class="submenu-item">
+                    <i class='bx bx-list-ul'></i>
+                    <span>All Providers</span>
+                </a>
+                <a href="providers/create.html" id="providers-create" class="submenu-item">
+                    <i class='bx bx-plus'></i>
+                    <span>Add Provider</span>
+                </a>
+                <a href="providers/edit.html" id="providers-edit" class="submenu-item">
+                    <i class='bx bx-edit'></i>
+                    <span>Edit Provider</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Communications Section -->
+        <div id="nav-section-comms" class="nav-section">
+            <div id="section-title-comms" class="nav-section-title">Communications</div>
+
+            <a href="notifications.html" id="nav-notifications" class="nav-item" data-page="notifications">
+                <i class='bx bxs-bell'></i>
+                <span class="nav-item-text">Notifications</span>
+            </a>
+
+            <a href="#" id="nav-feedback" class="nav-item" data-page="feedback" data-has-submenu="true">
+                <i class='bx bxs-message-square-detail'></i>
+                <span class="nav-item-text">Feedback</span>
+                <i id="feedback-dropdown" class='bx bx-chevron-down dropdown-icon'></i>
+            </a>
+
+            <div id="feedback-submenu" class="submenu">
+                <a href="feedback/view.html" id="feedback-view" class="submenu-item">
+                    <i class='bx bx-list-ul'></i>
+                    <span>All Feedback</span>
+                </a>
+                <a href="feedback/respond.html" id="feedback-respond" class="submenu-item">
+                    <i class='bx bx-message-alt-check'></i>
+                    <span>Respond to Feedback</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Resources Section -->
+        <div id="nav-section-resources" class="nav-section">
+            <div id="section-title-resources" class="nav-section-title">Resources</div>
+
+            <a href="#" id="nav-resources" class="nav-item" data-page="resources" data-has-submenu="true">
+                <i class='bx bxs-package'></i>
+                <span class="nav-item-text">Resources</span>
+                <i id="resources-dropdown" class='bx bx-chevron-down dropdown-icon'></i>
+            </a>
+
+            <div id="resources-submenu" class="submenu">
+                <a href="resources/view.html" id="resources-view" class="submenu-item">
+                    <i class='bx bx-list-ul'></i>
+                    <span>All Resources</span>
+                </a>
+                <a href="resources/create.html" id="resources-create" class="submenu-item">
+                    <i class='bx bx-plus'></i>
+                    <span>Add Resource</span>
+                </a>
+                <a href="resources/edit.html" id="resources-edit" class="submenu-item">
+                    <i class='bx bx-edit'></i>
+                    <span>Edit Resource</span>
+                </a>
+            </div>
+
+            <a href="reports.html" id="nav-reports" class="nav-item" data-page="reports">
+                <i class='bx bxs-report'></i>
+                <span class="nav-item-text">Reports</span>
+            </a>
+        </div>
+
+        <!-- System Section -->
+        <div id="nav-section-system" class="nav-section">
+            <div id="section-title-system" class="nav-section-title">System</div>
+
+            <a href="audit-logs.html" id="nav-audit" class="nav-item" data-page="audit">
+                <i class='bx bxs-file'></i>
+                <span class="nav-item-text">Audit Logs</span>
+            </a>
+
+            <a href="#" id="nav-settings" class="nav-item" data-page="settings" data-has-submenu="true">
+                <i class='bx bxs-cog'></i>
+                <span class="nav-item-text">Settings</span>
+                <i id="settings-dropdown" class='bx bx-chevron-down dropdown-icon'></i>
+            </a>
+
+            <div id="settings-submenu" class="submenu">
+                <a href="settings/profile.html" id="settings-profile" class="submenu-item">
+                    <i class='bx bx-user-circle'></i>
+                    <span>Profile Settings</span>
+                </a>
+                <a href="settings/security.html" id="settings-security" class="submenu-item">
+                    <i class='bx bx-lock-alt'></i>
+                    <span>Security</span>
+                </a>
+                <a href="settings/email.html" id="settings-email" class="submenu-item">
+                    <i class='bx bx-envelope'></i>
+                    <span>Email Settings</span>
+                </a>
+                <a href="settings/notifications.html" id="settings-notifications" class="submenu-item">
+                    <i class='bx bx-bell'></i>
+                    <span>Notification Settings</span>
+                </a>
+                <div class="gap"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Avatar -->
+    <div id="user-avatar" class="user-avatar">
+        <div id="avatar-circle" class="avatar-circle">A</div>
+        <div id="avatar-text" class="avatar-text">
+            <div id="avatar-name" class="avatar-name">Admin User</div>
+            <div id="avatar-role" class="avatar-role">Administrator</div>
+        </div>
+    </div>
+</div>
+
+<!-- Top Navigation Bar -->
+<div class="top-navbar">
+    <div class="breadcrumb">
+        <span class="breadcrumb-item">Home</span>
+        <span class="breadcrumb-separator">/</span>
+        <span class="breadcrumb-item active" id="page-title">Dashboard</span>
+    </div>
+    <div class="flex items-center space-x-4">
+        <div class="notification-bell">
+            <i class='bx bx-bell text-xl'></i>
+            <span class="notification-badge">3</span>
+        </div>
+        <div class="hidden md:block text-sm font-medium">Admin User</div>
+    </div>
+</div>
+
+<!-- 3D Visualization -->
+<div class="main-content">
+    <script type="module" src="https://unpkg.com/@splinetool/viewer@1.9.82/build/spline-viewer.js"></script>
+    <spline-viewer url="https://prod.spline.design/pMEALPBSSRjAV-MI/scene.splinecode" ></spline-viewer>
+</div>
+
+
+<button id="loadNewContentBtn" class="btn btn-primary">Load New Content</button>
+
+<!-- Main Content -->
+<div class="main-content" id="mainContent">
+
+    <!-- Dashboard Content -->
+    <div class="dashboard-grid">
+        <div class="dashboard-card">
+            <div class="card-header">
+                <div class="card-title">Active Outages</div>
+                <div class="card-icon">
+                    <i class='bx bxs-error-alt'></i>
+                </div>
+            </div>
+            <div class="card-value">24</div>
+            <div class="card-trend trend-up">
+                <i class='bx bx-up-arrow-alt mr-1'></i> 12% from yesterday
+            </div>
+        </div>
+
+        <div class="dashboard-card">
+            <div class="card-header">
+                <div class="card-title">Upcoming Outages</div>
+                <div class="card-icon">
+                    <i class='bx bxs-calendar'></i>
+                </div>
+            </div>
+            <div class="card-value">17</div>
+            <div class="card-trend trend-down">
+                <i class='bx bx-down-arrow-alt mr-1'></i> 5% from yesterday
+            </div>
+        </div>
+
+        <div class="dashboard-card">
+            <div class="card-header">
+                <div class="card-title">Areas Affected</div>
+                <div class="card-icon">
+                    <i class='bx bxs-map'></i>
+                </div>
+            </div>
+            <div class="card-value">8</div>
+            <div class="card-trend">
+                <i class='bx bx-right-arrow-alt mr-1'></i> No change
+            </div>
+        </div>
+
+        <div class="dashboard-card">
+            <div class="card-header">
+                <div class="card-title">Active Users</div>
+                <div class="card-icon">
+                    <i class='bx bxs-user'></i>
+                </div>
+            </div>
+            <div class="card-value">1,843</div>
+            <div class="card-trend trend-up">
+                <i class='bx bx-up-arrow-alt mr-1'></i> 8% from last week
+            </div>
+        </div>
+    </div>
+</div>
+<!-- JavaScript -->
+<script>
+    document.getElementById("loadNewContentBtn").addEventListener("click", function() {
+        document.getElementById("loadNewContentBtn").addEventListener("click", function() {
+            fetch("../index.html") // Adjust the path as needed
+                .then(response => response.text())
+                .then(data => {
+                    document.getElementById("mainContent").innerHTML = data;
+                })
+                .catch(error => console.error("Error loading the content:", error));
+        });
+    });
+</script>
+
+<script>
+    $(document).ready(function() {
+        // Set the active page based on URL path
+        const path = window.location.pathname;
+        let activePage = 'dashboard'; // Default active page
+
+        if (path.includes('/outages/')) {
+            activePage = 'outages';
+            const subPath = path.split('/').pop();
+            if (subPath) {
+                const subPage = subPath.replace('.html', '');
+                $(`#outages-${subPage}`).addClass('active');
+            }
+
+            // Expand outages submenu
+            $("#outages-submenu").addClass('expanded');
+            $("#outages-dropdown").addClass('open');
+        } else if (path.includes('/areas/')) {
+            activePage = 'areas';
+            const subPath = path.split('/').pop();
+            if (subPath) {
+                const subPage = subPath.replace('.html', '');
+                $(`#areas-${subPage}`).addClass('active');
+            }
+
+            // Expand areas submenu
+            $("#areas-submenu").addClass('expanded');
+            $("#areas-dropdown").addClass('open');
+        } else if (path.includes('/users/')) {
+            activePage = 'users';
+            const subPath = path.split('/').pop();
+            if (subPath) {
+                const subPage = subPath.replace('.html', '');
+                $(`#users-${subPage}`).addClass('active');
+            }
+
+            // Expand users submenu
+            $("#users-submenu").addClass('expanded');
+            $("#users-dropdown").addClass('open');
+        } else if (path.includes('/providers/')) {
+            activePage = 'providers';
+            const subPath = path.split('/').pop();
+            if (subPath) {
+                const subPage = subPath.replace('.html', '');
+                $(`#providers-${subPage}`).addClass('active');
+            }
+
+            // Expand providers submenu
+            $("#providers-submenu").addClass('expanded');
+            $("#providers-dropdown").addClass('open');
+        } else if (path.includes('/feedback/')) {
+            activePage = 'feedback';
+            const subPath = path.split('/').pop();
+            if (subPath) {
+                const subPage = subPath.replace('.html', '');
+                $(`#feedback-${subPage}`).addClass('active');
+            }
+
+            // Expand feedback submenu
+            $("#feedback-submenu").addClass('expanded');
+            $("#feedback-dropdown").addClass('open');
+        } else if (path.includes('/resources/')) {
+            activePage = 'resources';
+            const subPath = path.split('/').pop();
+            if (subPath) {
+                const subPage = subPath.replace('.html', '');
+                $(`#resources-${subPage}`).addClass('active');
+            }
+
+            // Expand resources submenu
+            $("#resources-submenu").addClass('expanded');
+            $("#resources-dropdown").addClass('open');
+        } else if (path.includes('/settings/')) {
+            activePage = 'settings';
+            const subPath = path.split('/').pop();
+            if (subPath) {
+                const subPage = subPath.replace('.html', '');
+                $(`#settings-${subPage}`).addClass('active');
+            }
+
+            // Expand settings submenu
+            $("#settings-submenu").addClass('expanded');
+            $("#settings-dropdown").addClass('open');
+        } else if (path.includes('notifications.html')) {
+            activePage = 'notifications';
+        } else if (path.includes('reports.html')) {
+            activePage = 'reports';
+        } else if (path.includes('audit-logs.html')) {
+            activePage = 'audit';
+        } else if (path.includes('dashboard.html') || path === '/' || path === '') {
+            activePage = 'dashboard';
+        }
+
+        // Set active main nav item
+        $(`#nav-${activePage}`).addClass('active');
+
+        // Update page title in breadcrumb
+        const pageTitle = activePage.charAt(0).toUpperCase() + activePage.slice(1);
+        $("#page-title").text(pageTitle);
+
+        // Handle Mobile Toggle
+        $("#mobile-toggle-btn").click(function() {
+            $("#sidebar-main").toggleClass("mobile-open");
+        });
+
+        // Handle Navigation Item Click
+        $(".nav-item").click(function(e) {
+            // Only handle submenu toggle if it has a submenu and is a direct click on the nav item
+            // (not a click on a child element that bubbles up)
+            if ($(this).data("has-submenu") === true && (e.target === this || $(e.target).hasClass('nav-item-text') || $(e.target).hasClass('dropdown-icon'))) {
+                e.preventDefault(); // Prevent navigation
+
+                const submenuId = $(this).data("page") + "-submenu";
+                $("#" + submenuId).toggleClass("expanded");
+                $(this).find(".dropdown-icon").toggleClass("open");
+
+                // Update active state
+                $(".nav-item").removeClass("active");
+                $(this).addClass("active");
+
+                // Update page title
+                const pageName = $(this).data("page");
+                $("#page-title").text(pageName.charAt(0).toUpperCase() + pageName.slice(1));
+
+                // Close mobile sidebar if open
+                if ($(window).width() <= 768) {
+                    $("#sidebar-main").removeClass("mobile-open");
+                }
+
+                return false; // Prevent default and stop propagation
+            }
+        });
+
+        // Close sidebar when clicking outside on mobile
+        $(document).click(function(event) {
+            if ($(window).width() <= 768 &&
+                !$("#sidebar-main").has(event.target).length &&
+                !$("#mobile-toggle-btn").has(event.target).length &&
+                $("#sidebar-main").hasClass("mobile-open")) {
+                $("#sidebar-main").removeClass("mobile-open");
+            }
+        });
+
+        // Handle window resize
+        $(window).resize(function() {
+            if ($(window).width() > 768) {
+                $("#sidebar-main").removeClass("mobile-open");
+            }
+        });
+
+        // Notification bell click
+        $(".notification-bell").click(function() {
+            alert("Notifications feature coming soon!");
+        });
+    });
+</script>
+<script src="admin.js"></script>
+</body>
+</html>
