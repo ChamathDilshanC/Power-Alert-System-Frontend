@@ -4,60 +4,117 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PowerAlert - Sign Up</title>
-    <link rel="icon" type="image/x-icon" href="assets/logo.jpg">
-    
+    <link rel="icon" type="image/x-icon" href="https://i.pinimg.com/736x/3f/bf/40/3fbf4075b391e07eaa00ec5a87647cb5.jpg">
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
+
     <!-- Inter Font -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
+
     <!-- Toastify CSS -->
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
-    
+
+    <!-- Mapbox GL JS -->
+    <script src='https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.js'></script>
+    <link href='https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.css' rel='stylesheet' />
+
     <style>
         * {
             font-family: 'Inter', -apple-system, sans-serif;
         }
-        
+
         .window-dot {
             width: 12px;
             height: 12px;
             border-radius: 50%;
         }
-        
+
         .dot-red { background-color: #FF5F56; }
         .dot-yellow { background-color: #FFBD2E; }
         .dot-green { background-color: #27C93F; }
-        
+
         .footer-dot {
             width: 8px;
             height: 8px;
             border-radius: 50%;
             background-color: #D1D5DB;
         }
-        
+
         .footer-dot.active {
             background-color: #4361ee;
         }
-        
+
         .required::after {
             content: "*";
             color: #4361ee;
         }
-        
-        input:focus {
+
+        input:focus, select:focus {
             outline: none;
             border-color: #4361ee;
             box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
         }
-        
+
+        .step-section {
+            display: none;
+        }
+
+        .step-section.active {
+            display: block;
+        }
+
+        /* Custom checkbox styles */
+        .custom-checkbox input[type="checkbox"] {
+            position: absolute;
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .custom-checkbox .checkbox-label {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            transition: all 0.2s;
+            background-color: #f3f4f6;
+            border: 1px solid #e5e7eb;
+        }
+
+        .custom-checkbox input[type="checkbox"]:checked + .checkbox-label {
+            background-color: rgba(67, 97, 238, 0.1);
+            border-color: #4361ee;
+            color: #4361ee;
+        }
+
+        .custom-checkbox .checkbox-label::before {
+            content: '';
+            display: inline-block;
+            width: 1rem;
+            height: 1rem;
+            margin-right: 0.5rem;
+            border: 2px solid #d1d5db;
+            border-radius: 0.25rem;
+            transition: all 0.2s;
+        }
+
+        .custom-checkbox input[type="checkbox"]:checked + .checkbox-label::before {
+            background-color: #4361ee;
+            border-color: #4361ee;
+            background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3e%3c/svg%3e");
+            background-size: 100% 100%;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
         @media (max-width: 768px) {
             body {
                 padding: 0;
                 background: white;
             }
-            
+
             .app-container {
                 min-height: 100vh;
                 border-radius: 0;
@@ -68,151 +125,166 @@
 </head>
 
 <body class="flex items-center justify-center min-h-screen p-3 bg-blue-50">
-    <div class="app-container bg-white w-full max-w-[1040px] min-h-[640px] rounded-xl shadow-sm relative py-6 overflow-hidden">
-        <!-- Window Controls -->
-        <div class="absolute top-4 left-4 flex gap-1.5">
-            <div class="window-dot dot-red"></div>
-            <div class="window-dot dot-yellow"></div>
-            <div class="window-dot dot-green"></div>
-        </div>
+<div class="app-container bg-white w-full max-w-[1040px] min-h-[640px] rounded-xl shadow-sm relative py-6 overflow-hidden">
+    <!-- Window Controls -->
+    <div class="absolute top-4 left-4 flex gap-1.5">
+        <div class="window-dot dot-red"></div>
+        <div class="window-dot dot-yellow"></div>
+        <div class="window-dot dot-green"></div>
+    </div>
 
-        <!-- Brand Logo -->
-        <a href="#" class="absolute top-12 left-[-5px] flex items-center gap-2 no-underline pl-8">
-            <span class="text-lg font-semibold text-blue-600">PowerAlert ⚡</span>
-        </a>
+    <!-- Brand Logo -->
+    <a href="#" class="absolute top-12 left-[-5px] flex items-center gap-2 no-underline pl-8">
+        <span class="text-lg font-semibold text-blue-600">PowerAlert ⚡</span>
+    </a>
 
-        <!-- Main Content -->
-        <div class="flex pt-[30px] px-8 gap-20 mt-12">
-            <!-- Left Side - Steps -->
-            <div class="flex-shrink-0 w-60">
-                <!-- Step 1 -->
-                <div class="flex gap-3 mb-6 text-gray-500">
-                    <div class="flex items-center justify-center flex-shrink-0 w-5 h-5 text-xs text-white bg-blue-600 border-2 border-blue-600 rounded-full">1</div>
-                    <div class="flex flex-col gap-1">
-                        <div class="text-sm font-medium text-gray-900">Account Creation</div>
-                        <div class="text-sm text-gray-500">Enter your details</div>
-                    </div>
-                </div>
-                
-                <!-- Step 2 -->
-                <div class="flex gap-3 mb-6 text-gray-500">
-                    <div class="flex items-center justify-center flex-shrink-0 w-5 h-5 text-xs text-gray-500 border-2 border-gray-300 rounded-full">2</div>
-                    <div class="flex flex-col gap-1">
-                        <div class="text-sm font-medium text-gray-900">Verification</div>
-                        <div class="text-sm text-gray-500">Confirm your email</div>
-                    </div>
-                </div>
-                
-                <!-- Step 3 -->
-                <div class="flex gap-3 mb-6 text-gray-500">
-                    <div class="flex items-center justify-center flex-shrink-0 w-5 h-5 text-xs text-gray-500 border-2 border-gray-300 rounded-full">3</div>
-                    <div class="flex flex-col gap-1">
-                        <div class="text-sm font-medium text-gray-900">Setup Complete</div>
-                        <div class="text-sm text-gray-500">Ready to monitor</div>
-                    </div>
-                </div>
-
-                <!-- Info box -->
-                <div class="p-4 mt-12 border border-blue-100 rounded-lg bg-blue-50">
-                    <h3 class="mb-2 text-sm font-medium text-gray-900">Why join PowerAlert?</h3>
-                    <ul class="space-y-2 text-xs text-gray-600">
-                        <li class="flex items-start gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-blue-600 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            <span>Real-time power consumption monitoring</span>
-                        </li>
-                        <li class="flex items-start gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-blue-600 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            <span>Smart alerts for irregular usage patterns</span>
-                        </li>
-                        <li class="flex items-start gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-blue-600 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            <span>Energy-saving recommendations</span>
-                        </li>
-                        <li class="flex items-start gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-blue-600 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            <span>Detailed usage reports and analytics</span>
-                        </li>
-                    </ul>
+    <!-- Main Content -->
+    <div class="flex pt-[30px] px-8 gap-20 mt-12">
+        <!-- Left Side - Steps -->
+        <div class="flex-shrink-0 w-60">
+            <!-- Step 1 -->
+            <div id="step-indicator-1" class="flex gap-3 mb-6">
+                <div class="step-number flex items-center justify-center flex-shrink-0 w-5 h-5 text-xs text-white bg-blue-600 border-2 border-blue-600 rounded-full">1</div>
+                <div class="flex flex-col gap-1">
+                    <div class="text-sm font-medium text-gray-900">Account Creation</div>
+                    <div class="text-sm text-gray-500">Basic info</div>
                 </div>
             </div>
 
-            <!-- Right Side - Form -->
-            <div class="flex-grow max-w-[640px] pr-12 md:pr-6 sm:pr-0 sm:max-w-[400px] sm:mx-auto sm:w-full">
-                <!-- Form Header -->
-                <div class="mb-6">
-                    <h1 class="mb-2 text-2xl font-semibold text-gray-900">Create your account</h1>
-                    <p class="text-sm text-gray-500">Join PowerAlert to start monitoring your power consumption</p>
+            <!-- Step 2 -->
+            <div id="step-indicator-2" class="flex gap-3 mb-6 text-gray-500">
+                <div class="step-number flex items-center justify-center flex-shrink-0 w-5 h-5 text-xs text-gray-500 border-2 border-gray-300 rounded-full">2</div>
+                <div class="flex flex-col gap-1">
+                    <div class="text-sm font-medium text-gray-900">Location Setup</div>
+                    <div class="text-sm text-gray-500">Your address details</div>
                 </div>
+            </div>
 
-                <!-- Registration Form -->
-                <form id="registerForm" class="w-full" onsubmit="return false;">
+            <!-- Step 3 -->
+            <div id="step-indicator-3" class="flex gap-3 mb-6 text-gray-500">
+                <div class="step-number flex items-center justify-center flex-shrink-0 w-5 h-5 text-xs text-gray-500 border-2 border-gray-300 rounded-full">3</div>
+                <div class="flex flex-col gap-1">
+                    <div class="text-sm font-medium text-gray-900">Notifications</div>
+                    <div class="text-sm text-gray-500">Set your preferences</div>
+                </div>
+            </div>
+
+            <!-- Step 4 -->
+            <div id="step-indicator-4" class="flex gap-3 mb-6 text-gray-500">
+                <div class="step-number flex items-center justify-center flex-shrink-0 w-5 h-5 text-xs text-gray-500 border-2 border-gray-300 rounded-full">4</div>
+                <div class="flex flex-col gap-1">
+                    <div class="text-sm font-medium text-gray-900">Complete</div>
+                    <div class="text-sm text-gray-500">Ready to monitor</div>
+                </div>
+            </div>
+
+            <!-- Info box -->
+            <div class="p-4 mt-8 border border-blue-100 rounded-lg bg-blue-50">
+                <h3 class="mb-2 text-sm font-medium text-gray-900">Why join PowerAlert?</h3>
+                <ul class="space-y-2 text-xs text-gray-600">
+                    <li class="flex items-start gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-blue-600 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span>Real-time power outage alerts</span>
+                    </li>
+                    <li class="flex items-start gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-blue-600 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span>Get updates on restoration times</span>
+                    </li>
+                    <li class="flex items-start gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-blue-600 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span>Track electricity, water & gas</span>
+                    </li>
+                    <li class="flex items-start gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-blue-600 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span>Find nearby alternative resources</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Right Side - Multi-step Form -->
+        <div class="flex-grow max-w-[640px] pr-12 md:pr-6 sm:pr-0 sm:max-w-[400px] sm:mx-auto sm:w-full">
+            <!-- Form Header -->
+            <div class="mb-6">
+                <h1 class="mb-2 text-2xl font-semibold text-gray-900">Create your account</h1>
+                <p class="text-sm text-gray-500">Join PowerAlert to stay informed about utility outages</p>
+            </div>
+
+            <!-- Registration Form -->
+            <form id="registerForm" class="w-full" onsubmit="return false;">
+                <!-- Step 1: Basic Account Info -->
+                <div id="step-1" class="step-section active">
                     <div class="flex flex-col gap-4 mb-4">
                         <!-- Username Field -->
                         <div>
                             <label class="flex items-center gap-1 text-sm font-medium text-gray-900 required">Username</label>
-                            <input 
-                                type="text" 
-                                id="username" 
-                                class="w-full py-2.5 px-3.5 mt-1 text-sm border border-gray-300 rounded-lg text-gray-900" 
-                                placeholder="Choose a username" 
-                                required
+                            <input
+                                    type="text"
+                                    id="username"
+                                    name="username"
+                                    class="w-full py-2.5 px-3.5 mt-1 text-sm border border-gray-300 rounded-lg text-gray-900"
+                                    placeholder="Choose a username"
+                                    required
                             >
                             <p class="mt-1 text-xs text-gray-500">Use only letters, numbers, dots, underscores, and hyphens (3-50 characters)</p>
                         </div>
-                        
+
                         <!-- Email Field -->
                         <div>
                             <label class="flex items-center gap-1 text-sm font-medium text-gray-900 required">Email</label>
-                            <input 
-                                type="email" 
-                                id="email" 
-                                class="w-full py-2.5 px-3.5 mt-1 text-sm border border-gray-300 rounded-lg text-gray-900" 
-                                placeholder="Enter your email address" 
-                                required
+                            <input
+                                    type="email"
+                                    id="email"
+                                    name="email"
+                                    class="w-full py-2.5 px-3.5 mt-1 text-sm border border-gray-300 rounded-lg text-gray-900"
+                                    placeholder="Enter your email address"
+                                    required
                             >
                         </div>
-                        
+
                         <!-- Phone Number Field -->
                         <div>
                             <label class="flex items-center gap-1 text-sm font-medium text-gray-900 required">Phone Number</label>
                             <div class="flex mt-1">
                                 <div class="flex-shrink-0 w-20">
-                                    <input 
-                                        type="text" 
-                                        id="countryCode" 
-                                        class="w-full py-2.5 px-3.5 text-sm border border-gray-300 rounded-l-lg text-gray-900 bg-gray-50" 
-                                        value="+94" 
-                                        readonly
+                                    <input
+                                            type="text"
+                                            id="countryCode"
+                                            class="w-full py-2.5 px-3.5 text-sm border border-gray-300 rounded-l-lg text-gray-900 bg-gray-50"
+                                            value="+94"
+                                            readonly
                                     >
                                 </div>
-                                <input 
-                                    type="tel" 
-                                    id="phoneNumberInput" 
-                                    class="w-full py-2.5 px-3.5 text-sm border border-gray-300 border-l-0 rounded-r-lg text-gray-900" 
-                                    placeholder="701234567" 
-                                    required
+                                <input
+                                        type="tel"
+                                        id="phoneNumberInput"
+                                        name="phoneNumber"
+                                        class="w-full py-2.5 px-3.5 text-sm border border-gray-300 border-l-0 rounded-r-lg text-gray-900"
+                                        placeholder="701234567"
+                                        required
                                 >
                             </div>
                         </div>
-                        
+
                         <!-- Password Field -->
                         <div>
                             <label class="flex items-center gap-1 text-sm font-medium text-gray-900 required">Password</label>
                             <div class="relative">
-                                <input 
-                                    type="password" 
-                                    id="password" 
-                                    class="w-full py-2.5 px-3.5 mt-1 text-sm border border-gray-300 rounded-lg text-gray-900" 
-                                    placeholder="Create a strong password" 
-                                    required
+                                <input
+                                        type="password"
+                                        id="password"
+                                        name="password"
+                                        class="w-full py-2.5 px-3.5 mt-1 text-sm border border-gray-300 rounded-lg text-gray-900"
+                                        placeholder="Create a strong password"
+                                        required
                                 >
                                 <button type="button" id="toggle-password" class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -223,17 +295,17 @@
                             </div>
                             <p class="mt-2 text-xs text-gray-500">Password must contain at least 8 characters, including uppercase, lowercase, number, and special character.</p>
                         </div>
-                        
+
                         <!-- Confirm Password Field -->
                         <div>
                             <label class="flex items-center gap-1 text-sm font-medium text-gray-900 required">Confirm Password</label>
                             <div class="relative">
-                                <input 
-                                    type="password" 
-                                    id="confirmPassword" 
-                                    class="w-full py-2.5 px-3.5 mt-1 text-sm border border-gray-300 rounded-lg text-gray-900" 
-                                    placeholder="Confirm your password" 
-                                    required
+                                <input
+                                        type="password"
+                                        id="confirmPassword"
+                                        class="w-full py-2.5 px-3.5 mt-1 text-sm border border-gray-300 rounded-lg text-gray-900"
+                                        placeholder="Confirm your password"
+                                        required
                                 >
                                 <button type="button" id="toggle-confirm-password" class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -243,18 +315,311 @@
                                 </button>
                             </div>
                         </div>
-                        
+
                         <!-- Language Preference -->
                         <div>
                             <label class="text-sm font-medium text-gray-900">Preferred Language</label>
-                            <select 
-                                id="preferredLanguage" 
-                                class="w-full py-2.5 px-3.5 mt-1 text-sm border border-gray-300 rounded-lg text-gray-900 appearance-none bg-white"
+                            <select
+                                    id="preferredLanguage"
+                                    name="preferredLanguage"
+                                    class="w-full py-2.5 px-3.5 mt-1 text-sm border border-gray-300 rounded-lg text-gray-900 appearance-none bg-white"
                             >
                                 <option value="si" selected>Sinhala</option>
                                 <option value="en">English</option>
                                 <option value="ta">Tamil</option>
                             </select>
+                        </div>
+                    </div>
+
+                    <button type="button" id="nextToStep2" class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white border-none rounded-lg text-sm font-medium cursor-pointer mt-6">Continue</button>
+                </div>
+
+                <!-- Step 2: Address Information -->
+                <div id="step-2" class="step-section">
+                    <div class="flex flex-col gap-4 mb-4">
+                        <!-- Address Line 1 -->
+                        <div>
+                            <label class="flex items-center gap-1 text-sm font-medium text-gray-900 required">Address Line 1</label>
+                            <input
+                                    type="text"
+                                    id="addressLine1"
+                                    name="addressLine1"
+                                    class="w-full py-2.5 px-3.5 mt-1 text-sm border border-gray-300 rounded-lg text-gray-900"
+                                    placeholder="Street address"
+                                    required
+                            >
+                        </div>
+
+                        <!-- Address Line 2 -->
+                        <div>
+                            <label class="text-sm font-medium text-gray-900">Address Line 2</label>
+                            <input
+                                    type="text"
+                                    id="addressLine2"
+                                    name="addressLine2"
+                                    class="w-full py-2.5 px-3.5 mt-1 text-sm border border-gray-300 rounded-lg text-gray-900"
+                                    placeholder="Apartment, suite, unit, etc. (optional)"
+                            >
+                        </div>
+
+                        <!-- City -->
+                        <div>
+                            <label class="flex items-center gap-1 text-sm font-medium text-gray-900 required">City</label>
+                            <input
+                                    type="text"
+                                    id="city"
+                                    name="city"
+                                    class="w-full py-2.5 px-3.5 mt-1 text-sm border border-gray-300 rounded-lg text-gray-900"
+                                    placeholder="City"
+                                    required
+                            >
+                        </div>
+
+                        <!-- District -->
+                        <div>
+                            <label class="flex items-center gap-1 text-sm font-medium text-gray-900 required">District</label>
+                            <select
+                                    id="district"
+                                    name="district"
+                                    class="w-full py-2.5 px-3.5 mt-1 text-sm border border-gray-300 rounded-lg text-gray-900 appearance-none bg-white"
+                                    required
+                            >
+                                <option value="" disabled selected>Select your district</option>
+                                <option value="Ampara">Ampara</option>
+                                <option value="Anuradhapura">Anuradhapura</option>
+                                <option value="Badulla">Badulla</option>
+                                <option value="Batticaloa">Batticaloa</option>
+                                <option value="Colombo">Colombo</option>
+                                <option value="Galle">Galle</option>
+                                <option value="Gampaha">Gampaha</option>
+                                <option value="Hambantota">Hambantota</option>
+                                <option value="Jaffna">Jaffna</option>
+                                <option value="Kalutara">Kalutara</option>
+                                <option value="Kandy">Kandy</option>
+                                <option value="Kegalle">Kegalle</option>
+                                <option value="Kilinochchi">Kilinochchi</option>
+                                <option value="Kurunegala">Kurunegala</option>
+                                <option value="Mannar">Mannar</option>
+                                <option value="Matale">Matale</option>
+                                <option value="Matara">Matara</option>
+                                <option value="Monaragala">Monaragala</option>
+                                <option value="Mullaitivu">Mullaitivu</option>
+                                <option value="Nuwara Eliya">Nuwara Eliya</option>
+                                <option value="Polonnaruwa">Polonnaruwa</option>
+                                <option value="Puttalam">Puttalam</option>
+                                <option value="Ratnapura">Ratnapura</option>
+                                <option value="Trincomalee">Trincomalee</option>
+                                <option value="Vavuniya">Vavuniya</option>
+                            </select>
+                        </div>
+
+                        <!-- Postal Code -->
+                        <div>
+                            <label class="text-sm font-medium text-gray-900">Postal Code</label>
+                            <input
+                                    type="text"
+                                    id="postalCode"
+                                    name="postalCode"
+                                    class="w-full py-2.5 px-3.5 mt-1 text-sm border border-gray-300 rounded-lg text-gray-900"
+                                    placeholder="Postal code (optional)"
+                            >
+                            <p class="mt-1 text-xs text-gray-500">Enter your postal code to help locate your area accurately</p>
+                        </div>
+
+                        <!-- Map Location -->
+                        <div class="mt-2">
+                            <label class="flex items-center gap-1 text-sm font-medium text-gray-900 required">Pin Your Location</label>
+                            <p class="text-xs text-gray-500 mb-2">To help us better locate your area for outage alerts, please pin your exact location on the map or enter coordinates manually.</p>
+
+                            <div id="map" class="bg-gray-100 h-48 rounded-lg flex items-center justify-center mb-2 relative">
+                                <div id="map-loading" class="absolute inset-0 bg-white bg-opacity-80 flex items-center justify-center z-10 text-gray-600 text-sm">
+                                    <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                    <span>Map loading...</span>
+                                </div>
+                                <div id="mapbox-container" class="absolute inset-0 opacity-0 rounded-lg overflow-hidden transition-opacity duration-300" style="opacity: 0;"></div>
+                            </div>
+
+                            <button type="button" id="get-current-location" class="py-2 px-3 mb-2 text-sm bg-blue-50 hover:bg-blue-100 text-blue-600 border border-blue-200 rounded-lg flex items-center justify-center w-full">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+                                Use my current location
+                            </button>
+
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label class="text-xs font-medium text-gray-700">Latitude</label>
+                                    <input
+                                            type="text"
+                                            id="latitude"
+                                            name="latitude"
+                                            class="w-full py-2 px-3 text-sm border border-gray-300 rounded-lg text-gray-900"
+                                            placeholder="6.9271"
+                                            required
+                                            value="6.9271"
+                                    >
+                                </div>
+                                <div>
+                                    <label class="text-xs font-medium text-gray-700">Longitude</label>
+                                    <input
+                                            type="text"
+                                            id="longitude"
+                                            name="longitude"
+                                            class="w-full py-2 px-3 text-sm border border-gray-300 rounded-lg text-gray-900"
+                                            placeholder="79.8612"
+                                            required
+                                            value="79.8612"
+                                    >
+                                </div>
+                            </div>
+
+                            <div class="mt-2 text-xs text-gray-500">
+                                <p>💡 <b>TIP:</b> You can also enter your postal code to locate your area, or click on the map to set your location.</p>
+                            </div>
+                        </div>
+
+                        <!-- Make Primary Address -->
+                        <div>
+                            <label class="inline-flex items-center cursor-pointer">
+                                <input type="checkbox" id="isPrimary" name="isPrimary" class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" checked>
+                                <span class="ml-2 text-sm text-gray-600">Make this my primary address</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-4 mt-6">
+                        <button type="button" id="backToStep1" class="w-full py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-800 border border-gray-300 rounded-lg text-sm font-medium cursor-pointer">Back</button>
+                        <button type="button" id="nextToStep3" class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white border-none rounded-lg text-sm font-medium cursor-pointer">Continue</button>
+                    </div>
+                </div>
+
+                <!-- Step 3: Notification Preferences -->
+                <div id="step-3" class="step-section">
+                    <div class="flex flex-col gap-4 mb-4">
+                        <!-- Outage Types -->
+                        <div>
+                            <label class="text-sm font-medium text-gray-900 mb-2 block">Types of Outages to Monitor</label>
+                            <p class="text-xs text-gray-500 mb-2">Select the utility services you want to receive alerts for.</p>
+
+                            <div class="flex flex-col gap-2">
+                                <div class="custom-checkbox">
+                                    <input type="checkbox" id="electricity" name="outageType" value="ELECTRICITY" checked>
+                                    <label for="electricity" class="checkbox-label">
+                                        Electricity
+                                    </label>
+                                </div>
+                                <div class="custom-checkbox">
+                                    <input type="checkbox" id="water" name="outageType" value="WATER">
+                                    <label for="water" class="checkbox-label">
+                                        Water
+                                    </label>
+                                </div>
+                                <div class="custom-checkbox">
+                                    <input type="checkbox" id="gas" name="outageType" value="GAS">
+                                    <label for="gas" class="checkbox-label">
+                                        Gas
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Notification Channels -->
+                        <div>
+                            <label class="text-sm font-medium text-gray-900 mb-2 block">Notification Methods</label>
+                            <p class="text-xs text-gray-500 mb-2">How would you like to be notified about outages?</p>
+
+                            <div class="flex flex-col gap-2">
+                                <div class="custom-checkbox">
+                                    <input type="checkbox" id="email-notification" name="notificationType" value="EMAIL" checked>
+                                    <label for="email-notification" class="checkbox-label">
+                                        Email
+                                    </label>
+                                </div>
+                                <div class="custom-checkbox">
+                                    <input type="checkbox" id="sms-notification" name="notificationType" value="SMS">
+                                    <label for="sms-notification" class="checkbox-label">
+                                        SMS
+                                    </label>
+                                </div>
+                                <div class="custom-checkbox">
+                                    <input type="checkbox" id="push-notification" name="notificationType" value="PUSH">
+                                    <label for="push-notification" class="checkbox-label">
+                                        Push Notifications
+                                    </label>
+                                </div>
+                                <div class="custom-checkbox">
+                                    <input type="checkbox" id="whatsapp-notification" name="notificationType" value="WHATSAPP">
+                                    <label for="whatsapp-notification" class="checkbox-label">
+                                        WhatsApp
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Notification Timing -->
+                        <div>
+                            <label class="text-sm font-medium text-gray-900">Advance Notice Time</label>
+                            <p class="text-xs text-gray-500 mb-2">How long before an outage would you like to be notified?</p>
+                            <select
+                                    id="advanceNoticeMinutes"
+                                    name="advanceNoticeMinutes"
+                                    class="w-full py-2.5 px-3.5 mt-1 text-sm border border-gray-300 rounded-lg text-gray-900 appearance-none bg-white"
+                            >
+                                <option value="30">30 minutes</option>
+                                <option value="60" selected>1 hour</option>
+                                <option value="120">2 hours</option>
+                                <option value="180">3 hours</option>
+                                <option value="360">6 hours</option>
+                                <option value="720">12 hours</option>
+                                <option value="1440">24 hours</option>
+                            </select>
+                        </div>
+
+                        <!-- Additional Notification Preferences -->
+                        <div>
+                            <div class="flex items-center gap-2 mb-3">
+                                <input type="checkbox" id="receiveUpdates" name="receiveUpdates" class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" checked>
+                                <label for="receiveUpdates" class="text-sm text-gray-700">Receive updates when outage details change</label>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <input type="checkbox" id="receiveRestoration" name="receiveRestoration" class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" checked>
+                                <label for="receiveRestoration" class="text-sm text-gray-700">Receive notifications when service is restored</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-4 mt-6">
+                        <button type="button" id="backToStep2" class="w-full py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-800 border border-gray-300 rounded-lg text-sm font-medium cursor-pointer">Back</button>
+                        <button type="button" id="nextToStep4" class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white border-none rounded-lg text-sm font-medium cursor-pointer">Continue</button>
+                    </div>
+                </div>
+
+                <!-- Step 4: Terms & Completion -->
+                <div id="step-4" class="step-section">
+                    <div class="mb-6 text-center">
+                        <div class="mx-auto mb-4 w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                        </div>
+                        <h2 class="text-xl font-semibold text-gray-900">Almost Done!</h2>
+                        <p class="text-sm text-gray-500 mt-2">Please review your information and agree to our terms.</p>
+                    </div>
+
+                    <div class="bg-gray-50 rounded-lg p-4 mb-6">
+                        <h3 class="text-sm font-medium text-gray-900 mb-2">Account Summary</h3>
+                        <div class="text-xs text-gray-700 space-y-1">
+                            <p><span class="font-medium">Username:</span> <span id="summary-username"></span></p>
+                            <p><span class="font-medium">Email:</span> <span id="summary-email"></span></p>
+                            <p><span class="font-medium">Phone:</span> <span id="summary-phone"></span></p>
+                            <p><span class="font-medium">Address:</span> <span id="summary-address"></span></p>
+                            <p><span class="font-medium">District:</span> <span id="summary-district"></span></p>
+                            <p><span class="font-medium">Monitoring:</span> <span id="summary-outage-types"></span></p>
+                            <p><span class="font-medium">Notification Methods:</span> <span id="summary-notification-methods"></span></p>
                         </div>
                     </div>
 
@@ -266,198 +631,925 @@
                         </label>
                     </div>
 
-                    <!-- Sign up Button -->
-                    <button type="button" id="registerBtn" class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white border-none rounded-lg text-sm font-medium cursor-pointer mt-6">Create Account</button>
-
-                    <!-- Sign in Link -->
-                    <div class="mt-4 text-sm text-center text-gray-500">
-                        Already have an account?
-                        <a href="index.html" class="font-medium text-blue-600 no-underline">Sign in</a>
+                    <div class="flex gap-4 mt-6">
+                        <button type="button" id="backToStep3" class="w-full py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-800 border border-gray-300 rounded-lg text-sm font-medium cursor-pointer">Back</button>
+                        <button type="button" id="registerBtn" class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white border-none rounded-lg text-sm font-medium cursor-pointer">Create Account</button>
                     </div>
-                </form>
-            </div>
-        </div>
+                </div>
 
-        <!-- Footer -->
-        <div class="absolute left-0 right-0 flex items-center justify-between px-8 text-sm text-gray-500 bottom-6 sm:relative sm:mt-12 sm:px-6 sm:flex-col sm:gap-4 sm:text-center">
-            <span>© 2025 PowerAlert. All rights reserved.</span>
-            <span>support@poweralert.com</span>
-            <div class="flex gap-2 sm:order-first sm:mb-2">
-                <div class="footer-dot active"></div>
-                <div class="footer-dot"></div>
-                <div class="footer-dot"></div>
-            </div>
+                <!-- Sign in Link (shown on all steps) -->
+                <div class="mt-4 text-sm text-center text-gray-500">
+                    Already have an account?
+                    <a href="index.html" class="font-medium text-blue-600 no-underline">Sign in</a>
+                </div>
+            </form>
         </div>
     </div>
 
-    <!-- Scripts -->
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
-    <script>
-        $(document).ready(function() {
-            // Toggle password visibility
-            $('#toggle-password').on('click', function(e) {
-                e.preventDefault();
-                const passwordField = document.getElementById('password');
-                
-                if (passwordField.type === 'password') {
-                    passwordField.type = 'text';
-                    $(this).find('svg').html('<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />');
-                } else {
-                    passwordField.type = 'password';
-                    $(this).find('svg').html('<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />');
+    <!-- Footer -->
+    <div class="absolute left-0 right-0 flex items-center justify-between px-8 text-sm text-gray-500 bottom-6 sm:relative sm:mt-12 sm:px-6 sm:flex-col sm:gap-4 sm:text-center">
+        <span>© 2025 PowerAlert. All rights reserved.</span>
+        <span>support@poweralert.com</span>
+        <div class="flex gap-2 sm:order-first sm:mb-2">
+            <div class="footer-dot active"></div>
+            <div class="footer-dot"></div>
+            <div class="footer-dot"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Scripts -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+<script>
+    // Mapbox initialization and geolocation functions
+    function initializeMapbox() {
+        const mapboxToken = 'pk.eyJ1IjoiY2hhbWF0aDQ5OTciLCJhIjoiY204bXhqN2N2MGtuMDJscGw2bDk1N3RpNyJ9.tzXMf6U8UAd0GY1GR-iuTQ';
+        let map = null;
+        let marker = null;
+
+        // Default coordinates (Sri Lanka center)
+        const defaultLat = 7.8731;
+        const defaultLng = 80.7718;
+
+        // Initialize map with default location
+        function initMap() {
+            if (map) return; // Prevent re-initialization
+
+            // Get coordinates from inputs if available
+            const initialLat = parseFloat($('#latitude').val()) || defaultLat;
+            const initialLng = parseFloat($('#longitude').val()) || defaultLng;
+
+            mapboxgl.accessToken = mapboxToken;
+
+            // Create the map
+            map = new mapboxgl.Map({
+                container: 'mapbox-container',
+                style: 'mapbox://styles/mapbox/streets-v11',
+                center: [initialLng, initialLat],
+                zoom: 8
+            });
+
+            // Add navigation controls
+            map.addControl(new mapboxgl.NavigationControl(), 'top-right');
+
+            // Add geolocation control
+            const geolocateControl = new mapboxgl.GeolocateControl({
+                positionOptions: {
+                    enableHighAccuracy: true
+                },
+                trackUserLocation: false,
+                showUserHeading: true
+            });
+
+            map.addControl(geolocateControl);
+
+            // Create initial marker
+            marker = new mapboxgl.Marker({
+                draggable: true,
+                color: '#4361ee'
+            })
+                .setLngLat([initialLng, initialLat])
+                .addTo(map);
+
+            // Update coordinates when marker is dragged
+            marker.on('dragend', function() {
+                const lngLat = marker.getLngLat();
+                updateCoordinateInputs(lngLat.lat, lngLat.lng);
+            });
+
+            // Make map interactive
+            map.on('click', function(e) {
+                marker.setLngLat(e.lngLat);
+                updateCoordinateInputs(e.lngLat.lat, e.lngLat.lng);
+            });
+
+            // Show map on load
+            map.on('load', function() {
+                $('#map-loading').fadeOut();
+                $('#mapbox-container').css('opacity', '1');
+
+                // Add listener for geolocation success
+                geolocateControl.on('geolocate', function(e) {
+                    const lat = e.coords.latitude;
+                    const lng = e.coords.longitude;
+
+                    updateCoordinateInputs(lat, lng);
+                    marker.setLngLat([lng, lat]);
+
+                    // Try to get address info from coordinates
+                    reverseGeocode(lat, lng);
+                });
+            });
+
+            // Listen for postal code changes to update map
+            $('#postalCode').on('change', function() {
+                const postalCode = $(this).val().trim();
+                if (postalCode && postalCode.length >= 4) {
+                    // Get country or district to improve the search
+                    const district = $('#district').val() || '';
+                    const country = 'Sri Lanka';
+
+                    geocodePostalCode(postalCode, district, country);
                 }
             });
-            
-            // Toggle confirm password visibility
-            $('#toggle-confirm-password').on('click', function(e) {
-                e.preventDefault();
-                const passwordField = document.getElementById('confirmPassword');
-                
-                if (passwordField.type === 'password') {
-                    passwordField.type = 'text';
-                    $(this).find('svg').html('<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />');
-                } else {
-                    passwordField.type = 'password';
-                    $(this).find('svg').html('<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />');
+
+            // Listen for district changes
+            $('#district').on('change', function() {
+                const district = $(this).val();
+                if (district) {
+                    // Center map on the district
+                    geocodeDistrict(district);
                 }
             });
-            
-            // Register button click handler
-            $('#registerBtn').on('click', function() {
-                // Get form data
-                const username = $('#username').val().trim();
-                const email = $('#email').val().trim();
-                const countryCode = $('#countryCode').val().trim();
-                const phoneNumberInput = $('#phoneNumberInput').val().trim();
-                const password = $('#password').val();
-                const confirmPassword = $('#confirmPassword').val();
-                const preferredLanguage = $('#preferredLanguage').val();
-                
-                // Form validation
-                if (!username || !email || !phoneNumberInput || !password || !confirmPassword) {
-                    showToast("Please fill in all required fields", "error");
-                    return;
-                }
-                
-                if (password !== confirmPassword) {
-                    showToast("Passwords do not match", "error");
-                    return;
-                }
-                
-                if (!$('#termsAgreed').is(':checked')) {
-                    showToast("Please agree to the Terms of Service and Privacy Policy", "error");
-                    return;
-                }
-                
-                // Password validation (matching server requirements)
-                const passwordRegex = /^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=])(?=\S+$).{8,}$/;
-                if (!passwordRegex.test(password)) {
-                    showToast("Password must be at least 8 characters long and include uppercase, lowercase, number, and special character", "error");
-                    return;
-                }
-                
-                // Show loading state
-                $(this).html('<svg class="inline-block w-4 h-4 mr-2 -ml-1 text-white animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Creating Account...').addClass('opacity-90').prop('disabled', true);
-                
-                // Create full phone number
-                const fullPhoneNumber = countryCode + phoneNumberInput;
-                
-                // Prepare request data
-                const requestData = {
-                    username: username,
-                    email: email,
-                    phoneNumber: fullPhoneNumber,
-                    password: password,
-                    preferredLanguage: preferredLanguage,
-                    role: "USER"
-                };
-                
-                // Use plain XMLHttpRequest for maximum control over headers
-                const xhr = new XMLHttpRequest();
-                xhr.open('POST', 'http://localhost:8080/api/auth/register', true);
-                xhr.setRequestHeader('Content-Type', 'application/json');
-                
-                xhr.onload = function() {
-                    if (xhr.status >= 200 && xhr.status < 300) {
-                        // Parse response
-                        const response = JSON.parse(xhr.responseText);
-                        
-                        // Store token if provided
-                        if (response.data && response.data.token) {
-                            localStorage.setItem('auth_token', response.data.token);
-                            localStorage.setItem('user_role', response.data.role);
-                            localStorage.setItem('username', response.data.username);
-                        }
-                        
-                        // Show success message
-                        showToast("Account created successfully!", "success");
-                        
-                        // Redirect after a short delay
-                        setTimeout(function() {
-                            window.location.href = 'index.html';
-                        }, 1500);
+        }
+
+        // Update coordinate inputs and validate them
+        function updateCoordinateInputs(lat, lng) {
+            $('#latitude').val(lat.toFixed(6));
+            $('#longitude').val(lng.toFixed(6));
+        }
+
+        // Geocode postal code to get coordinates
+        function geocodePostalCode(postalCode, district, country) {
+            const searchQuery = `${postalCode} ${district} ${country}`;
+
+            // Show loading indicator
+            showMapLoading(true, 'Finding location...');
+
+            $.ajax({
+                url: `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(searchQuery)}.json`,
+                data: {
+                    access_token: mapboxToken,
+                    country: 'lk',
+                    types: 'postcode,place',
+                    limit: 1
+                },
+                success: function(response) {
+                    if (response.features && response.features.length > 0) {
+                        const feature = response.features[0];
+                        const [lng, lat] = feature.center;
+
+                        // Update marker and map
+                        marker.setLngLat([lng, lat]);
+                        map.flyTo({
+                            center: [lng, lat],
+                            zoom: 13,
+                            essential: true
+                        });
+
+                        // Update form inputs
+                        updateCoordinateInputs(lat, lng);
+
+                        // Try to get more address details
+                        reverseGeocode(lat, lng);
                     } else {
-                        // Handle error
-                        handleRegistrationError(xhr);
+                        showToast("Location not found. Please check the postal code or set manually.", "warning");
                     }
-                };
-                
-                xhr.onerror = function() {
-                    // Reset button state
-                    $('#registerBtn').text('Create Account').removeClass('opacity-90').prop('disabled', false);
-                    
-                    // Network error
-                    showToast("Network error. Please check your connection", "error");
-                };
-                
-                // Send the request
-                xhr.send(JSON.stringify(requestData));
-            });
-            
-            // Helper function to show toast notifications
-            function showToast(message, type) {
-                const background = type === 'success' ? '#4ade80' : '#f87171';
-                
-                Toastify({
-                    text: message,
-                    duration: type === 'success' ? 3000 : 5000,
-                    close: true,
-                    gravity: "top",
-                    position: "right",
-                    style: {
-                        background: background,
-                        borderRadius: "8px",
-                        boxShadow: "0 3px 6px rgba(0,0,0,0.16)",
-                        fontFamily: "'Inter', sans-serif"
-                    }
-                }).showToast();
-            }
-            
-            // Helper function to handle registration errors
-            function handleRegistrationError(xhr) {
-                // Reset button state
-                $('#registerBtn').text('Create Account').removeClass('opacity-90').prop('disabled', false);
-                
-                let errorMsg = 'An error occurred. Please try again.';
-                
-                if (xhr.status === 409) {
-                    errorMsg = 'This email is already registered.';
-                } else if (xhr.responseText) {
-                    try {
-                        const errorResponse = JSON.parse(xhr.responseText);
-                        if (errorResponse.message) {
-                            errorMsg = errorResponse.message;
-                        }
-                    } catch (e) {
-                        // If JSON parsing fails, use the default error message
-                        console.error('Error parsing response:', e);
-                    }
+                    showMapLoading(false);
+                },
+                error: function(error) {
+                    console.error("Geocoding error:", error);
+                    showToast("Error finding location. Please set location manually.", "error");
+                    showMapLoading(false);
                 }
-                
-                showToast(errorMsg, "error");
+            });
+        }
+
+        // Geocode district to get coordinates
+        function geocodeDistrict(district) {
+            const searchQuery = `${district} Sri Lanka`;
+
+            $.ajax({
+                url: `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(searchQuery)}.json`,
+                data: {
+                    access_token: mapboxToken,
+                    country: 'lk',
+                    types: 'place,district',
+                    limit: 1
+                },
+                success: function(response) {
+                    if (response.features && response.features.length > 0) {
+                        const feature = response.features[0];
+                        const [lng, lat] = feature.center;
+
+                        // Only update the map center, not the marker
+                        map.flyTo({
+                            center: [lng, lat],
+                            zoom: 10,
+                            essential: true
+                        });
+                    }
+                },
+                error: function(error) {
+                    console.error("District geocoding error:", error);
+                }
+            });
+        }
+
+        // Reverse geocode coordinates to get address
+        function reverseGeocode(lat, lng) {
+            $.ajax({
+                url: `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json`,
+                data: {
+                    access_token: mapboxToken,
+                    country: 'lk',
+                    types: 'address,place,locality,neighborhood',
+                    limit: 1
+                },
+                success: function(response) {
+                    if (response.features && response.features.length > 0) {
+                        const feature = response.features[0];
+
+                        // Extract address components
+                        let addressLine1 = '', city = '';
+
+                        // Loop through context to find the place
+                        if (feature.context) {
+                            for (const context of feature.context) {
+                                if (context.id.startsWith('place')) {
+                                    city = context.text;
+                                }
+                            }
+                        }
+
+                        // Use the feature name as address line if it looks like an address
+                        if (feature.place_type.includes('address')) {
+                            addressLine1 = feature.text;
+                        }
+
+                        // Update form fields if they're empty
+                        if (addressLine1 && $('#addressLine1').val().trim() === '') {
+                            $('#addressLine1').val(addressLine1);
+                        }
+
+                        if (city && $('#city').val().trim() === '') {
+                            $('#city').val(city);
+                        }
+                    }
+                },
+                error: function(error) {
+                    console.error("Reverse geocoding error:", error);
+                }
+            });
+        }
+
+        // Show/hide map loading indicator
+        function showMapLoading(show, message = 'Map loading...') {
+            if (show) {
+                $('#map-loading').text(message).fadeIn();
+            } else {
+                $('#map-loading').fadeOut();
+            }
+        }
+
+        // Public interface
+        return {
+            initMap: initMap,
+            updateCoordinates: function(lat, lng) {
+                if (map && marker) {
+                    marker.setLngLat([lng, lat]);
+                    map.flyTo({
+                        center: [lng, lat],
+                        zoom: 12
+                    });
+                    updateCoordinateInputs(lat, lng);
+                }
+            }
+        };
+    }
+
+    // Debounce function for input checking
+    function debounce(func, wait) {
+        let timeout;
+        return function(...args) {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => func.apply(this, args), wait);
+        };
+    }
+
+    $(document).ready(function() {
+        // Initialize mapbox
+        const mapbox = initializeMapbox();
+
+        // Check if username exists (debounced)
+        const checkUsername = debounce(function(username) {
+            if (!username || username.length < 3) return;
+
+            $.ajax({
+                url: 'http://localhost:8080/api/public/check-username',
+                method: 'GET',
+                data: { username: username },
+                success: function(response) {
+                    if (response.exists) {
+                        $('#username').addClass('border-red-500');
+                        showToast("Username is already taken. Please choose another one.", "error");
+                    } else {
+                        $('#username').removeClass('border-red-500').addClass('border-green-500');
+                    }
+                },
+                error: function() {
+                    // Silently fail - will be checked again on submit
+                }
+            });
+        }, 500);
+
+        // Check if email exists (debounced)
+        const checkEmail = debounce(function(email) {
+            if (!email || !email.includes('@')) return;
+
+            $.ajax({
+                url: 'http://localhost:8080/api/public/check-email',
+                method: 'GET',
+                data: { email: email },
+                success: function(response) {
+                    if (response.exists) {
+                        $('#email').addClass('border-red-500');
+                        showToast("Email is already registered. Please use another one or sign in.", "error");
+                    } else {
+                        $('#email').removeClass('border-red-500').addClass('border-green-500');
+                    }
+                },
+                error: function() {
+                    // Silently fail - will be checked again on submit
+                }
+            });
+        }, 500);
+
+        // Check if phone exists (debounced)
+        const checkPhone = debounce(function(phone) {
+            if (!phone || phone.length < 9) return;
+
+            const fullPhone = $('#countryCode').val() + phone;
+
+            $.ajax({
+                url: 'http://localhost:8080/api/public/check-phone',
+                method: 'GET',
+                data: { phoneNumber: fullPhone },
+                success: function(response) {
+                    if (response.exists) {
+                        $('#phoneNumberInput').addClass('border-red-500');
+                        showToast("Phone number is already registered. Please use another one or sign in.", "error");
+                    } else {
+                        $('#phoneNumberInput').removeClass('border-red-500').addClass('border-green-500');
+                    }
+                },
+                error: function() {
+                    // Silently fail - will be checked again on submit
+                }
+            });
+        }, 500);
+
+        // Attach blur events for field validation
+        $('#username').on('blur', function() {
+            const username = $(this).val().trim();
+            checkUsername(username);
+        });
+
+        $('#email').on('blur', function() {
+            const email = $(this).val().trim();
+            checkEmail(email);
+        });
+
+        $('#phoneNumberInput').on('blur', function() {
+            const phone = $(this).val().trim();
+            checkPhone(phone);
+        });
+
+        // Toggle password visibility functions
+        $('#toggle-password').on('click', function(e) {
+            e.preventDefault();
+            const passwordField = document.getElementById('password');
+
+            if (passwordField.type === 'password') {
+                passwordField.type = 'text';
+                $(this).find('svg').html('<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />');
+            } else {
+                passwordField.type = 'password';
+                $(this).find('svg').html('<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />');
             }
         });
-    </script>
+
+        $('#toggle-confirm-password').on('click', function(e) {
+            e.preventDefault();
+            const passwordField = document.getElementById('confirmPassword');
+
+            if (passwordField.type === 'password') {
+                passwordField.type = 'text';
+                $(this).find('svg').html('<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />');
+            } else {
+                passwordField.type = 'password';
+                $(this).find('svg').html('<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />');
+            }
+        });
+
+        // Step navigation
+        function goToStep(stepNumber) {
+            $('.step-section').removeClass('active');
+            $(`#step-${stepNumber}`).addClass('active');
+
+            // Update step indicators
+            $('.step-number').each(function(index) {
+                const stepNum = index + 1;
+
+                if (stepNum < stepNumber) {
+                    // Completed step
+                    $(this).html('<svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>');
+                    $(this).removeClass('text-gray-500 text-white bg-blue-600').addClass('text-white bg-green-600 border-green-600');
+                } else if (stepNum === stepNumber) {
+                    // Current step
+                    $(this).text(stepNum);
+                    $(this).removeClass('text-gray-500 border-gray-300').addClass('text-white bg-blue-600 border-blue-600');
+                } else {
+                    // Future step
+                    $(this).text(stepNum);
+                    $(this).removeClass('text-white bg-blue-600 bg-green-600 border-blue-600 border-green-600').addClass('text-gray-500 border-gray-300');
+                }
+            });
+        }
+
+        // Step 1 to Step 2
+        $('#nextToStep2').click(function() {
+            // Validate step 1
+            if (!validateStep1()) return;
+
+            // Show loading indicator
+            $(this).html('<svg class="inline-block w-4 h-4 mr-2 -ml-1 text-white animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Checking...').addClass('opacity-90').prop('disabled', true);
+
+            // Check username, email and phone on the server before proceeding
+            const username = $('#username').val().trim();
+            const email = $('#email').val().trim();
+            const phone = $('#countryCode').val() + $('#phoneNumberInput').val().trim();
+
+            // Create promises for all verification requests
+            const usernameCheck = $.ajax({
+                url: 'http://localhost:8080/api/public/check-username',
+                method: 'GET',
+                data: { username: username }
+            });
+
+            const emailCheck = $.ajax({
+                url: 'http://localhost:8080/api/public/check-email',
+                method: 'GET',
+                data: { email: email }
+            });
+
+            const phoneCheck = $.ajax({
+                url: 'http://localhost:8080/api/public/check-phone',
+                method: 'GET',
+                data: { phoneNumber: phone }
+            });
+
+            // Run all checks in parallel
+            Promise.all([usernameCheck, emailCheck, phoneCheck])
+                .then(function(responses) {
+                    const resetButton = function() {
+                        $('#nextToStep2').html('Continue').removeClass('opacity-90').prop('disabled', false);
+                    };
+
+                    // Check for existing username
+                    if (responses[0].exists) {
+                        resetButton();
+                        $('#username').addClass('border-red-500').focus();
+                        showToast("Username is already taken. Please choose another one.", "error");
+                        return;
+                    }
+
+                    // Check for existing email
+                    if (responses[1].exists) {
+                        resetButton();
+                        $('#email').addClass('border-red-500').focus();
+                        showToast("Email is already registered. Please use another one or sign in.", "error");
+                        return;
+                    }
+
+                    // Check for existing phone
+                    if (responses[2].exists) {
+                        resetButton();
+                        $('#phoneNumberInput').addClass('border-red-500').focus();
+                        showToast("Phone number is already registered. Please use another one or sign in.", "error");
+                        return;
+                    }
+
+                    // All checks passed, proceed to next step
+                    resetButton();
+                    goToStep(2);
+
+                    // Initialize map when transitioning to step 2
+                    setTimeout(mapbox.initMap, 300);
+                })
+                .catch(function(error) {
+                    console.error("Error checking user data:", error);
+                    // If server check fails, we'll still allow proceeding but validation will happen again during registration
+                    $('#nextToStep2').html('Continue').removeClass('opacity-90').prop('disabled', false);
+                    goToStep(2);
+                    setTimeout(mapbox.initMap, 300);
+                });
+        });
+
+        // Step 2 to Step 1
+        $('#backToStep1').click(function() {
+            goToStep(1);
+        });
+
+        // Step 2 to Step 3
+        $('#nextToStep3').click(function() {
+            // Validate step 2
+            if (!validateStep2()) return;
+
+            goToStep(3);
+        });
+
+        // Step 3 to Step 2
+        $('#backToStep2').click(function() {
+            goToStep(2);
+        });
+
+        // Step 3 to Step 4
+        $('#nextToStep4').click(function() {
+            // Validate step 3
+            if (!validateStep3()) return;
+
+            // Populate summary
+            populateSummary();
+
+            goToStep(4);
+        });
+
+        // Step 4 to Step 3
+        $('#backToStep3').click(function() {
+            goToStep(3);
+        });
+
+        // Current location button click handler
+        $('#get-current-location').click(function() {
+            if (navigator.geolocation) {
+                $(this).html('<svg class="animate-spin h-4 w-4 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Locating...').prop('disabled', true);
+
+                navigator.geolocation.getCurrentPosition(
+                    function(position) {
+                        const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
+
+                        // Update map
+                        mapbox.updateCoordinates(lat, lng);
+
+                        // Attempt reverse geocoding
+                        $.ajax({
+                            url: `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json`,
+                            data: {
+                                access_token: mapboxgl.accessToken,
+                                country: 'lk',
+                                types: 'address,place,locality',
+                                limit: 1
+                            },
+                            success: function(response) {
+                                if (response.features && response.features.length > 0) {
+                                    const feature = response.features[0];
+
+                                    // Try to extract address components
+                                    let addressLine1 = '', city = '', district = '';
+
+                                    if (feature.place_type.includes('address')) {
+                                        addressLine1 = feature.text;
+                                    }
+
+                                    // Look through context for city and district
+                                    if (feature.context) {
+                                        for (const context of feature.context) {
+                                            if (context.id.startsWith('place')) {
+                                                city = context.text;
+                                            } else if (context.id.startsWith('district')) {
+                                                district = context.text;
+                                            }
+                                        }
+                                    }
+
+                                    // Update form fields if empty
+                                    if (addressLine1 && $('#addressLine1').val().trim() === '') {
+                                        $('#addressLine1').val(addressLine1);
+                                    }
+
+                                    if (city && $('#city').val().trim() === '') {
+                                        $('#city').val(city);
+                                    }
+
+                                    if (district) {
+                                        $('#district').val(district);
+                                    }
+                                }
+
+                                $('#get-current-location').html('<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg> Use my current location').prop('disabled', false);
+                            },
+                            error: function() {
+                                $('#get-current-location').html('<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg> Use my current location').prop('disabled', false);
+                            }
+                        });
+                    },
+                    function(error) {
+                        console.error("Geolocation error:", error);
+                        showToast("Unable to get your location. Please check your browser permissions or enter location manually.", "error");
+                        $('#get-current-location').html('<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg> Use my current location').prop('disabled', false);
+                    },
+                    {
+                        enableHighAccuracy: true,
+                        timeout: 10000,
+                        maximumAge: 0
+                    }
+                );
+            } else {
+                showToast("Geolocation is not supported by this browser.", "error");
+            }
+        });
+
+        // Register button click handler
+        $('#registerBtn').click(function() {
+            // Validate final step
+            if (!$('#termsAgreed').is(':checked')) {
+                showToast("You must agree to the Terms of Service and Privacy Policy to continue.", "error");
+                return;
+            }
+
+            // Show loading state
+            $(this).html('<svg class="inline-block w-4 h-4 mr-2 -ml-1 text-white animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Creating Account...').addClass('opacity-90').prop('disabled', true);
+
+            // Create user object
+            const userData = {
+                username: $('#username').val().trim(),
+                email: $('#email').val().trim(),
+                phoneNumber: $('#countryCode').val() + $('#phoneNumberInput').val().trim(),
+                password: $('#password').val(),
+                preferredLanguage: $('#preferredLanguage').val(),
+                role: "USER"
+            };
+
+            // Create address object
+            const addressData = {
+                addressLine1: $('#addressLine1').val().trim(),
+                addressLine2: $('#addressLine2').val().trim(),
+                city: $('#city').val().trim(),
+                district: $('#district').val(),
+                postalCode: $('#postalCode').val().trim(),
+                latitude: parseFloat($('#latitude').val()),
+                longitude: parseFloat($('#longitude').val()),
+                isPrimary: $('#isPrimary').is(':checked')
+            };
+
+            // Create notification preferences
+            const notificationPreferences = [];
+
+            // Get selected outage types
+            $('input[name="outageType"]:checked').each(function() {
+                const outageType = $(this).val();
+
+                // Get selected notification types
+                $('input[name="notificationType"]:checked').each(function() {
+                    notificationPreferences.push({
+                        outageType: outageType,
+                        channelType: $(this).val(),
+                        enabled: true,
+                        advanceNoticeMinutes: parseInt($('#advanceNoticeMinutes').val()),
+                        receiveUpdates: $('#receiveUpdates').is(':checked'),
+                        receiveRestoration: $('#receiveRestoration').is(':checked')
+                    });
+                });
+            });
+
+            // Register user
+            $.ajax({
+                url: 'http://localhost:8080/api/auth/register',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(userData),
+                success: function(response) {
+                    // User created successfully
+                    if (response.code === 201) {
+                        const userId = response.data.id;
+                        const token = response.data.token;
+
+                        // Set the token for subsequent requests
+                        $.ajaxSetup({
+                            headers: {
+                                'Authorization': 'Bearer ' + token
+                            }
+                        });
+
+                        // Add address
+                        $.ajax({
+                            url: 'http://localhost:8080/api/user/addresses',
+                            method: 'POST',
+                            contentType: 'application/json',
+                            data: JSON.stringify(addressData),
+                            success: function() {
+                                // Add notification preferences
+                                const prefPromises = notificationPreferences.map(pref => {
+                                    return $.ajax({
+                                        url: 'http://localhost:8080/api/user/notification-preferences',
+                                        method: 'POST',
+                                        contentType: 'application/json',
+                                        data: JSON.stringify(pref)
+                                    });
+                                });
+
+                                // Wait for all preferences to be added
+                                Promise.all(prefPromises)
+                                    .then(function() {
+                                        // Save user data in localStorage
+                                        localStorage.setItem('user', JSON.stringify({
+                                            id: userId,
+                                            username: userData.username,
+                                            email: userData.email,
+                                            token: token
+                                        }));
+
+                                        // Show success message
+                                        showToast("Account created successfully! Redirecting to dashboard...", "success");
+
+                                        // Redirect to dashboard after a short delay
+                                        setTimeout(function() {
+                                            window.location.href = 'dashboard.html';
+                                        }, 2000);
+                                    })
+                                    .catch(function(error) {
+                                        console.error("Error setting up notification preferences:", error);
+                                        $('#registerBtn').html('Create Account').removeClass('opacity-90').prop('disabled', false);
+                                        showToast("Account created but notification preferences couldn't be set. Please try again later.", "warning");
+                                    });
+                            },
+                            error: function(error) {
+                                console.error("Error adding address:", error);
+                                $('#registerBtn').html('Create Account').removeClass('opacity-90').prop('disabled', false);
+                                showToast("Account created but address couldn't be added. Please add your address later.", "warning");
+                            }
+                        });
+                    } else {
+                        $('#registerBtn').html('Create Account').removeClass('opacity-90').prop('disabled', false);
+                        showToast("Error creating account: " + response.message, "error");
+                    }
+                },
+                error: function(error) {
+                    console.error("Registration error:", error);
+                    $('#registerBtn').html('Create Account').removeClass('opacity-90').prop('disabled', false);
+
+                    let errorMessage = "Error creating account. Please try again.";
+                    if (error.responseJSON && error.responseJSON.message) {
+                        errorMessage = error.responseJSON.message;
+                    }
+
+                    showToast(errorMessage, "error");
+                }
+            });
+        });
+
+        // Form validation functions
+        function validateStep1() {
+            const username = $('#username').val().trim();
+            const email = $('#email').val().trim();
+            const phone = $('#phoneNumberInput').val().trim();
+            const password = $('#password').val();
+            const confirmPassword = $('#confirmPassword').val();
+
+            // Username validation
+            if (!username || username.length < 3 || username.length > 50) {
+                showToast("Username must be between 3 and 50 characters.", "error");
+                $('#username').focus();
+                return false;
+            }
+
+            // Email validation
+            if (!email || !isValidEmail(email)) {
+                showToast("Please enter a valid email address.", "error");
+                $('#email').focus();
+                return false;
+            }
+
+            // Phone validation
+            if (!phone || phone.length < 9) {
+                showToast("Please enter a valid phone number.", "error");
+                $('#phoneNumberInput').focus();
+                return false;
+            }
+
+            // Password validation
+            if (!isValidPassword(password)) {
+                showToast("Password must be at least 8 characters with at least one uppercase letter, one lowercase letter, one number, and one special character.", "error");
+                $('#password').focus();
+                return false;
+            }
+
+            // Password confirmation
+            if (password !== confirmPassword) {
+                showToast("Passwords do not match.", "error");
+                $('#confirmPassword').focus();
+                return false;
+            }
+
+            return true;
+        }
+
+        function validateStep2() {
+            const addressLine1 = $('#addressLine1').val().trim();
+            const city = $('#city').val().trim();
+            const district = $('#district').val();
+            const latitude = $('#latitude').val().trim();
+            const longitude = $('#longitude').val().trim();
+
+            if (!addressLine1) {
+                showToast("Please enter your address.", "error");
+                $('#addressLine1').focus();
+                return false;
+            }
+
+            if (!city) {
+                showToast("Please enter your city.", "error");
+                $('#city').focus();
+                return false;
+            }
+
+            if (!district) {
+                showToast("Please select your district.", "error");
+                $('#district').focus();
+                return false;
+            }
+
+            if (!latitude || !longitude) {
+                showToast("Please set your location on the map.", "error");
+                return false;
+            }
+
+            return true;
+        }
+
+        function validateStep3() {
+            // Check if at least one outage type is selected
+            if ($('input[name="outageType"]:checked').length === 0) {
+                showToast("Please select at least one outage type to monitor.", "error");
+                return false;
+            }
+
+            // Check if at least one notification method is selected
+            if ($('input[name="notificationType"]:checked').length === 0) {
+                showToast("Please select at least one notification method.", "error");
+                return false;
+            }
+
+            return true;
+        }
+
+        function populateSummary() {
+            $('#summary-username').text($('#username').val().trim());
+            $('#summary-email').text($('#email').val().trim());
+            $('#summary-phone').text($('#countryCode').val() + $('#phoneNumberInput').val().trim());
+
+            const address = $('#addressLine1').val().trim();
+            const city = $('#city').val().trim();
+            const district = $('#district').val();
+            $('#summary-address').text(`${address}, ${city}`);
+            $('#summary-district').text(district);
+
+            // Get selected outage types
+            const outageTypes = [];
+            $('input[name="outageType"]:checked').each(function() {
+                outageTypes.push($(this).val());
+            });
+            $('#summary-outage-types').text(outageTypes.join(', '));
+
+            // Get selected notification methods
+            const notificationMethods = [];
+            $('input[name="notificationType"]:checked').each(function() {
+                notificationMethods.push($(this).val());
+            });
+            $('#summary-notification-methods').text(notificationMethods.join(', '));
+        }
+
+        // Helper functions
+        function isValidEmail(email) {
+            const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailPattern.test(email);
+        }
+
+        function isValidPassword(password) {
+            // At least 8 characters, one uppercase, one lowercase, one number, one special character
+            const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+            return passwordPattern.test(password);
+        }
+
+        function showToast(message, type) {
+            const backgroundColor = type === 'error' ? '#EF4444' :
+                type === 'success' ? '#10B981' :
+                    type === 'warning' ? '#F59E0B' : '#3B82F6';
+
+            Toastify({
+                text: message,
+                duration: 3000,
+                close: true,
+                gravity: "top",
+                position: "right",
+                backgroundColor: backgroundColor,
+                stopOnFocus: true
+            }).showToast();
+        }
+    });
+</script>
 </body>
 </html>

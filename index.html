@@ -4,58 +4,58 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PowerAlert - Login</title>
-    <link rel="icon" type="image/x-icon" href="assets/logo.jpg">
+    <link rel="icon" type="image/x-icon" href="https://i.pinimg.com/736x/3f/bf/40/3fbf4075b391e07eaa00ec5a87647cb5.jpg">
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Inter Font -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <!-- Toastify CSS -->
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
-    
+
     <style>
         /* Custom styles that are hard to replicate with pure Tailwind */
         * {
             font-family: 'Inter', -apple-system, sans-serif;
         }
-        
+
         .window-dot {
             width: 12px;
             height: 12px;
             border-radius: 50%;
         }
-        
+
         .dot-red { background-color: #FF5F56; }
         .dot-yellow { background-color: #FFBD2E; }
         .dot-green { background-color: #27C93F; }
-        
+
         .footer-dot {
             width: 8px;
             height: 8px;
             border-radius: 50%;
             background-color: #D1D5DB;
         }
-        
+
         .footer-dot.active {
             background-color: #4361ee;
         }
-        
+
         .required::after {
             content: "*";
             color: #4361ee;
         }
-        
+
         input:focus {
             outline: none;
             border-color: #4361ee;
             box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
         }
-        
+
         @media (max-width: 768px) {
             body {
                 padding: 0;
                 background: white;
             }
-            
+
             .app-container {
                 min-height: 100vh;
                 border-radius: 0;
@@ -91,7 +91,7 @@
                         <div class="text-sm text-gray-500">Enter your credentials</div>
                     </div>
                 </div>
-                
+
                 <!-- Step 2 -->
                 <div class="flex gap-3 mb-6 text-gray-500">
                     <div class="flex items-center justify-center flex-shrink-0 w-5 h-5 text-xs text-gray-500 border-2 border-gray-300 rounded-full">2</div>
@@ -100,7 +100,7 @@
                         <div class="text-sm text-gray-500">Security check</div>
                     </div>
                 </div>
-                
+
                 <!-- Step 3 -->
                 <div class="flex gap-3 mb-6 text-gray-500">
                     <div class="flex items-center justify-center flex-shrink-0 w-5 h-5 text-xs text-gray-500 border-2 border-gray-300 rounded-full">3</div>
@@ -127,7 +127,7 @@
                             <label class="flex items-center gap-1 text-sm font-medium text-gray-900 required">Username</label><br>
                             <input type="text" name="username" class="w-full py-2.5 px-3.5 text-sm border border-gray-300 rounded-lg text-gray-900" placeholder="Enter your username" required>
                         </div>
-                        
+
                         <!-- Password Field -->
                         <div>
                             <div class="flex items-center justify-between">
@@ -182,12 +182,19 @@
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
     <script>
+
+        window.onerror = function(message, source, lineno, colno, error) {
+            console.error("JavaScript error:", message, "at", source, "line:", lineno);
+            alert("An error occurred: " + message);
+            return true;
+        };
+
         $(document).ready(function() {
             // Toggle password visibility
             $('#toggle-password').click(function() {
                 const passwordField = $('#password');
                 const passwordIcon = $(this).find('svg');
-                
+
                 if (passwordField.attr('type') === 'password') {
                     passwordField.attr('type', 'text');
                     passwordIcon.html('<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />');
@@ -196,24 +203,51 @@
                     passwordIcon.html('<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />');
                 }
             });
-            
+
+            // Check if user is already logged in
+            const authToken = localStorage.getItem('auth_token');
+            if (authToken) {
+                // If user is already logged in, redirect based on role
+                const userRole = localStorage.getItem('user_role');
+                if (userRole === 'ADMIN') {
+                    window.location.href = '/admin/dashboard.html';
+                } else if (userRole === 'UTILITY_PROVIDER') {
+                    window.location.href = '/provider/dashboard.html';
+                } else {
+                    window.location.href = '/dashboard.html';
+                }
+            }
+
             // Form submission
             $('#loginForm').submit(function(e) {
                 e.preventDefault();
-                
+
                 // Get form data
                 const username = $('input[name="username"]').val();
                 const password = $('input[name="password"]').val();
-                
+                const rememberMe = $('#rememberMe').is(':checked');
+
+                // Validate inputs
+                if (!username.trim()) {
+                    showError('Please enter your username');
+                    return;
+                }
+
+                if (!password) {
+                    showError('Please enter your password');
+                    return;
+                }
+
                 // Show loading state
                 $('#loginBtn').html('<svg class="inline-block w-4 h-4 mr-2 -ml-1 text-white animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Signing in...').addClass('opacity-90').prop('disabled', true);
-                
+
                 // Prepare request data
                 const requestData = {
                     username: username,
-                    password: password
+                    password: password,
+                    rememberMe: rememberMe
                 };
-                
+
                 // Send login request
                 $.ajax({
                     url: 'http://localhost:8080/api/auth/login',
@@ -221,11 +255,24 @@
                     contentType: 'application/json',
                     data: JSON.stringify(requestData),
                     success: function(response) {
-                        // Store token in localStorage
+                        // Check if response has expected structure
+                        if (!response.data || !response.data.token) {
+                            showError('Invalid server response. Please try again.');
+                            resetLoginButton();
+                            return;
+                        }
+
+                        // Store complete user information in localStorage
                         localStorage.setItem('auth_token', response.data.token);
                         localStorage.setItem('user_role', response.data.role);
                         localStorage.setItem('username', response.data.username);
-                        
+                        localStorage.setItem('user_id', response.data.userId);
+
+                        // Store additional user info if available
+                        if (response.data.email) localStorage.setItem('user_email', response.data.email);
+                        if (response.data.firstName) localStorage.setItem('user_firstName', response.data.firstName);
+                        if (response.data.lastName) localStorage.setItem('user_lastName', response.data.lastName);
+
                         // Show success message with Toastify
                         Toastify({
                             text: "Login successful! Redirecting...",
@@ -240,47 +287,83 @@
                                 fontFamily: "'Inter', sans-serif"
                             }
                         }).showToast();
-                        
+
                         // Redirect after a short delay
                         setTimeout(function() {
                             // Redirect based on role
                             if (response.data.role === 'ADMIN') {
-                                window.location.href = '/admin/dashboard';
+                                window.location.href = '/admin/dashboard.html';
+                            } else if (response.data.role === 'UTILITY_PROVIDER') {
+                                window.location.href = '/provider/dashboard.html';
                             } else {
-                                window.location.href = '/dashboard';
+                                window.location.href = '/user/dashboard.html';
                             }
                         }, 1500);
                     },
                     error: function(xhr) {
                         // Reset button state
-                        $('#loginBtn').text('Sign in').removeClass('opacity-90').prop('disabled', false);
-                        
+                        resetLoginButton();
+
                         // Prepare error message
                         let errorMsg = 'An error occurred. Please try again.';
-                        
+
                         if (xhr.status === 401) {
                             errorMsg = 'Invalid username or password';
+                        } else if (xhr.status === 403) {
+                            errorMsg = 'Account is locked or disabled';
                         } else if (xhr.responseJSON && xhr.responseJSON.message) {
                             errorMsg = xhr.responseJSON.message;
                         }
-                        
-                        // Show error message with Toastify
-                        Toastify({
-                            text: errorMsg,
-                            duration: 5000,
-                            close: true,
-                            gravity: "top",
-                            position: "right",
-                            style: {
-                                background: "#f87171", // Red background
-                                borderRadius: "8px",
-                                boxShadow: "0 3px 6px rgba(0,0,0,0.16)",
-                                fontFamily: "'Inter', sans-serif"
-                            }
-                        }).showToast();
+
+                        // Show error message
+                        showError(errorMsg);
                     }
                 });
             });
+
+            // Function to show error messages
+            function showError(message) {
+                Toastify({
+                    text: message,
+                    duration: 5000,
+                    close: true,
+                    gravity: "top",
+                    position: "right",
+                    style: {
+                        background: "#f87171", // Red background
+                        borderRadius: "8px",
+                        boxShadow: "0 3px 6px rgba(0,0,0,0.16)",
+                        fontFamily: "'Inter', sans-serif"
+                    }
+                }).showToast();
+            }
+
+            // Function to reset login button
+            function resetLoginButton() {
+                $('#loginBtn').text('Sign in').removeClass('opacity-90').prop('disabled', false);
+            }
+
+            // Check for password reset success message in URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const successMessage = urlParams.get('success');
+            if (successMessage) {
+                Toastify({
+                    text: decodeURIComponent(successMessage),
+                    duration: 5000,
+                    close: true,
+                    gravity: "top",
+                    position: "right",
+                    style: {
+                        background: "#4ade80",
+                        borderRadius: "8px",
+                        boxShadow: "0 3px 6px rgba(0,0,0,0.16)",
+                        fontFamily: "'Inter', sans-serif"
+                    }
+                }).showToast();
+
+                // Remove the query parameter to prevent showing the message on page refresh
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
         });
     </script>
 </body>
