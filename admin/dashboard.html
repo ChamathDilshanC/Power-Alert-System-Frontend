@@ -755,9 +755,6 @@
     <spline-viewer url="https://prod.spline.design/pMEALPBSSRjAV-MI/scene.splinecode" ></spline-viewer>
 </div>
 
-
-<button id="loadNewContentBtn" class="btn btn-primary">Load New Content</button>
-
 <!-- Main Content -->
 <div class="main-content" id="mainContent">
 
@@ -816,20 +813,6 @@
         </div>
     </div>
 </div>
-<!-- JavaScript -->
-<script>
-    document.getElementById("loadNewContentBtn").addEventListener("click", function() {
-        document.getElementById("loadNewContentBtn").addEventListener("click", function() {
-            fetch("../index.html") // Adjust the path as needed
-                .then(response => response.text())
-                .then(data => {
-                    document.getElementById("mainContent").innerHTML = data;
-                })
-                .catch(error => console.error("Error loading the content:", error));
-        });
-    });
-</script>
-
 <script>
     $(document).ready(function() {
         // Set the active page based on URL path
