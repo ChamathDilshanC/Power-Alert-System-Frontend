@@ -1,3 +1,11 @@
+* {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;     /* Firefox */
+}
+*::-webkit-scrollbar {
+    display: none;
+}
+
 :root {
     --sidebar-width: 70px;
     --sidebar-expanded-width: 240px;
@@ -229,6 +237,7 @@ body {
 
 .main-content {
     margin-left: calc(var(--sidebar-width) + 20px);
+    margin-right: 20px;
     padding: 24px;
     transition: margin-left 0.3s ease;
 }
