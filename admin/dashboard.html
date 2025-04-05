@@ -38,471 +38,7 @@
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --sidebar-width: 70px;
-            --sidebar-expanded-width: 240px;
-            --primary-color: #4f46e5;
-            --hover-color: rgba(99, 102, 241, 0.1);
-            --active-color: #4f46e5;
-            --active-text: white;
-            --text-color: #374151;
-            --border-color: #e5e7eb;
-            --bg-color: #f9fafb;
-        }
-
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: #f9fafb;
-            color: #374151;
-        }
-
-        .sidebar {
-            position: fixed;
-            left: 0;
-            top: 0;
-            bottom: 0;
-            width: var(--sidebar-width);
-            background-color: white;
-            border-right: 1px solid var(--border-color);
-            z-index: 100;
-            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            overflow: hidden;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-            border-radius: 0 12px 12px 0;
-        }
-
-        .sidebar:hover {
-            width: var(--sidebar-expanded-width);
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-            padding: 18px 12px;
-            border-bottom: 1px solid var(--border-color);
-            margin-bottom: 8px;
-        }
-
-        .logo-icon {
-            min-width: 36px;
-            height: 36px;
-            background: linear-gradient(135deg, #4f46e5, #4338ca);
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(79, 70, 229, 0.25);
-        }
-
-        .logo-text {
-            margin-left: 12px;
-            white-space: nowrap;
-            opacity: 0;
-            transition: opacity 0.2s ease;
-        }
-
-        .sidebar:hover .logo-text {
-            opacity: 1;
-        }
-
-        .nav-container {
-            height: calc(100% - 73px - 60px);
-            overflow-y: auto;
-            padding: 10px 0;
-        }
-
-        .nav-section {
-            margin-bottom: 8px;
-        }
-
-        .nav-section-title {
-            padding: 8px 16px;
-            font-size: 11px;
-            font-weight: 600;
-            text-transform: uppercase;
-            color: #6b7280;
-            opacity: 0;
-            white-space: nowrap;
-            transition: opacity 0.2s ease;
-            letter-spacing: 0.05em;
-        }
-
-        .sidebar:hover .nav-section-title {
-            opacity: 1;
-        }
-
-        .nav-item {
-            padding: 10px 14px;
-            margin: 3px 8px;
-            display: flex;
-            align-items: center;
-            cursor: pointer;
-            white-space: nowrap;
-            color: var(--text-color);
-            border-radius: 8px;
-            transition: all 0.2s ease;
-            text-decoration: none;
-        }
-
-        .nav-item:hover {
-            background-color: var(--hover-color);
-        }
-
-        .nav-item.active {
-            background-color: var(--active-color);
-            color: var(--active-text);
-            box-shadow: 0 3px 8px rgba(79, 70, 229, 0.25);
-        }
-
-        .nav-item i {
-            min-width: 26px;
-            display: flex;
-            justify-content: center;
-            font-size: 18px;
-        }
-
-        .nav-item-text {
-            margin-left: 8px;
-            font-size: 14px;
-            opacity: 0;
-            transition: opacity 0.2s ease;
-            font-weight: 500;
-        }
-
-        .sidebar:hover .nav-item-text {
-            opacity: 1;
-        }
-
-        .submenu {
-            margin-left: 30px;
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.3s ease;
-        }
-
-        .submenu.expanded {
-            max-height: 500px;
-            max-width: 100%;
-        }
-
-        .submenu-item {
-            padding: 8px 12px;
-            display: flex;
-            align-items: center;
-            cursor: pointer;
-            white-space: nowrap;
-            color: var(--text-color);
-            border-radius: 6px;
-            margin: 3px 8px 3px 0;
-            font-size: 13px;
-            opacity: 0;
-            transition: all 0.2s ease;
-            text-decoration: none;
-        }
-
-        .sidebar:hover .submenu-item {
-            opacity: 1;
-        }
-
-        .submenu-item:hover {
-            background-color: var(--hover-color);
-        }
-
-        .submenu-item.active {
-            color: var(--active-color);
-            font-weight: 500;
-            background-color: rgba(79, 70, 229, 0.08);
-        }
-
-        .submenu-item i {
-            font-size: 14px;
-            margin-right: 6px;
-        }
-
-        .user-avatar {
-            position: absolute;
-            bottom: 0;
-            width: 100%;
-            padding: 16px 12px;
-            display: flex;
-            align-items: center;
-            border-top: 1px solid var(--border-color);
-            background: white;
-        }
-
-        .avatar-circle {
-            min-width: 36px;
-            height: 36px;
-            background: linear-gradient(135deg, #4f46e5, #4338ca);
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-weight: 600;
-            color: white;
-            border: 2px solid rgba(79, 70, 229, 0.1);
-        }
-
-        .avatar-text {
-            margin-left: 10px;
-            opacity: 0;
-            transition: opacity 0.2s ease;
-            white-space: nowrap;
-        }
-
-        .avatar-name {
-            font-size: 13px;
-            font-weight: 600;
-        }
-
-        .avatar-role {
-            font-size: 11px;
-            color: #6b7280;
-        }
-
-        .sidebar:hover .avatar-text {
-            opacity: 1;
-        }
-
-        .main-content {
-            margin-left: var(--sidebar-width);
-            padding: 24px;
-            transition: margin-left 0.3s ease;
-        }
-
-        .content-card {
-            background-color: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-            padding: 20px;
-            transition: all 0.3s ease;
-        }
-
-        .content-card:hover {
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
-            transform: translateY(-2px);
-        }
-
-        .dropdown-icon {
-            margin-left: auto;
-            transform: rotate(0deg);
-            transition: transform 0.3s ease;
-            font-size: 16px;
-        }
-
-        .dropdown-icon.open {
-            transform: rotate(180deg);
-        }
-
-        @media (max-width: 768px) {
-            .sidebar {
-                border-radius: 0;
-                transform: translateX(-100%);
-            }
-
-            .sidebar.mobile-open {
-                transform: translateX(0);
-                width: var(--sidebar-expanded-width);
-            }
-
-            .sidebar.mobile-open .logo-text,
-            .sidebar.mobile-open .nav-item-text,
-            .sidebar.mobile-open .nav-section-title,
-            .sidebar.mobile-open .submenu-item,
-            .sidebar.mobile-open .avatar-text {
-                opacity: 1;
-            }
-
-            .main-content {
-                margin-left: 0;
-                padding: 24px 16px;
-            }
-
-            .mobile-toggle {
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                position: fixed;
-                top: 15px;
-                left: 15px;
-                z-index: 101;
-                background: white;
-                border: none;
-                border-radius: 8px;
-                width: 40px;
-                height: 40px;
-                box-shadow: 0 2px 10px rgba(0,0,0,0.15);
-                color: var(--primary-color);
-                cursor: pointer;
-            }
-        }
-
-        @media (min-width: 769px) {
-            .mobile-toggle {
-                display: none;
-            }
-        }
-
-        /* Custom scrollbar */
-        .nav-container::-webkit-scrollbar {
-            width: 4px;
-        }
-
-        .nav-container::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        .nav-container::-webkit-scrollbar-thumb {
-            background-color: rgba(0, 0, 0, 0.1);
-            border-radius: 20px;
-        }
-
-        /* Firefox */
-        .nav-container {
-            scrollbar-width: thin;
-            scrollbar-color: rgba(0, 0, 0, 0.1) transparent;
-        }
-
-        .gap {
-            height: 20px;
-        }
-
-        /* Top navigation bar */
-        .top-navbar {
-            height: 64px;
-            background-color: white;
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 24px;
-            margin-left: var(--sidebar-width);
-            transition: margin-left 0.3s ease;
-        }
-
-        @media (max-width: 768px) {
-            .top-navbar {
-                margin-left: 0;
-                padding: 0 16px 0 64px;
-            }
-        }
-
-        .breadcrumb {
-            display: flex;
-            align-items: center;
-            font-size: 14px;
-        }
-
-        .breadcrumb-item {
-            color: #6b7280;
-        }
-
-        .breadcrumb-item.active {
-            color: #111827;
-            font-weight: 500;
-        }
-
-        .breadcrumb-separator {
-            color: #d1d5db;
-            margin: 0 8px;
-        }
-
-        .notification-bell {
-            position: relative;
-            color: #6b7280;
-            cursor: pointer;
-            transition: color 0.2s ease;
-        }
-
-        .notification-bell:hover {
-            color: #4f46e5;
-        }
-
-        .notification-badge {
-            position: absolute;
-            top: -5px;
-            right: -5px;
-            background-color: #ef4444;
-            color: white;
-            border-radius: 50%;
-            font-size: 10px;
-            width: 16px;
-            height: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        /* Dashboard cards */
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 24px;
-            margin-top: 24px;
-        }
-
-        .dashboard-card {
-            background-color: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-            padding: 20px;
-            transition: all 0.2s ease;
-        }
-
-        .dashboard-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.08);
-        }
-
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-
-        .card-title {
-            font-size: 14px;
-            font-weight: 500;
-            color: #6b7280;
-        }
-
-        .card-icon {
-            width: 36px;
-            height: 36px;
-            background-color: rgba(79, 70, 229, 0.1);
-            color: #4f46e5;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .card-value {
-            font-size: 24px;
-            font-weight: 700;
-            color: #111827;
-            margin-bottom: 5px;
-        }
-
-        .card-trend {
-            display: flex;
-            align-items: center;
-            font-size: 12px;
-        }
-
-        .trend-up {
-            color: #10b981;
-        }
-
-        .trend-down {
-            color: #ef4444;
-        }
-    </style>
+    <link rel="stylesheet" href="dashboard.css">
 </head>
 <body class="bg-gray-50">
 <!-- Mobile Toggle Button -->
@@ -720,7 +256,23 @@
                 </a>
                 <div class="gap"></div>
             </div>
+
+            <!-- Modern Logout Button -->
+            <a href="#" id="nav-logout" class="nav-item group transition-all duration-300 hover:bg-red-50 text-gray-700 hover:text-red-600">
+                <div class="flex items-center">
+                    <div class="relative">
+                        <i class='bx bx-log-out text-xl group-hover:rotate-12 transition-transform duration-300'></i>
+                        <span class="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
+                    </div>
+                    <span class="nav-item-text ml-2 font-medium">Sign Out</span>
+                </div>
+                <div class="ml-auto opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <i class='bx bx-chevron-right text-sm'></i>
+                </div>
+            </a>
+
         </div>
+
     </div>
 
     <!-- User Avatar -->
@@ -740,79 +292,43 @@
         <span class="breadcrumb-separator">/</span>
         <span class="breadcrumb-item active" id="page-title">Dashboard</span>
     </div>
-    <div class="flex items-center space-x-4">
-        <div class="notification-bell">
-            <i class='bx bx-bell text-xl'></i>
-            <span class="notification-badge">3</span>
+    <div class="flex items-center justify-between gap-4">
+        <!-- Notification Bell with smooth animation -->
+        <div class="relative group">
+            <button class="p-2 rounded-full transition-all duration-300 hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                </svg>
+            </button>
+            <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">3</span>
         </div>
-        <div class="hidden md:block text-sm font-medium">Admin User</div>
+
+        <!-- User info with avatar -->
+        <div class="hidden md:flex items-center gap-2">
+            <span class="text-sm font-medium">Admin User</span>
+        </div>
+
+        <!-- Premium Button with micro-interactions -->
+        <button class="flex items-center gap-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-4 py-2 rounded-lg shadow-lg transition-all duration-300 hover:shadow-xl hover:translate-y-[1px] focus:outline-none focus:ring-2 focus:ring-purple-300">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2L9.09 8.5H2l5.8 4.5-2.2 7 6.4-4.8 6.4 4.8-2.2-7 5.8-4.5h-7.09z" />
+            </svg>
+            <span class="font-medium text-sm">Upgrade Now</span>
+        </button>
     </div>
+
 </div>
 
 <!-- 3D Visualization -->
-<div class="main-content">
+<div class="main-content rounded-[20px] shadow-card bg-white  mt-4 mr-40px">
     <script type="module" src="https://unpkg.com/@splinetool/viewer@1.9.82/build/spline-viewer.js"></script>
     <spline-viewer url="https://prod.spline.design/pMEALPBSSRjAV-MI/scene.splinecode" ></spline-viewer>
 </div>
 
-<!-- Main Content -->
-<div class="main-content" id="mainContent">
-
-    <!-- Dashboard Content -->
-    <div class="dashboard-grid">
-        <div class="dashboard-card">
-            <div class="card-header">
-                <div class="card-title">Active Outages</div>
-                <div class="card-icon">
-                    <i class='bx bxs-error-alt'></i>
-                </div>
-            </div>
-            <div class="card-value">24</div>
-            <div class="card-trend trend-up">
-                <i class='bx bx-up-arrow-alt mr-1'></i> 12% from yesterday
-            </div>
-        </div>
-
-        <div class="dashboard-card">
-            <div class="card-header">
-                <div class="card-title">Upcoming Outages</div>
-                <div class="card-icon">
-                    <i class='bx bxs-calendar'></i>
-                </div>
-            </div>
-            <div class="card-value">17</div>
-            <div class="card-trend trend-down">
-                <i class='bx bx-down-arrow-alt mr-1'></i> 5% from yesterday
-            </div>
-        </div>
-
-        <div class="dashboard-card">
-            <div class="card-header">
-                <div class="card-title">Areas Affected</div>
-                <div class="card-icon">
-                    <i class='bx bxs-map'></i>
-                </div>
-            </div>
-            <div class="card-value">8</div>
-            <div class="card-trend">
-                <i class='bx bx-right-arrow-alt mr-1'></i> No change
-            </div>
-        </div>
-
-        <div class="dashboard-card">
-            <div class="card-header">
-                <div class="card-title">Active Users</div>
-                <div class="card-icon">
-                    <i class='bx bxs-user'></i>
-                </div>
-            </div>
-            <div class="card-value">1,843</div>
-            <div class="card-trend trend-up">
-                <i class='bx bx-up-arrow-alt mr-1'></i> 8% from last week
-            </div>
-        </div>
-    </div>
-</div>
+<!-- Updated Main Content with Calendar -->
+<div class="main-content" id="mainContent"></div>
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
 <script>
     $(document).ready(function() {
         // Set the active page based on URL path
@@ -969,6 +485,7 @@
         });
     });
 </script>
-<script src="admin.js"></script>
+<script src="/admin/admin.js"></script>
+<script src="updateUserInfo.js"></script>
 </body>
 </html>

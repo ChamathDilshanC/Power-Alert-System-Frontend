@@ -1,46 +1,5 @@
-$(document).ready(function() {
-    // Initialize the dashboard
-    initializeDashboard();
-});
+localStorage.getItem('userRole') !== 'ADMIN' && localStorage.getItem('auth_token') === null ? window.location.href = '../in.html' : null;
 
-// Function to initialize the dashboard
-function initializeDashboard() {
-    const userEmail = localStorage.getItem('user_email');
-    const userRole = localStorage.getItem('user_role');
-    const userName = localStorage.getItem('user_name');
-
-    // Set user information in the dashboard
-    if (userName) {
-        // Update avatar initials
-        const avatarCircle = document.getElementById('avatar-circle');
-        if (avatarCircle) {
-            avatarCircle.textContent = userName.charAt(0).toUpperCase();
-        }
-
-        // Update user name in avatar section
-        const avatarName = document.getElementById('avatar-name');
-        if (avatarName) {
-            avatarName.textContent = userName;
-        }
-
-        // Update user name in top navbar
-        const topNavUserName = document.querySelector('.hidden.md\\:block.text-sm.font-medium');
-        if (topNavUserName) {
-            topNavUserName.textContent = userName;
-        }
-    }
-
-    // Update role in avatar section
-    if (userRole) {
-        const avatarRole = document.getElementById('avatar-role');
-        if (avatarRole) {
-            // Format role for display (e.g., ROLE_ADMIN → Administrator)
-            const formattedRole = userRole.replace('ROLE_', '').toLowerCase()
-                .replace(/\b\w/g, char => char.toUpperCase());
-            avatarRole.textContent = formattedRole;
-        }
-    }
-}
 
 // Function to format date
 function formatDate(date) {

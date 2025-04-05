@@ -210,7 +210,7 @@
                 // If user is already logged in, redirect based on role
                 const userRole = localStorage.getItem('user_role');
                 if (userRole === 'ADMIN') {
-                    window.location.href = '/admin/dashboard.html';
+                    window.location.href = 'admin/dashboard.html';
                 } else if (userRole === 'UTILITY_PROVIDER') {
                     window.location.href = '/provider/dashboard.html';
                 } else {
@@ -292,7 +292,7 @@
                         setTimeout(function() {
                             // Redirect based on role
                             if (response.data.role === 'ADMIN') {
-                                window.location.href = '/admin/dashboard.html';
+                                window.location.href = 'admin/dashboard.html';
                             } else if (response.data.role === 'UTILITY_PROVIDER') {
                                 window.location.href = '/provider/dashboard.html';
                             } else {
