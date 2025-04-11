@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Power Alert - Outage Management</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- BoxIcons -->
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <!-- Mapbox CSS -->
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet">
+    <!-- Mapbox Geocoder CSS -->
+    <link href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v5.0.0/mapbox-gl-geocoder.min.css" rel="stylesheet" type="text/css">
+    <!-- Mapbox Draw CSS -->
+    <link rel="stylesheet" href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.4.0/mapbox-gl-draw.css" type="text/css">
+    <!-- DateTimePicker CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="../styles/outageManagement.css">
+</head>
+<body>
+<!-- Spinner Overlay -->
+<div class="spinner-overlay" id="spinner">
+    <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+</div>
+
+<!-- Toast Notifications -->
+<div class="toast-container"></div>
+
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="mb-3">Outage Management</h2>
+        </div>
+    </div>
+
+    <!-- Tabs Navigation -->
+    <ul class="nav nav-tabs" id="outageTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="view-tab" data-bs-toggle="tab" data-bs-target="#view-outages" type="button" role="tab">
+                <i class='bx bx-list-ul me-1'></i> View All Outages
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="create-tab" data-bs-toggle="tab" data-bs-target="#create-outage" type="button" role="tab">
+                <i class='bx bx-plus me-1'></i> Create Outage
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="edit-tab" data-bs-toggle="tab" data-bs-target="#edit-outage" type="button" role="tab">
+                <i class='bx bx-edit me-1'></i> Edit Outage
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="history-tab" data-bs-toggle="tab" data-bs-target="#outage-history" type="button" role="tab">
+                <i class='bx bx-history me-1'></i> Outage History
+            </button>
+        </li>
+    </ul>
+
+    <!-- Tab Content -->
+    <div class="tab-content" id="outageTabsContent">
+        <!-- View All Outages Tab -->
+        <div class="tab-pane fade show active" id="view-outages" role="tabpanel">
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="input-group">
+                        <input type="text" class="form-control" placeholder="Search outages..." id="outage-search">
+                        <button class="btn btn-primary" type="button" id="search-btn">
+                            <i class='bx bx-search'></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="d-flex justify-content-end">
+                        <div class="btn-group me-2">
+                            <button type="button" class="btn btn-outline-primary active filter-btn" data-filter="all">All</button>
+                            <button type="button" class="btn btn-outline-primary filter-btn" data-filter="scheduled">Scheduled</button>
+                            <button type="button" class="btn btn-outline-primary filter-btn" data-filter="ongoing">Ongoing</button>
+                            <button type="button" class="btn btn-outline-primary filter-btn" data-filter="completed">Completed</button>
+                        </div>
+                        <div class="dropdown">
+                            <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="outageTypeDropdown" data-bs-toggle="dropdown">
+                                Type
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item type-filter active" href="#" data-type="all">All Types</a></li>
+                                <li><a class="dropdown-item type-filter" href="#" data-type="ELECTRICITY">Electricity</a></li>
+                                <li><a class="dropdown-item type-filter" href="#" data-type="WATER">Water</a></li>
+                                <li><a class="dropdown-item type-filter" href="#" data-type="GAS">Gas</a></li>
+                                <li><a class="dropdown-item type-filter" href="#" data-type="INTERNET">Internet</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Outages List -->
+            <div class="row" id="outages-container">
+                <!-- Outage cards will be dynamically added here -->
+                <div class="col-12 text-center py-5 d-none" id="no-outages-message">
+                    <i class='bx bx-info-circle fs-1 text-muted'></i>
+                    <p class="mt-3 text-muted">No outages found</p>
+                </div>
+            </div>
+
+            <!-- Outage Details Modal -->
+            <div class="modal fade" id="outageDetailsModal" tabindex="-1">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Outage Details</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div id="outage-details-content">
+                                <!-- Outage details will be displayed here -->
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-primary" id="edit-outage-btn">Edit</button>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Create Outage Tab -->
+        <div class="tab-pane fade" id="create-outage" role="tabpanel">
+            <div class="card">
+                <div class="card-body">
+                    <div class="progress-tracker mb-4">
+                        <div class="progress-step active" data-step="1">
+                            <div class="progress-step-icon">1</div>
+                            <div class="progress-step-text">Basic Info</div>
+                        </div>
+                        <div class="progress-step" data-step="2">
+                            <div class="progress-step-icon">2</div>
+                            <div class="progress-step-text">Location</div>
+                        </div>
+                        <div class="progress-step" data-step="3">
+                            <div class="progress-step-icon">3</div>
+                            <div class="progress-step-text">Provider</div>
+                        </div>
+                        <div class="progress-step" data-step="4">
+                            <div class="progress-step-icon">4</div>
+                            <div class="progress-step-text">Review</div>
+                        </div>
+                    </div>
+
+                    <form id="create-outage-form">
+                        <!-- Step 1: Basic Information -->
+                        <div class="create-outage-step" id="step-1">
+                            <h4 class="mb-4">Basic Information</h4>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label for="outage-type" class="form-label">Outage Type <span class="text-danger">*</span></label>
+                                    <select class="form-select" id="outage-type" required>
+                                        <option value="" disabled selected>Select outage type</option>
+                                        <option value="ELECTRICITY">Electricity</option>
+                                        <option value="WATER">Water</option>
+                                        <option value="GAS">Gas</option>
+                                        <option value="INTERNET">Internet</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="outage-status" class="form-label">Status <span class="text-danger">*</span></label>
+                                    <select class="form-select" id="outage-status" required>
+                                        <option value="SCHEDULED" selected>Scheduled</option>
+                                        <option value="ONGOING">Ongoing</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="start-time" class="form-label">Start Time <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="start-time" placeholder="Select start time" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="end-time" class="form-label">Estimated End Time <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="end-time" placeholder="Select end time" required>
+                                </div>
+                                <div class="col-12">
+                                    <label for="reason" class="form-label">Reason <span class="text-danger">*</span></label>
+                                    <textarea class="form-control" id="reason" rows="3" placeholder="Enter reason for outage" required></textarea>
+                                </div>
+                                <div class="col-12">
+                                    <label for="additional-info" class="form-label">Additional Information</label>
+                                    <textarea class="form-control" id="additional-info" rows="3" placeholder="Enter any additional information"></textarea>
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-end mt-4">
+                                <button type="button" class="btn btn-primary next-step">Next <i class='bx bx-right-arrow-alt'></i></button>
+                            </div>
+                        </div>
+
+                        <!-- Step 2: Location Information -->
+                        <div class="create-outage-step d-none" id="step-2">
+                            <h4 class="mb-4">Location Information</h4>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label for="area-select" class="form-label">Select Area <span class="text-danger">*</span></label>
+                                    <select class="form-select" id="area-select" required>
+                                        <option value="" disabled selected>Select an area</option>
+                                        <!-- Areas will be loaded dynamically -->
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Search Area</label>
+                                    <div id="area-geocoder" class="geocoder"></div>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label">Define Affected Area on Map <span class="text-danger">*</span></label>
+                                    <div id="map" class="map-container"></div>
+                                    <pre id="coordinates" class="coordinates"></pre>
+                                </div>
+                                <div class="col-12">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="entire-area-check">
+                                        <label class="form-check-label" for="entire-area-check">
+                                            Apply to entire area
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-between mt-4">
+                                <button type="button" class="btn btn-outline-secondary prev-step"><i class='bx bx-left-arrow-alt'></i> Previous</button>
+                                <button type="button" class="btn btn-primary next-step">Next <i class='bx bx-right-arrow-alt'></i></button>
+                            </div>
+                        </div>
+
+                        <!-- Step 3: Provider Selection -->
+                        <div class="create-outage-step d-none" id="step-3">
+                            <h4 class="mb-4">Utility Provider</h4>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label for="provider-select" class="form-label">Select Provider <span class="text-danger">*</span></label>
+                                    <select class="form-select" id="provider-select" required>
+                                        <option value="" disabled selected>Select a provider</option>
+                                        <!-- Providers will be loaded dynamically -->
+                                    </select>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label">Available Providers</label>
+                                    <div class="row" id="provider-cards-container">
+                                        <!-- Provider cards will be loaded dynamically -->
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-between mt-4">
+                                <button type="button" class="btn btn-outline-secondary prev-step"><i class='bx bx-left-arrow-alt'></i> Previous</button>
+                                <button type="button" class="btn btn-primary next-step">Next <i class='bx bx-right-arrow-alt'></i></button>
+                            </div>
+                        </div>
+
+                        <!-- Step 4: Review -->
+                        <div class="create-outage-step d-none" id="step-4">
+                            <h4 class="mb-4">Review Outage Information</h4>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <h6>Basic Information</h6>
+                                        <div class="mb-2"><strong>Type:</strong> <span id="review-type"></span></div>
+                                        <div class="mb-2"><strong>Status:</strong> <span id="review-status"></span></div>
+                                        <div class="mb-2"><strong>Start Time:</strong> <span id="review-start-time"></span></div>
+                                        <div class="mb-2"><strong>End Time:</strong> <span id="review-end-time"></span></div>
+                                        <div class="mb-2"><strong>Reason:</strong> <span id="review-reason"></span></div>
+                                        <div class="mb-2"><strong>Additional Info:</strong> <span id="review-additional-info"></span></div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <h6>Location and Provider</h6>
+                                        <div class="mb-2"><strong>Area:</strong> <span id="review-area"></span></div>
+                                        <div class="mb-2"><strong>Provider:</strong> <span id="review-provider"></span></div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <h6>Affected Area</h6>
+                                        <div id="review-map" class="map-container"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-between mt-4">
+                                <button type="button" class="btn btn-outline-secondary prev-step"><i class='bx bx-left-arrow-alt'></i> Previous</button>
+                                <button type="submit" class="btn btn-success"><i class='bx bx-check'></i> Create Outage</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Edit Outage Tab -->
+        <div class="tab-pane fade" id="edit-outage" role="tabpanel">
+            <div class="card mb-4" id="edit-outage-placeholder">
+                <div class="card-body text-center py-5">
+                    <i class='bx bx-edit-alt fs-1 text-muted'></i>
+                    <h5 class="mt-3">Select an Outage to Edit</h5>
+                    <p class="text-muted">Choose an outage from the dropdown below to start editing</p>
+                    <select class="form-select w-50 mx-auto mt-3" id="edit-outage-select">
+                        <option value="" selected>Select an outage to edit</option>
+                        <!-- Outages will be loaded dynamically -->
+                    </select>
+                </div>
+            </div>
+
+            <div class="card d-none" id="edit-outage-form-container">
+                <div class="card-body">
+                    <h4 class="mb-4">Edit Outage</h4>
+                    <form id="edit-outage-form">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="edit-outage-type" class="form-label">Outage Type <span class="text-danger">*</span></label>
+                                <select class="form-select" id="edit-outage-type" required>
+                                    <option value="" disabled>Select outage type</option>
+                                    <option value="ELECTRICITY">Electricity</option>
+                                    <option value="WATER">Water</option>
+                                    <option value="GAS">Gas</option>
+                                    <option value="INTERNET">Internet</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="edit-outage-status" class="form-label">Status <span class="text-danger">*</span></label>
+                                <select class="form-select" id="edit-outage-status" required>
+                                    <option value="SCHEDULED">Scheduled</option>
+                                    <option value="ONGOING">Ongoing</option>
+                                    <option value="COMPLETED">Completed</option>
+                                    <option value="CANCELLED">Cancelled</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="edit-start-time" class="form-label">Start Time <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="edit-start-time" placeholder="Select start time" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="edit-end-time" class="form-label">Estimated End Time <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="edit-end-time" placeholder="Select end time" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="edit-area-select" class="form-label">Area <span class="text-danger">*</span></label>
+                                <select class="form-select" id="edit-area-select" required>
+                                    <option value="" disabled>Select an area</option>
+                                    <!-- Areas will be loaded dynamically -->
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="edit-provider-select" class="form-label">Provider <span class="text-danger">*</span></label>
+                                <select class="form-select" id="edit-provider-select" required>
+                                    <option value="" disabled>Select a provider</option>
+                                    <!-- Providers will be loaded dynamically -->
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <label for="edit-reason" class="form-label">Reason <span class="text-danger">*</span></label>
+                                <textarea class="form-control" id="edit-reason" rows="3" placeholder="Enter reason for outage" required></textarea>
+                            </div>
+                            <div class="col-12">
+                                <label for="edit-additional-info" class="form-label">Additional Information</label>
+                                <textarea class="form-control" id="edit-additional-info" rows="3" placeholder="Enter any additional information"></textarea>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Define Affected Area on Map</label>
+                                <div id="edit-map" class="map-container"></div>
+                                <div class="form-check mt-2">
+                                    <input class="form-check-input" type="checkbox" id="edit-entire-area-check">
+                                    <label class="form-check-label" for="edit-entire-area-check">
+                                        Apply to entire area
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between mt-4">
+                            <button type="button" class="btn btn-outline-danger" id="cancel-edit-btn">Cancel</button>
+                            <div>
+                                <button type="button" class="btn btn-secondary me-2" id="add-update-btn" data-bs-toggle="modal" data-bs-target="#addUpdateModal">
+                                    <i class='bx bx-plus-circle me-1'></i> Add Update
+                                </button>
+                                <button type="submit" class="btn btn-primary" id="save-outage-btn">
+                                    <i class='bx bx-save me-1'></i> Save Changes
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Outage History Tab -->
+        <div class="tab-pane fade" id="outage-history" role="tabpanel">
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <div class="card statistics-card electricity-stat">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="card-subtitle mb-2 text-muted">Electricity Outages</h6>
+                                    <h3 class="card-title mb-0" id="electricity-outage-count">0</h3>
+                                </div>
+                                <div class="rounded-circle bg-light p-3">
+                                    <i class='bx bx-bolt fs-3 text-info'></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card statistics-card water-stat">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="card-subtitle mb-2 text-muted">Water Outages</h6>
+                                    <h3 class="card-title mb-0" id="water-outage-count">0</h3>
+                                </div>
+                                <div class="rounded-circle bg-light p-3">
+                                    <i class='bx bx-droplet fs-3 text-primary'></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card statistics-card gas-stat">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="card-subtitle mb-2 text-muted">Avg. Restoration Time</h6>
+                                    <h3 class="card-title mb-0" id="avg-restoration-time">0h</h3>
+                                </div>
+                                <div class="rounded-circle bg-light p-3">
+                                    <i class='bx bx-time fs-3 text-warning'></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">Filter History</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label for="history-year" class="form-label">Year</label>
+                                    <select class="form-select" id="history-year">
+                                        <option value="" selected>All Years</option>
+                                        <!-- Years will be added dynamically -->
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="history-month" class="form-label">Month</label>
+                                    <select class="form-select" id="history-month">
+                                        <option value="" selected>All Months</option>
+                                        <option value="1">January</option>
+                                        <option value="2">February</option>
+                                        <option value="3">March</option>
+                                        <option value="4">April</option>
+                                        <option value="5">May</option>
+                                        <option value="6">June</option>
+                                        <option value="7">July</option>
+                                        <option value="8">August</option>
+                                        <option value="9">September</option>
+                                        <option value="10">October</option>
+                                        <option value="11">November</option>
+                                        <option value="12">December</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="history-area" class="form-label">Area</label>
+                                    <select class="form-select" id="history-area">
+                                        <option value="" selected>All Areas</option>
+                                        <!-- Areas will be added dynamically -->
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="history-type" class="form-label">Type</label>
+                                    <select class="form-select" id="history-type">
+                                        <option value="" selected>All Types</option>
+                                        <option value="ELECTRICITY">Electricity</option>
+                                        <option value="WATER">Water</option>
+                                        <option value="GAS">Gas</option>
+                                        <option value="INTERNET">Internet</option>
+                                    </select>
+                                </div>
+                                <div class="col-12">
+                                    <button type="button" class="btn btn-primary w-100" id="apply-history-filters">
+                                        <i class='bx bx-filter-alt me-1'></i> Apply Filters
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">Outage Statistics</h5>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="outage-chart" height="212"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">Outage History</h5>
+                        <button class="btn btn-sm btn-outline-primary" id="export-history-btn">
+                            <i class='bx bx-export me-1'></i> Export
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead>
+                            <tr>
+                                <th>Type</th>
+                                <th>Area</th>
+                                <th>Month</th>
+                                <th>Outage Count</th>
+                                <th>Total Hours</th>
+                                <th>Avg. Time</th>
+                                <th>Actions</th>
+                            </tr>
+                            </thead>
+                            <tbody id="history-table-body">
+                            <!-- History data will be loaded dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <div class="text-muted" id="history-count-info">Showing 0 outages</div>
+                        <nav aria-label="History pagination">
+                            <ul class="pagination justify-content-end mb-0" id="history-pagination">
+                                <!-- Pagination will be added dynamically -->
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Update Modal -->
+<div class="modal fade" id="addUpdateModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add Outage Update</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="update-form">
+                    <div class="mb-3">
+                        <label for="update-info" class="form-label">Update Information <span class="text-danger">*</span></label>
+                        <textarea class="form-control" id="update-info" rows="3" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="new-status" class="form-label">New Status</label>
+                        <select class="form-select" id="new-status">
+                            <option value="">No change</option>
+                            <option value="ONGOING">Ongoing</option>
+                            <option value="COMPLETED">Completed</option>
+                            <option value="CANCELLED">Cancelled</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="updated-end-time" class="form-label">Updated End Time</label>
+                        <input type="text" class="form-control" id="updated-end-time" placeholder="Leave blank for no change">
+                    </div>
+                    <div class="mb-3">
+                        <label for="update-reason" class="form-label">Reason for Update</label>
+                        <textarea class="form-control" id="update-reason" rows="2"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="submit-update-btn">Submit Update</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap JS Bundle with Popper -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Mapbox GL JS -->
+<script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
+<!-- Mapbox Geocoder -->
+<script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v5.0.0/mapbox-gl-geocoder.min.js"></script>
+<!-- Mapbox Draw -->
+<script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.4.0/mapbox-gl-draw.js"></script>
+<!-- Turf.js for GeoJSON operations -->
+<script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
+<!-- FlatPickr DateTime Picker -->
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- Custom JS -->
+<script src="../js/config.js"></script>
+<script src="../js/outageManagement.js"></script>
+</body>
+</html>
