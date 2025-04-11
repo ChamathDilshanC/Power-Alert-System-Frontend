@@ -1,4 +1,7 @@
-// Function to update user information in sidebar and top navigation
+/**
+ * Role-Based Navigation System
+ * Dynamically adjusts the sidebar based on user role (Admin, Utility Provider, User)
+ */
 $(document).ready(function() {
     // Get user info from localStorage
     const username = localStorage.getItem('username') || 'User';
@@ -87,14 +90,20 @@ $(document).ready(function() {
 
     // Check if user has appropriate role for admin pages
     const requiredRoles = ['ADMIN', 'SUPER_ADMIN'];
-    if (!requiredRoles.includes(userRole)) {
+    const currentPathname = window.location.pathname;
+
+    // Only redirect if we're in the admin section and user doesn't have admin role
+    if (currentPathname.includes('/admin/') && !requiredRoles.includes(userRole)) {
         // Redirect to appropriate dashboard based on role
         if (userRole === 'UTILITY_PROVIDER') {
-            window.location.href = '../provider/dashboard.html';
+            window.location.href = '../pages/dashboard.html';
         } else {
-            window.location.href = '../user/dashboard.html';
+            window.location.href = '../pages/dashboard.html';
         }
     }
+
+    // Update navigation based on role
+    updateNavigation(userRole);
 });
 
 // Helper function to get initials from name
@@ -194,7 +203,7 @@ $(document).ready(function() {
 
             // Add a small delay for better UX
             setTimeout(function() {
-                // Redirect to login page
+                // Redirect to login page with the correct path
                 window.location.href = '../index.html';
             }, 800);
         });
@@ -215,4 +224,96 @@ $(document).ready(function() {
             }
         });
     });
+});
+
+/**
+ * Role-Based Navigation System
+ * Dynamically adjusts the sidebar based on user role (Admin, Utility Provider, User)
+ */
+// Function to update navigation based on user role
+function updateNavigation(role) {
+    // Default role is 'user' if not specified
+    role = role || 'user';
+
+    // Convert to lowercase for consistency
+    role = role.toLowerCase();
+
+    // Show navigation elements based on role
+    switch(role) {
+        case 'admin':
+        case 'super_admin':
+            // Admin has access to everything - no need to hide anything
+            break;
+
+        case 'utility_provider':
+        case 'utilityprovider':
+        case 'utility provider':
+            // Hide administrative items
+            $('#nav-section-users').hide();
+            $('#nav-resources, #resources-submenu').hide();
+            $('#nav-reports').hide();
+            $('#nav-audit').hide();
+            $('#settings-email').hide();
+            $('#nav-areas').hide();
+            $('#areas-submenu').hide();
+
+            // Show only relevant submenu items
+            $('#outages-view, #outages-create, #outages-edit, #outages-history').show();
+            $('#feedback-view').show();
+            $('#feedback-respond').hide();
+            break;
+
+        case 'user':
+        default:
+            // Hide administrative items and provider items
+            $('#nav-section-users').hide();
+            $('#nav-resources, #resources-submenu').hide();
+            $('#nav-reports').hide();
+            $('#nav-audit').hide();
+            $('#settings-email').hide();
+            $('#nav-areas').hide();
+            $('#areas-submenu').hide();
+
+            // Hide outage management
+            $('#outages-create').hide();
+            $('#outages-edit').hide();
+            $('#outages-history').hide();
+            $('#feedback-respond').hide();
+
+            // Show only user-relevant items
+            $('#outages-view').show();
+            $('#feedback-view').show();
+            break;
+    }
+
+    // Fix submenu visibility after role updates
+    fixSubmenuVisibility();
+}
+
+// Function to handle submenu visibility after role changes
+function fixSubmenuVisibility() {
+    // For each nav item with submenu
+    $('.nav-item[data-has-submenu="true"]').each(function() {
+        const submenuId = $(this).data('page') + '-submenu';
+        const $submenu = $('#' + submenuId);
+
+        // Check if any submenu items are visible
+        const hasVisibleItems = $submenu.find('.submenu-item:visible').length > 0;
+
+        // Hide the entire nav item if it has no visible submenu items
+        if (!hasVisibleItems) {
+            $(this).hide();
+        } else {
+            $(this).show();
+        }
+    });
+}
+
+// Initialize the navigation when the page loads
+$(document).ready(function() {
+    // Get the user role from localStorage
+    const userRole = localStorage.getItem('user_role') || 'user';
+
+    // Update navigation based on user role
+    updateNavigation(userRole);
 });

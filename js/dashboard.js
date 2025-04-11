@@ -1,4 +1,5 @@
-localStorage.getItem('userRole') !== 'ADMIN' && localStorage.getItem('auth_token') === null ? window.location.href = '../in.html' : null;
+localStorage.getItem('userRole') !== 'ADMIN' && localStorage.getItem('auth_token') === null ? window.location.href = '../index.html' : null;
+$('current-year').textContent = new Date().getFullYear();
 
 
 // Function to format date
@@ -741,3 +742,83 @@ function calculateTimeRemaining(now, endDate) {
         return `${hours}h ${minutes}m remaining`;
     }
 }
+
+// Function to animate counting up
+function animateCounter(counter, target) {
+    const speed = 200; // Lower is faster
+    const increment = target / speed;
+    let current = 0;
+
+    const timer = setInterval(() => {
+        current += increment;
+
+        // If we've reached the target, stop and set the final value
+        if (current >= target) {
+            clearInterval(timer);
+            counter.innerText = target;
+        } else {
+            counter.innerText = Math.floor(current);
+        }
+    }, 10);
+}
+
+// Observe when stats section comes into view
+document.addEventListener('DOMContentLoaded', function() {
+    // Set up intersection observer for stats
+    const statsObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                // Animate all stat cards in sequence
+                const statCards = document.querySelectorAll('.stat-card');
+                statCards.forEach((card, index) => {
+                    setTimeout(() => {
+                        card.classList.add('animated');
+
+                        // Start counter animation
+                        const counter = card.querySelector('.counter');
+                        const target = parseInt(counter.getAttribute('data-target'));
+                        animateCounter(counter, target);
+                    }, index * 200); // Stagger each card's animation
+                });
+
+                // Unobserve once animation is triggered
+                statsObserver.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.2 });
+
+    // Start observing stats container
+    const statsContainer = document.querySelector('.stats-container');
+    if (statsContainer) {
+        statsObserver.observe(statsContainer);
+    }
+
+    // Image hover effect
+    const imageContainer = document.getElementById('about-image-container');
+    const image = document.getElementById('about-image');
+
+    if (imageContainer && image) {
+        imageContainer.addEventListener('mousemove', (e) => {
+            const { left, top, width, height } = imageContainer.getBoundingClientRect();
+            const x = (e.clientX - left) / width;
+            const y = (e.clientY - top) / height;
+
+            // Subtle parallax effect on hover
+            image.style.transform = `scale(1.05) translate(${(x - 0.5) * -10}px, ${(y - 0.5) * -10}px)`;
+        });
+
+        imageContainer.addEventListener('mouseleave', () => {
+            image.style.transform = 'scale(1) translate(0, 0)';
+        });
+    }
+
+    // Button click effect
+    const learnMoreBtn = document.getElementById('learn-more-btn');
+    if (learnMoreBtn) {
+        learnMoreBtn.addEventListener('click', () => {
+            // You can add a modal or redirect logic here
+            alert('Learn more functionality will be implemented soon!');
+        });
+    }
+});
+

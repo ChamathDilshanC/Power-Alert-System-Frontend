@@ -661,7 +661,17 @@
 <!-- Scripts -->
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
-<script>
+<script type="module">
+    // Import notification system
+    import {
+        showSuccess,
+        showError,
+        showWarning,
+        showInfo,
+        showLoading,
+        completeLoading
+    } from './js/notification.js';
+
     // Mapbox initialization and geolocation functions
     function initializeMapbox() {
         const mapboxToken = 'pk.eyJ1IjoiY2hhbWF0aDQ5OTciLCJhIjoiY204bXhqN2N2MGtuMDJscGw2bDk1N3RpNyJ9.tzXMf6U8UAd0GY1GR-iuTQ';
@@ -682,86 +692,93 @@
 
             mapboxgl.accessToken = mapboxToken;
 
-            // Create the map
-            map = new mapboxgl.Map({
-                container: 'mapbox-container',
-                style: 'mapbox://styles/mapbox/streets-v11',
-                center: [initialLng, initialLat],
-                zoom: 8
-            });
-
-            // Add navigation controls
-            map.addControl(new mapboxgl.NavigationControl(), 'top-right');
-
-            // Add geolocation control
-            const geolocateControl = new mapboxgl.GeolocateControl({
-                positionOptions: {
-                    enableHighAccuracy: true
-                },
-                trackUserLocation: false,
-                showUserHeading: true
-            });
-
-            map.addControl(geolocateControl);
-
-            // Create initial marker
-            marker = new mapboxgl.Marker({
-                draggable: true,
-                color: '#4361ee'
-            })
-                .setLngLat([initialLng, initialLat])
-                .addTo(map);
-
-            // Update coordinates when marker is dragged
-            marker.on('dragend', function() {
-                const lngLat = marker.getLngLat();
-                updateCoordinateInputs(lngLat.lat, lngLat.lng);
-            });
-
-            // Make map interactive
-            map.on('click', function(e) {
-                marker.setLngLat(e.lngLat);
-                updateCoordinateInputs(e.lngLat.lat, e.lngLat.lng);
-            });
-
-            // Show map on load
-            map.on('load', function() {
-                $('#map-loading').fadeOut();
-                $('#mapbox-container').css('opacity', '1');
-
-                // Add listener for geolocation success
-                geolocateControl.on('geolocate', function(e) {
-                    const lat = e.coords.latitude;
-                    const lng = e.coords.longitude;
-
-                    updateCoordinateInputs(lat, lng);
-                    marker.setLngLat([lng, lat]);
-
-                    // Try to get address info from coordinates
-                    reverseGeocode(lat, lng);
+            try {
+                // Create the map
+                map = new mapboxgl.Map({
+                    container: 'mapbox-container',
+                    style: 'mapbox://styles/mapbox/streets-v11',
+                    center: [initialLng, initialLat],
+                    zoom: 8,
+                    failIfMajorPerformanceCaveat: true
                 });
-            });
 
-            // Listen for postal code changes to update map
-            $('#postalCode').on('change', function() {
-                const postalCode = $(this).val().trim();
-                if (postalCode && postalCode.length >= 4) {
-                    // Get country or district to improve the search
-                    const district = $('#district').val() || '';
-                    const country = 'Sri Lanka';
+                // Add navigation controls
+                map.addControl(new mapboxgl.NavigationControl(), 'top-right');
 
-                    geocodePostalCode(postalCode, district, country);
-                }
-            });
+                // Add geolocation control
+                const geolocateControl = new mapboxgl.GeolocateControl({
+                    positionOptions: {
+                        enableHighAccuracy: true
+                    },
+                    trackUserLocation: false,
+                    showUserHeading: true
+                });
 
-            // Listen for district changes
-            $('#district').on('change', function() {
-                const district = $(this).val();
-                if (district) {
-                    // Center map on the district
-                    geocodeDistrict(district);
-                }
-            });
+                map.addControl(geolocateControl);
+
+                // Create initial marker
+                marker = new mapboxgl.Marker({
+                    draggable: true,
+                    color: '#4361ee'
+                })
+                    .setLngLat([initialLng, initialLat])
+                    .addTo(map);
+
+                // Update coordinates when marker is dragged
+                marker.on('dragend', function() {
+                    const lngLat = marker.getLngLat();
+                    updateCoordinateInputs(lngLat.lat, lngLat.lng);
+                });
+
+                // Make map interactive
+                map.on('click', function(e) {
+                    marker.setLngLat(e.lngLat);
+                    updateCoordinateInputs(e.lngLat.lat, e.lngLat.lng);
+                });
+
+                // Show map on load
+                map.on('load', function() {
+                    $('#map-loading').fadeOut();
+                    $('#mapbox-container').css('opacity', '1');
+
+                    // Add listener for geolocation success
+                    geolocateControl.on('geolocate', function(e) {
+                        const lat = e.coords.latitude;
+                        const lng = e.coords.longitude;
+
+                        updateCoordinateInputs(lat, lng);
+                        marker.setLngLat([lng, lat]);
+
+                        // Try to get address info from coordinates
+                        reverseGeocode(lat, lng);
+                    });
+                });
+
+                // Listen for postal code changes to update map
+                $('#postalCode').on('change', function() {
+                    const postalCode = $(this).val().trim();
+                    if (postalCode && postalCode.length >= 4) {
+                        // Get country or district to improve the search
+                        const district = $('#district').val() || '';
+                        const country = 'Sri Lanka';
+
+                        geocodePostalCode(postalCode, district, country);
+                    }
+                });
+
+                // Listen for district changes
+                $('#district').on('change', function() {
+                    const district = $(this).val();
+                    if (district) {
+                        // Center map on the district
+                        geocodeDistrict(district);
+                    }
+                });
+            } catch (error) {
+                console.error("Error initializing map:", error);
+                $('#map-loading').html('<div class="text-red-500"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg> Error loading map. Please try a different browser.</div>');
+                showError("Couldn't initialize map. Please enter your location manually.");
+            }
         }
 
         // Update coordinate inputs and validate them
@@ -803,14 +820,16 @@
 
                         // Try to get more address details
                         reverseGeocode(lat, lng);
+
+                        showSuccess("Location found based on postal code", 2000);
                     } else {
-                        showToast("Location not found. Please check the postal code or set manually.", "warning");
+                        showWarning("Location not found. Please check the postal code or set manually.");
                     }
                     showMapLoading(false);
                 },
                 error: function(error) {
                     console.error("Geocoding error:", error);
-                    showToast("Error finding location. Please set location manually.", "error");
+                    showError("Error finding location. Please set location manually.");
                     showMapLoading(false);
                 }
             });
@@ -839,6 +858,12 @@
                             zoom: 10,
                             essential: true
                         });
+
+                        // If we don't have coordinates yet, set them and the marker
+                        if ($('#latitude').val() === defaultLat.toFixed(6) && $('#longitude').val() === defaultLng.toFixed(6)) {
+                            marker.setLngLat([lng, lat]);
+                            updateCoordinateInputs(lat, lng);
+                        }
                     }
                 },
                 error: function(error) {
@@ -854,28 +879,60 @@
                 data: {
                     access_token: mapboxToken,
                     country: 'lk',
-                    types: 'address,place,locality,neighborhood',
-                    limit: 1
+                    types: 'address,place,locality,neighborhood,district',
+                    limit: 5
                 },
                 success: function(response) {
                     if (response.features && response.features.length > 0) {
-                        const feature = response.features[0];
-
                         // Extract address components
-                        let addressLine1 = '', city = '';
+                        let addressLine1 = '';
+                        let city = '';
+                        let district = '';
+                        let postalCode = '';
 
-                        // Loop through context to find the place
-                        if (feature.context) {
-                            for (const context of feature.context) {
-                                if (context.id.startsWith('place')) {
-                                    city = context.text;
+                        // The first feature is usually the most specific
+                        const specificFeature = response.features[0];
+
+                        // Try to get the street address from the first feature
+                        if (specificFeature.place_type.includes('address')) {
+                            addressLine1 = specificFeature.text;
+                        }
+
+                        // Loop through all features to find different components
+                        for (const feature of response.features) {
+                            // Get place (city)
+                            if (feature.place_type.includes('place') && !city) {
+                                city = feature.text;
+                            }
+
+                            // Get district
+                            if (feature.place_type.includes('district') && !district) {
+                                district = feature.text;
+                            }
+
+                            // Check context for more info
+                            if (feature.context) {
+                                for (const context of feature.context) {
+                                    if (context.id.startsWith('place') && !city) {
+                                        city = context.text;
+                                    } else if (context.id.startsWith('district') && !district) {
+                                        district = context.text;
+                                    } else if (context.id.startsWith('postcode') && !postalCode) {
+                                        postalCode = context.text;
+                                    }
                                 }
                             }
                         }
 
-                        // Use the feature name as address line if it looks like an address
-                        if (feature.place_type.includes('address')) {
-                            addressLine1 = feature.text;
+                        // If we still don't have an address line but have a neighborhood or locality
+                        if (!addressLine1) {
+                            for (const feature of response.features) {
+                                if (feature.place_type.includes('neighborhood') ||
+                                    feature.place_type.includes('locality')) {
+                                    addressLine1 = feature.text;
+                                    break;
+                                }
+                            }
                         }
 
                         // Update form fields if they're empty
@@ -885,6 +942,23 @@
 
                         if (city && $('#city').val().trim() === '') {
                             $('#city').val(city);
+                        }
+
+                        // For district, we need to check if it's in our dropdown
+                        if (district) {
+                            // Check if this district is in our dropdown
+                            const districtExists = $('#district option').filter(function() {
+                                return $(this).val() === district;
+                            }).length > 0;
+
+                            if (districtExists) {
+                                $('#district').val(district);
+                            }
+                        }
+
+                        // Update postal code if available
+                        if (postalCode && $('#postalCode').val().trim() === '') {
+                            $('#postalCode').val(postalCode);
                         }
                     }
                 },
@@ -897,7 +971,13 @@
         // Show/hide map loading indicator
         function showMapLoading(show, message = 'Map loading...') {
             if (show) {
-                $('#map-loading').text(message).fadeIn();
+                $('#map-loading').html(`
+                    <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span>${message}</span>
+                `).fadeIn();
             } else {
                 $('#map-loading').fadeOut();
             }
@@ -915,7 +995,9 @@
                     });
                     updateCoordinateInputs(lat, lng);
                 }
-            }
+            },
+            reverseGeocode: reverseGeocode,
+            geocodePostalCode: geocodePostalCode
         };
     }
 
@@ -929,6 +1011,14 @@
     }
 
     $(document).ready(function() {
+        // Make notification functions available globally
+        window.showSuccess = showSuccess;
+        window.showError = showError;
+        window.showWarning = showWarning;
+        window.showInfo = showInfo;
+        window.showLoading = showLoading;
+        window.completeLoading = completeLoading;
+
         // Initialize mapbox
         const mapbox = initializeMapbox();
 
@@ -943,7 +1033,7 @@
                 success: function(response) {
                     if (response.exists) {
                         $('#username').addClass('border-red-500');
-                        showToast("Username is already taken. Please choose another one.", "error");
+                        showError("Username is already taken. Please choose another one.");
                     } else {
                         $('#username').removeClass('border-red-500').addClass('border-green-500');
                     }
@@ -965,7 +1055,7 @@
                 success: function(response) {
                     if (response.exists) {
                         $('#email').addClass('border-red-500');
-                        showToast("Email is already registered. Please use another one or sign in.", "error");
+                        showError("Email is already registered. Please use another one or sign in.");
                     } else {
                         $('#email').removeClass('border-red-500').addClass('border-green-500');
                     }
@@ -989,7 +1079,7 @@
                 success: function(response) {
                     if (response.exists) {
                         $('#phoneNumberInput').addClass('border-red-500');
-                        showToast("Phone number is already registered. Please use another one or sign in.", "error");
+                        showError("Phone number is already registered. Please use another one or sign in.");
                     } else {
                         $('#phoneNumberInput').removeClass('border-red-500').addClass('border-green-500');
                     }
@@ -1076,6 +1166,9 @@
             // Show loading indicator
             $(this).html('<svg class="inline-block w-4 h-4 mr-2 -ml-1 text-white animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Checking...').addClass('opacity-90').prop('disabled', true);
 
+            // Create loading toast
+            const loadingToast = showLoading("Verifying user information...", 0, null, "Account Verification");
+
             // Check username, email and phone on the server before proceeding
             const username = $('#username').val().trim();
             const email = $('#email').val().trim();
@@ -1111,7 +1204,7 @@
                     if (responses[0].exists) {
                         resetButton();
                         $('#username').addClass('border-red-500').focus();
-                        showToast("Username is already taken. Please choose another one.", "error");
+                        completeLoading(loadingToast, false, "Username is already taken. Please choose another one.");
                         return;
                     }
 
@@ -1119,7 +1212,7 @@
                     if (responses[1].exists) {
                         resetButton();
                         $('#email').addClass('border-red-500').focus();
-                        showToast("Email is already registered. Please use another one or sign in.", "error");
+                        completeLoading(loadingToast, false, "Email is already registered. Please use another one or sign in.");
                         return;
                     }
 
@@ -1127,12 +1220,13 @@
                     if (responses[2].exists) {
                         resetButton();
                         $('#phoneNumberInput').addClass('border-red-500').focus();
-                        showToast("Phone number is already registered. Please use another one or sign in.", "error");
+                        completeLoading(loadingToast, false, "Phone number is already registered. Please use another one or sign in.");
                         return;
                     }
 
                     // All checks passed, proceed to next step
                     resetButton();
+                    completeLoading(loadingToast, true, "Verification successful! Proceeding to location setup.");
                     goToStep(2);
 
                     // Initialize map when transitioning to step 2
@@ -1142,6 +1236,7 @@
                     console.error("Error checking user data:", error);
                     // If server check fails, we'll still allow proceeding but validation will happen again during registration
                     $('#nextToStep2').html('Continue').removeClass('opacity-90').prop('disabled', false);
+                    completeLoading(loadingToast, false, "Couldn't verify information with server. You can proceed, but validation will be performed again during registration.");
                     goToStep(2);
                     setTimeout(mapbox.initMap, 300);
                 });
@@ -1156,6 +1251,9 @@
         $('#nextToStep3').click(function() {
             // Validate step 2
             if (!validateStep2()) return;
+
+            // Show success message for completing address setup
+            showSuccess("Address information saved successfully!", 2000, null, null, "Location Setup");
 
             goToStep(3);
         });
@@ -1173,6 +1271,9 @@
             // Populate summary
             populateSummary();
 
+            // Show success message for completing notification setup
+            showSuccess("Notification preferences saved!", 2000, null, null, "Preferences Setup");
+
             goToStep(4);
         });
 
@@ -1186,6 +1287,9 @@
             if (navigator.geolocation) {
                 $(this).html('<svg class="animate-spin h-4 w-4 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Locating...').prop('disabled', true);
 
+                // Create loading toast
+                const locationToast = showLoading("Accessing your current location...", 0, null, "Location Services");
+
                 navigator.geolocation.getCurrentPosition(
                     function(position) {
                         const lat = position.coords.latitude;
@@ -1194,62 +1298,129 @@
                         // Update map
                         mapbox.updateCoordinates(lat, lng);
 
-                        // Attempt reverse geocoding
+                        // Attempt reverse geocoding to get address details
                         $.ajax({
                             url: `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json`,
                             data: {
                                 access_token: mapboxgl.accessToken,
                                 country: 'lk',
-                                types: 'address,place,locality',
-                                limit: 1
+                                types: 'address,place,locality,district',
+                                limit: 5
                             },
                             success: function(response) {
+                                let addressFound = false;
+
                                 if (response.features && response.features.length > 0) {
-                                    const feature = response.features[0];
+                                    // Initialize variables for address components
+                                    let addressLine1 = '', city = '', district = '', postalCode = '';
 
-                                    // Try to extract address components
-                                    let addressLine1 = '', city = '', district = '';
+                                    // Process all features to extract different address components
+                                    for (const feature of response.features) {
+                                        // Try to extract address components based on place_type
+                                        if (feature.place_type.includes('address') && !addressLine1) {
+                                            addressLine1 = feature.text;
+                                        } else if (feature.place_type.includes('place') && !city) {
+                                            city = feature.text;
+                                        } else if (feature.place_type.includes('district') && !district) {
+                                            district = feature.text;
+                                        } else if (feature.place_type.includes('postcode') && !postalCode) {
+                                            postalCode = feature.text;
+                                        }
 
-                                    if (feature.place_type.includes('address')) {
-                                        addressLine1 = feature.text;
-                                    }
+                                        // Also check context for more info
+                                        if (feature.context) {
+                                            for (const context of feature.context) {
+                                                const id = context.id || '';
 
-                                    // Look through context for city and district
-                                    if (feature.context) {
-                                        for (const context of feature.context) {
-                                            if (context.id.startsWith('place')) {
-                                                city = context.text;
-                                            } else if (context.id.startsWith('district')) {
-                                                district = context.text;
+                                                if (id.startsWith('place') && !city) {
+                                                    city = context.text;
+                                                } else if (id.startsWith('district') && !district) {
+                                                    district = context.text;
+                                                } else if (id.startsWith('postcode') && !postalCode) {
+                                                    postalCode = context.text;
+                                                }
                                             }
                                         }
                                     }
 
-                                    // Update form fields if empty
-                                    if (addressLine1 && $('#addressLine1').val().trim() === '') {
-                                        $('#addressLine1').val(addressLine1);
+                                    // If we still don't have a street address, use neighborhood or locality
+                                    if (!addressLine1) {
+                                        for (const feature of response.features) {
+                                            if (feature.place_type.includes('neighborhood') ||
+                                                feature.place_type.includes('locality')) {
+                                                addressLine1 = feature.text;
+                                                break;
+                                            }
+                                        }
                                     }
 
-                                    if (city && $('#city').val().trim() === '') {
+                                    // Update form fields
+                                    if (addressLine1) {
+                                        $('#addressLine1').val(addressLine1);
+                                        addressFound = true;
+                                    }
+
+                                    if (city) {
                                         $('#city').val(city);
                                     }
 
                                     if (district) {
-                                        $('#district').val(district);
+                                        // Check if this district is in our dropdown
+                                        const districtOption = $('#district option').filter(function() {
+                                            return $(this).val() === district ||
+                                                $(this).text() === district;
+                                        });
+
+                                        if (districtOption.length > 0) {
+                                            $('#district').val(districtOption.val());
+                                        }
+                                    }
+
+                                    if (postalCode) {
+                                        $('#postalCode').val(postalCode);
                                     }
                                 }
 
                                 $('#get-current-location').html('<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg> Use my current location').prop('disabled', false);
+
+                                // Complete loading toast with appropriate message
+                                if (addressFound) {
+                                    completeLoading(locationToast, true, "Your location has been found!");
+                                } else {
+                                    completeLoading(locationToast, true, "Location found, but address details couldn't be determined. Please enter them manually.");
+                                }
                             },
-                            error: function() {
+                            error: function(error) {
+                                console.error("Reverse geocoding error:", error);
                                 $('#get-current-location').html('<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg> Use my current location').prop('disabled', false);
+
+                                // Still complete with a success message for the location part
+                                completeLoading(locationToast, true, "Location found, but address details couldn't be retrieved. Please enter them manually.");
                             }
                         });
                     },
                     function(error) {
                         console.error("Geolocation error:", error);
-                        showToast("Unable to get your location. Please check your browser permissions or enter location manually.", "error");
                         $('#get-current-location').html('<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg> Use my current location').prop('disabled', false);
+
+                        // Complete loading toast with error
+                        let errorMsg = "Unable to get your location.";
+                        switch(error.code) {
+                            case error.PERMISSION_DENIED:
+                                errorMsg += " Please check your browser permissions.";
+                                break;
+                            case error.POSITION_UNAVAILABLE:
+                                errorMsg += " Location information is unavailable.";
+                                break;
+                            case error.TIMEOUT:
+                                errorMsg += " The request timed out.";
+                                break;
+                            case error.UNKNOWN_ERROR:
+                                errorMsg += " An unknown error occurred.";
+                                break;
+                        }
+
+                        completeLoading(locationToast, false, errorMsg + " Please enter location manually.");
                     },
                     {
                         enableHighAccuracy: true,
@@ -1258,7 +1429,22 @@
                     }
                 );
             } else {
-                showToast("Geolocation is not supported by this browser.", "error");
+                showError("Geolocation is not supported by this browser.");
+            }
+        });
+
+        // Add event listener to postal code field to trigger search
+        $('#postalCode').on('blur', function() {
+            const postalCode = $(this).val().trim();
+            if (postalCode && postalCode.length >= 4) {
+                // Get district to improve the search
+                const district = $('#district').val() || '';
+                const country = 'Sri Lanka';
+
+                // Call the geocoding function with a small delay
+                setTimeout(() => {
+                    mapbox.geocodePostalCode(postalCode, district, country);
+                }, 300);
             }
         });
 
@@ -1266,12 +1452,15 @@
         $('#registerBtn').click(function() {
             // Validate final step
             if (!$('#termsAgreed').is(':checked')) {
-                showToast("You must agree to the Terms of Service and Privacy Policy to continue.", "error");
+                showError("You must agree to the Terms of Service and Privacy Policy to continue.");
                 return;
             }
 
             // Show loading state
             $(this).html('<svg class="inline-block w-4 h-4 mr-2 -ml-1 text-white animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Creating Account...').addClass('opacity-90').prop('disabled', true);
+
+            // Create loading notification
+            const registrationToast = showLoading("Creating your account...", 0, null, "Registration");
 
             // Create user object
             const userData = {
@@ -1324,7 +1513,7 @@
                 success: function(response) {
                     // User created successfully
                     if (response.code === 201) {
-                        const userId = response.data.id;
+                        const userId = response.data.userId;
                         const token = response.data.token;
 
                         // Set the token for subsequent requests
@@ -1334,6 +1523,9 @@
                             }
                         });
 
+                        // Update registration toast
+                        completeLoading(registrationToast, true, "Account created successfully!");
+
                         // Add address
                         $.ajax({
                             url: 'http://localhost:8080/api/user/addresses',
@@ -1341,6 +1533,7 @@
                             contentType: 'application/json',
                             data: JSON.stringify(addressData),
                             success: function() {
+
                                 // Add notification preferences
                                 const prefPromises = notificationPreferences.map(pref => {
                                     return $.ajax({
@@ -1355,36 +1548,47 @@
                                 Promise.all(prefPromises)
                                     .then(function() {
                                         // Save user data in localStorage
-                                        localStorage.setItem('user', JSON.stringify({
-                                            id: userId,
-                                            username: userData.username,
-                                            email: userData.email,
-                                            token: token
-                                        }));
+                                        localStorage.setItem('auth_token', token);
+                                        localStorage.setItem('user_role', response.data.role);
+                                        localStorage.setItem('username', userData.username);
+                                        localStorage.setItem('user_id', userId);
+                                        localStorage.setItem('user_email', userData.email);
 
-                                        // Show success message
-                                        showToast("Account created successfully! Redirecting to dashboard...", "success");
-
-                                        // Redirect to dashboard after a short delay
-                                        setTimeout(function() {
-                                            window.location.href = 'dashboard.html';
-                                        }, 2000);
+                                        // Show final success message
+                                        showSuccess("Account setup completed! Redirecting to dashboard...", 3000, function() {
+                                            // Redirect to dashboard after toast disappears
+                                            window.location.href = 'pages/dashboard.html';
+                                        }, null, "Registration Complete");
                                     })
                                     .catch(function(error) {
                                         console.error("Error setting up notification preferences:", error);
                                         $('#registerBtn').html('Create Account').removeClass('opacity-90').prop('disabled', false);
-                                        showToast("Account created but notification preferences couldn't be set. Please try again later.", "warning");
+
+                                        // Complete preferences toast with warning
+                                        completeLoading(preferencesToast, false, "Account created but some notification preferences couldn't be set. You can set them later in your profile.");
+
+                                        // Still redirect after a delay
+                                        setTimeout(function() {
+                                            window.location.href = 'pages/dashboard.html';
+                                        }, 3000);
                                     });
                             },
                             error: function(error) {
                                 console.error("Error adding address:", error);
                                 $('#registerBtn').html('Create Account').removeClass('opacity-90').prop('disabled', false);
-                                showToast("Account created but address couldn't be added. Please add your address later.", "warning");
+
+                                // Complete address toast with warning
+                                completeLoading(addressToast, false, "Account created but address couldn't be added. Please add your address later in your profile.");
+
+                                // Still redirect after a delay
+                                setTimeout(function() {
+                                    window.location.href = 'pages/dashboard.html';
+                                }, 3000);
                             }
                         });
                     } else {
                         $('#registerBtn').html('Create Account').removeClass('opacity-90').prop('disabled', false);
-                        showToast("Error creating account: " + response.message, "error");
+                        completeLoading(registrationToast, false, "Error creating account: " + response.message);
                     }
                 },
                 error: function(error) {
@@ -1396,7 +1600,7 @@
                         errorMessage = error.responseJSON.message;
                     }
 
-                    showToast(errorMessage, "error");
+                    completeLoading(registrationToast, false, errorMessage);
                 }
             });
         });
@@ -1411,35 +1615,35 @@
 
             // Username validation
             if (!username || username.length < 3 || username.length > 50) {
-                showToast("Username must be between 3 and 50 characters.", "error");
+                showError("Username must be between 3 and 50 characters.");
                 $('#username').focus();
                 return false;
             }
 
             // Email validation
             if (!email || !isValidEmail(email)) {
-                showToast("Please enter a valid email address.", "error");
+                showError("Please enter a valid email address.");
                 $('#email').focus();
                 return false;
             }
 
             // Phone validation
             if (!phone || phone.length < 9) {
-                showToast("Please enter a valid phone number.", "error");
+                showError("Please enter a valid phone number.");
                 $('#phoneNumberInput').focus();
                 return false;
             }
 
             // Password validation
             if (!isValidPassword(password)) {
-                showToast("Password must be at least 8 characters with at least one uppercase letter, one lowercase letter, one number, and one special character.", "error");
+                showError("Password must be at least 8 characters with at least one uppercase letter, one lowercase letter, one number, and one special character.");
                 $('#password').focus();
                 return false;
             }
 
             // Password confirmation
             if (password !== confirmPassword) {
-                showToast("Passwords do not match.", "error");
+                showError("Passwords do not match.");
                 $('#confirmPassword').focus();
                 return false;
             }
@@ -1455,25 +1659,25 @@
             const longitude = $('#longitude').val().trim();
 
             if (!addressLine1) {
-                showToast("Please enter your address.", "error");
+                showError("Please enter your address.");
                 $('#addressLine1').focus();
                 return false;
             }
 
             if (!city) {
-                showToast("Please enter your city.", "error");
+                showError("Please enter your city.");
                 $('#city').focus();
                 return false;
             }
 
             if (!district) {
-                showToast("Please select your district.", "error");
+                showError("Please select your district.");
                 $('#district').focus();
                 return false;
             }
 
             if (!latitude || !longitude) {
-                showToast("Please set your location on the map.", "error");
+                showError("Please set your location on the map.");
                 return false;
             }
 
@@ -1483,13 +1687,13 @@
         function validateStep3() {
             // Check if at least one outage type is selected
             if ($('input[name="outageType"]:checked').length === 0) {
-                showToast("Please select at least one outage type to monitor.", "error");
+                showError("Please select at least one outage type to monitor.");
                 return false;
             }
 
             // Check if at least one notification method is selected
             if ($('input[name="notificationType"]:checked').length === 0) {
-                showToast("Please select at least one notification method.", "error");
+                showError("Please select at least one notification method.");
                 return false;
             }
 
@@ -1532,22 +1736,6 @@
             // At least 8 characters, one uppercase, one lowercase, one number, one special character
             const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
             return passwordPattern.test(password);
-        }
-
-        function showToast(message, type) {
-            const backgroundColor = type === 'error' ? '#EF4444' :
-                type === 'success' ? '#10B981' :
-                    type === 'warning' ? '#F59E0B' : '#3B82F6';
-
-            Toastify({
-                text: message,
-                duration: 3000,
-                close: true,
-                gravity: "top",
-                position: "right",
-                backgroundColor: backgroundColor,
-                stopOnFocus: true
-            }).showToast();
         }
     });
 </script>

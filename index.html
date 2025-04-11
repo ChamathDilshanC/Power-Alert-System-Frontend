@@ -132,7 +132,7 @@
                         <div>
                             <div class="flex items-center justify-between">
                                 <label class="flex items-center gap-1 text-sm font-medium text-gray-900 required">Password</label>
-                                <a href="passwortReset.html" class="text-sm text-blue-600 no-underline">Forgot password?</a>
+                                <a href="passwordReset.html" class="text-sm text-blue-600 no-underline">Forgot password?</a>
                             </div><br>
                             <div class="relative">
                                 <input type="password" name="password" id="password" class="w-full py-2.5 px-3.5 text-sm border border-gray-300 rounded-lg text-gray-900" placeholder="••••••••" required>
@@ -181,15 +181,28 @@
     <!-- Scripts -->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
-    <script>
+    <script type="module">
+        // Import notification system
+        import {
+            showSuccess,
+            showError,
+            showLoading,
+            completeLoading
+        } from './js/notification.js';
 
         window.onerror = function(message, source, lineno, colno, error) {
             console.error("JavaScript error:", message, "at", source, "line:", lineno);
-            alert("An error occurred: " + message);
+            showError("An error occurred: " + message, 10000);
             return true;
         };
 
         $(document).ready(function() {
+            // Make showError and other notification functions available globally
+            window.showSuccess = showSuccess;
+            window.showError = showError;
+            window.showLoading = showLoading;
+            window.completeLoading = completeLoading;
+
             // Toggle password visibility
             $('#toggle-password').click(function() {
                 const passwordField = $('#password');
@@ -210,11 +223,11 @@
                 // If user is already logged in, redirect based on role
                 const userRole = localStorage.getItem('user_role');
                 if (userRole === 'ADMIN') {
-                    window.location.href = 'admin/dashboard.html';
+                    window.location.href = 'pages/dashboard.html';
                 } else if (userRole === 'UTILITY_PROVIDER') {
-                    window.location.href = '/provider/dashboard.html';
+                    window.location.href = 'pages/dashboard.html';
                 } else {
-                    window.location.href = '/dashboard.html';
+                    window.location.href = 'pages/dashboard.html';
                 }
             }
 
@@ -238,7 +251,10 @@
                     return;
                 }
 
-                // Show loading state
+                // Show loading notification
+                const loadingToast = showLoading('Signing in, please wait...', 0, null, 'Authentication');
+
+                // Show loading state on button
                 $('#loginBtn').html('<svg class="inline-block w-4 h-4 mr-2 -ml-1 text-white animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Signing in...').addClass('opacity-90').prop('disabled', true);
 
                 // Prepare request data
@@ -257,7 +273,7 @@
                     success: function(response) {
                         // Check if response has expected structure
                         if (!response.data || !response.data.token) {
-                            showError('Invalid server response. Please try again.');
+                            completeLoading(loadingToast, false, 'Invalid server response. Please try again.');
                             resetLoginButton();
                             return;
                         }
@@ -273,31 +289,12 @@
                         if (response.data.firstName) localStorage.setItem('user_firstName', response.data.firstName);
                         if (response.data.lastName) localStorage.setItem('user_lastName', response.data.lastName);
 
-                        // Show success message with Toastify
-                        Toastify({
-                            text: "Login successful! Redirecting...",
-                            duration: 3000,
-                            close: true,
-                            gravity: "top",
-                            position: "right",
-                            style: {
-                                background: "#4ade80", // Green background
-                                borderRadius: "8px",
-                                boxShadow: "0 3px 6px rgba(0,0,0,0.16)",
-                                fontFamily: "'Inter', sans-serif"
-                            }
-                        }).showToast();
+                        // Complete loading with success
+                        completeLoading(loadingToast, true, 'Login successful! Redirecting...');
 
                         // Redirect after a short delay
                         setTimeout(function() {
-                            // Redirect based on role
-                            if (response.data.role === 'ADMIN') {
-                                window.location.href = 'admin/dashboard.html';
-                            } else if (response.data.role === 'UTILITY_PROVIDER') {
-                                window.location.href = '/provider/dashboard.html';
-                            } else {
-                                window.location.href = '/user/dashboard.html';
-                            }
+                            window.location.href = 'pages/dashboard.html';
                         }, 1500);
                     },
                     error: function(xhr) {
@@ -315,28 +312,11 @@
                             errorMsg = xhr.responseJSON.message;
                         }
 
-                        // Show error message
-                        showError(errorMsg);
+                        // Complete loading with error
+                        completeLoading(loadingToast, false, errorMsg);
                     }
                 });
             });
-
-            // Function to show error messages
-            function showError(message) {
-                Toastify({
-                    text: message,
-                    duration: 5000,
-                    close: true,
-                    gravity: "top",
-                    position: "right",
-                    style: {
-                        background: "#f87171", // Red background
-                        borderRadius: "8px",
-                        boxShadow: "0 3px 6px rgba(0,0,0,0.16)",
-                        fontFamily: "'Inter', sans-serif"
-                    }
-                }).showToast();
-            }
 
             // Function to reset login button
             function resetLoginButton() {
@@ -347,19 +327,7 @@
             const urlParams = new URLSearchParams(window.location.search);
             const successMessage = urlParams.get('success');
             if (successMessage) {
-                Toastify({
-                    text: decodeURIComponent(successMessage),
-                    duration: 5000,
-                    close: true,
-                    gravity: "top",
-                    position: "right",
-                    style: {
-                        background: "#4ade80",
-                        borderRadius: "8px",
-                        boxShadow: "0 3px 6px rgba(0,0,0,0.16)",
-                        fontFamily: "'Inter', sans-serif"
-                    }
-                }).showToast();
+                showSuccess(decodeURIComponent(successMessage), 7000);
 
                 // Remove the query parameter to prevent showing the message on page refresh
                 window.history.replaceState({}, document.title, window.location.pathname);
