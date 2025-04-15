@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management - PowerAlert</title>
+    <link rel="icon" type="image/x-icon" href="https://i.pinimg.com/736x/3f/bf/40/3fbf4075b391e07eaa00ec5a87647cb5.jpg">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            200: '#c7d2fe',
+                            300: '#a5b4fc',
+                            400: '#818cf8',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                            800: '#3730a3',
+                            900: '#312e81',
+                        },
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'nav': '0 4px 12px rgba(0, 0, 0, 0.05)',
+                        'card': '0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025)',
+                        'button': '0 4px 6px -1px rgba(99, 102, 241, 0.2)',
+                    },
+                }
+            }
+        }
+    </script>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <!-- Box Icons -->
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <!-- Inter Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Toastify CSS -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <!-- Toastify JS -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <link href="../styles/userManagement.css" rel="stylesheet">
+
+    <!-- Inline configuration -->
+    <script>
+        // Define CONFIG globally to ensure it's available before other scripts load
+        const CONFIG = {
+            API_BASE_URL: 'http://localhost:8080',
+            API_VERSION: 'v1',
+            API_TIMEOUT: 30000,
+            MAPBOX_TOKEN: 'pk.eyJ1IjoiY2hhbWF0aDQ5OTciLCJhIjoiY204bXhqN2N2MGtuMDJscGw2bDk1N3RpNyJ9.tzXMf6U8UAd0GY1GR-iuTQ',
+            DEFAULT_MAP_CENTER: [80.6337, 7.8731], // Sri Lanka center coordinates
+            DEFAULT_MAP_ZOOM: 7
+        };
+        window.CONFIG = CONFIG;
+    </script>
+
+    <!-- Custom JS -->
+    <script src="../js/userManagement.js"></script>
+    <link rel="stylesheet" href="../styles/userManagement.css">
+</head>
+<body class="bg-gray-50">
+<div class="container mx-auto px-4 py-8">
+    <!-- Header Section -->
+    <div class="flex justify-between items-center mb-8">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-800">User Management</h1>
+            <p class="text-gray-600">Manage system users and their permissions</p>
+        </div>
+        <div class="flex gap-3">
+            <a href="dashboard.html" class="flex items-center gap-2 bg-primary-50 text-primary-600 px-4 py-2 rounded-lg font-medium hover:bg-primary-100 transition-colors">
+                <i class='bx bx-arrow-back'></i>
+                <span>Back to Dashboard</span>
+            </a>
+            <button id="add-user-btn" class="flex items-center gap-2 bg-primary-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-primary-700 transition-colors">
+                <i class='bx bx-plus'></i>
+                <span>Add New User</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Filters and Search Section -->
+    <div class="bg-white p-4 rounded-xl shadow-card mb-6">
+        <div class="flex flex-col md:flex-row gap-4">
+            <div class="flex-1">
+                <label for="search-users" class="block text-sm font-medium text-gray-700 mb-1">Search Users</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                        <i class='bx bx-search text-gray-400'></i>
+                    </div>
+                    <input type="text" id="search-users" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full pl-10 p-2.5" placeholder="Search by name, email, or username...">
+                </div>
+            </div>
+            <div class="md:w-48">
+                <label for="filter-role" class="block text-sm font-medium text-gray-700 mb-1">Role</label>
+                <select id="filter-role" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5">
+                    <option value="">All Roles</option>
+                    <option value="ADMIN">Admin</option>
+                    <option value="UTILITY_PROVIDER">Utility Provider</option>
+                    <option value="USER">User</option>
+                </select>
+            </div>
+            <div class="md:w-48">
+                <label for="filter-status" class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                <select id="filter-status" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5">
+                    <option value="">All Status</option>
+                    <option value="true">Active</option>
+                    <option value="false">Inactive</option>
+                </select>
+            </div>
+            <div class="md:w-48 flex items-end">
+                <button id="reset-filters" class="bg-gray-100 hover:bg-gray-200 text-gray-700 py-2.5 px-4 rounded-lg font-medium transition-colors w-full">
+                    Reset Filters
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Users Table -->
+    <div class="bg-white rounded-xl shadow-card overflow-hidden mb-6">
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                <tr>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact Info</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Login</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                </tr>
+                </thead>
+                <tbody id="users-table-body" class="bg-white divide-y divide-gray-200">
+                <!-- User rows will be populated by JavaScript -->
+                <tr id="loading-row">
+                    <td colspan="7" class="px-6 py-12 text-center">
+                        <div class="flex justify-center">
+                            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+                        </div>
+                        <p class="mt-2 text-sm text-gray-500">Loading users...</p>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Empty State (initially hidden) -->
+        <div id="empty-state" class="hidden py-12 text-center">
+            <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 text-gray-400 mb-4">
+                <i class='bx bx-user-x text-3xl'></i>
+            </div>
+            <h3 class="text-lg font-medium text-gray-900">No users found</h3>
+            <p class="mt-2 text-sm text-gray-500" id="empty-state-message">No users match your search criteria.</p>
+            <button id="clear-search-btn" class="mt-4 inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                Clear Search
+            </button>
+        </div>
+
+        <!-- Pagination -->
+        <div id="pagination-container" class="px-6 py-3 flex items-center justify-between border-t border-gray-200">
+            <div class="flex-1 flex justify-between items-center">
+                <div class="text-sm text-gray-700">
+                    Showing <span id="page-start">1</span> to <span id="page-end">10</span> of <span id="total-items">50</span> users
+                </div>
+                <div class="flex space-x-2">
+                    <button id="prev-page" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                        Previous
+                    </button>
+                    <div id="page-numbers" class="flex space-x-1">
+                        <!-- Page numbers will be inserted here -->
+                    </div>
+                    <button id="next-page" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                        Next
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add/Edit User Modal (initially hidden) -->
+<div id="user-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden modal">
+    <div class="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto mx-4 modal-content">
+        <div class="flex justify-between items-center border-b border-gray-200 px-6 py-4">
+            <h2 id="modal-title" class="text-xl font-semibold text-gray-800">Add New User</h2>
+            <button id="close-modal" class="text-gray-400 hover:text-gray-500 focus:outline-none">
+                <i class='bx bx-x text-2xl'></i>
+            </button>
+        </div>
+        <form id="user-form" class="p-6">
+            <input type="hidden" id="user-id">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- User Basic Information -->
+                <div class="md:col-span-2">
+                    <h3 class="text-md font-medium text-gray-900 mb-3">Basic Information</h3>
+                </div>
+
+                <div>
+                    <label for="username" class="block text-sm font-medium text-gray-700 mb-1 required">Username</label>
+                    <input type="text" id="username" name="username" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5" required>
+                    <p id="username-error" class="mt-1 text-sm text-red-600 hidden">Username already exists.</p>
+                </div>
+
+                <div>
+                    <label for="email" class="block text-sm font-medium text-gray-700 mb-1 required">Email</label>
+                    <input type="email" id="email" name="email" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5" required>
+                    <p id="email-error" class="mt-1 text-sm text-red-600 hidden">Email already exists.</p>
+                </div>
+
+                <div>
+                    <label for="phone-number" class="block text-sm font-medium text-gray-700 mb-1 required">Phone Number</label>
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <input type="text" value="+94" readonly class="bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-l-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 border-r-0" style="width: 60px;">
+                        </div>
+                        <input type="tel" placeholder="701234567" id="phone-number" name="phoneNumber" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-r-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5" required>
+                    </div>
+                    <p class="mt-1 text-xs text-gray-500">Enter your phone number without spaces or hyphens</p>
+                    <p id="phone-error" class="mt-1 text-sm text-red-600 hidden">Phone number already exists. </p>
+                </div>
+
+                <div>
+                    <label for="role" class="block text-sm font-medium text-gray-700 mb-1 required">Role</label>
+                    <select id="role" name="role" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5" required>
+                        <option value="USER">User</option>
+                        <option value="UTILITY_PROVIDER">Utility Provider</option>
+                        <option value="ADMIN">Admin</option>
+                    </select>
+                </div>
+
+                <!-- Password Fields (shown only for new users) -->
+                <div id="password-container" class="md:col-span-2">
+                    <h3 class="text-md font-medium text-gray-900 mb-3">Password</h3>
+                </div>
+
+                <div id="password-field">
+                    <label for="password" class="block text-sm font-medium text-gray-700 mb-1 required">Password</label>
+                    <div class="relative">
+                        <input type="password" id="password" name="password" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5" required>
+                        <button type="button" id="toggle-password" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600">
+                            <i class='bx bx-show text-xl'></i>
+                        </button>
+                    </div>
+                    <p class="mt-1 text-xs text-gray-500">Password must be at least 8 characters, include uppercase, lowercase, number, and special character.</p>
+                </div>
+
+                <!-- Additional Settings -->
+                <div class="md:col-span-2 mt-2">
+                    <h3 class="text-md font-medium text-gray-900 mb-3">Additional Settings</h3>
+                </div>
+
+                <div>
+                    <label for="preferred-language" class="block text-sm font-medium text-gray-700 mb-1">Preferred Language</label>
+                    <select id="preferred-language" name="preferredLanguage" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5">
+                        <option value="en">English</option>
+                        <option value="si">Sinhala</option>
+                        <option value="ta">Tamil</option>
+                    </select>
+                </div>
+
+                <div class="flex items-center">
+                    <div class="flex items-center h-5">
+                        <input id="is-active" name="isActive" type="checkbox" class="w-4 h-4 text-primary-600 bg-gray-100 rounded border-gray-300 focus:ring-primary-500 focus:ring-2" checked>
+                    </div>
+                    <label for="is-active" class="ml-2 text-sm font-medium text-gray-700">Account is active</label>
+                </div>
+            </div>
+
+            <!-- Utility Provider Section (hidden by default, shown when role is utility provider) -->
+            <div id="utility-provider-section" class="hidden mt-6 pt-6 border-t border-gray-200">
+                <h3 class="text-md font-medium text-gray-900 mb-3">Utility Provider Details</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label for="provider-name" class="block text-sm font-medium text-gray-700 mb-1 required">Provider Name</label>
+                        <input type="text" id="provider-name" name="providerName" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5">
+                    </div>
+                    <div>
+                        <label for="provider-type" class="block text-sm font-medium text-gray-700 mb-1 required">Provider Type</label>
+                        <select id="provider-type" name="providerType" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5">
+                            <option value="ELECTRICITY">Electricity</option>
+                            <option value="WATER">Water</option>
+                            <option value="GAS">Gas</option>
+                            <option value="INTERNET">Internet</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="provider-website" class="block text-sm font-medium text-gray-700 mb-1">Website</label>
+                        <input type="url" id="provider-website" name="website" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5" placeholder="https://example.com">
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-8 flex justify-end gap-3">
+                <button type="button" id="cancel-form" class="bg-white text-gray-700 border border-gray-300 py-2 px-4 rounded-lg font-medium hover:bg-gray-50 transition-colors">
+                    Cancel
+                </button>
+                <button type="submit" id="save-user" class="bg-primary-600 text-white py-2 px-6 rounded-lg font-medium hover:bg-primary-700 transition-colors">
+                    Save User
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- View User Details Modal (initially hidden) -->
+<div id="view-user-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden modal">
+    <div class="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto mx-4 modal-content">
+        <div class="flex justify-between items-center border-b border-gray-200 px-6 py-4">
+            <h2 id="view-modal-title" class="text-xl font-semibold text-gray-800">User Details</h2>
+            <button id="close-view-modal" class="text-gray-400 hover:text-gray-500 focus:outline-none">
+                <i class='bx bx-x text-2xl'></i>
+            </button>
+        </div>
+        <div class="p-6">
+            <div class="flex mb-6">
+                <div class="flex items-center justify-center flex-shrink-0 w-16 h-16 bg-primary-100 text-primary-600 rounded-full mr-4">
+                    <span id="user-initials" class="text-xl font-semibold">JD</span>
+                </div>
+                <div>
+                    <h3 id="view-username" class="text-xl font-semibold text-gray-900">John Doe</h3>
+                    <p id="view-role" class="text-sm text-primary-600 font-medium">Administrator</p>
+                    <div id="view-status" class="mt-1 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        Active
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-8 mb-6">
+                <div>
+                    <h4 class="text-xs font-medium text-gray-500 uppercase mb-2">Contact Information</h4>
+                    <div class="space-y-3">
+                        <div>
+                            <p class="text-sm text-gray-500">Email</p>
+                            <p id="view-email" class="text-sm font-medium text-gray-900">john.doe@example.com</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500">Phone Number</p>
+                            <p id="view-phone" class="text-sm font-medium text-gray-900">+1 234 567 890</p>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <h4 class="text-xs font-medium text-gray-500 uppercase mb-2">Account Information</h4>
+                    <div class="space-y-3">
+                        <div>
+                            <p class="text-sm text-gray-500">Created On</p>
+                            <p id="view-created" class="text-sm font-medium text-gray-900">Jan 15, 2023</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500">Last Login</p>
+                            <p id="view-last-login" class="text-sm font-medium text-gray-900">3 hours ago</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500">Preferred Language</p>
+                            <p id="view-language" class="text-sm font-medium text-gray-900">English</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Utility Provider details (conditionally shown) -->
+            <div id="view-provider-details" class="hidden border-t border-gray-200 pt-6 mt-4">
+                <h4 class="text-xs font-medium text-gray-500 uppercase mb-2">Utility Provider Details</h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-8">
+                    <div>
+                        <p class="text-sm text-gray-500">Provider Name</p>
+                        <p id="view-provider-name" class="text-sm font-medium text-gray-900">ABC Electricity</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Provider Type</p>
+                        <p id="view-provider-type" class="text-sm font-medium text-gray-900">Electricity</p>
+                    </div>
+                    <div id="view-website-container">
+                        <p class="text-sm text-gray-500">Website</p>
+                        <p class="text-sm font-medium text-gray-900">
+                            <a id="view-website" href="#" target="_blank" class="text-primary-600 hover:underline">https://example.com</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="border-t border-gray-200 pt-6 mt-6 flex justify-between">
+                <div class="space-x-2">
+                    <button id="reset-password-btn" class="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                        <i class='bx bx-lock-open-alt mr-2'></i> Reset Password
+                    </button>
+                    <button id="toggle-status-btn" class="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                        <i class='bx bx-power-off mr-2'></i> Deactivate
+                    </button>
+                </div>
+                <button id="edit-user-btn" class="inline-flex items-center px-4 py-2 bg-primary-600 text-white text-sm font-medium rounded-md hover:bg-primary-700">
+                    <i class='bx bx-edit-alt mr-2'></i> Edit User
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Confirmation Modal (initially hidden) -->
+<div id="confirm-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden modal">
+    <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-6 modal-content">
+        <div class="text-center mb-4">
+            <div id="confirm-icon-container" class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-red-100 text-red-600 mb-4">
+                <i id="confirm-icon" class='bx bx-trash text-2xl'></i>
+            </div>
+            <h3 id="confirm-title" class="text-lg font-medium text-gray-900">Delete User</h3>
+            <p id="confirm-message" class="mt-2 text-sm text-gray-500">Are you sure you want to delete this user? This action cannot be undone.</p>
+        </div>
+        <div class="flex justify-center gap-3 mt-4">
+            <button id="cancel-confirm" class="px-4 py-2 bg-white text-gray-700 border border-gray-300 rounded-md font-medium hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+                Cancel
+            </button>
+            <button id="confirm-action" class="px-4 py-2 bg-red-600 text-white rounded-md font-medium hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                Delete
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Reset Password Modal (initially hidden) -->
+<div id="reset-password-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden modal">
+    <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-6 modal-content">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-medium text-gray-900">Reset Password</h3>
+            <button id="close-reset-modal" class="text-gray-400 hover:text-gray-500 focus:outline-none">
+                <i class='bx bx-x text-2xl'></i>
+            </button>
+        </div>
+        <p class="text-sm text-gray-500 mb-4">Enter a new password for <span id="reset-user-name" class="font-medium">the user</span>.</p>
+        <form id="reset-password-form">
+            <input type="hidden" id="reset-user-id">
+            <div class="mb-4">
+                <label for="new-password" class="block text-sm font-medium text-gray-700 mb-1">New Password</label>
+                <div class="relative">
+                    <input type="password" id="new-password" name="newPassword" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5" required>
+                    <button type="button" id="toggle-new-password" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600">
+                        <i class='bx bx-show text-xl'></i>
+                    </button>
+                </div>
+                <p class="mt-1 text-xs text-gray-500">Password must be at least 8 characters, include uppercase, lowercase, number, and special character.</p>
+            </div>
+            <div class="flex justify-end gap-3 mt-4">
+                <button type="button" id="cancel-reset" class="bg-white text-gray-700 border border-gray-300 py-2 px-4 rounded-lg font-medium hover:bg-gray-50 transition-colors">
+                    Cancel
+                </button>
+                <button type="submit" id="save-password" class="bg-primary-600 text-white py-2 px-6 rounded-lg font-medium hover:bg-primary-700 transition-colors">
+                    Reset Password
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+</body>
+</html>

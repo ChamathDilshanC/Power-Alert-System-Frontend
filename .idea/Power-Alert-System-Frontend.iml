@@ -12,5 +12,6 @@
     <orderEntry type="library" name="jquery-3.6.4" level="application" />
     <orderEntry type="library" name="tailwindcss" level="application" />
     <orderEntry type="library" name="fullcalendar" level="application" />
+    <orderEntry type="library" name="moment.js" level="application" />
   </component>
 </module>

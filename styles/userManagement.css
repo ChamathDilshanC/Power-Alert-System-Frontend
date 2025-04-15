@@ -1,0 +1,253 @@
+/**
+ * User Management Styles for PowerAlert
+ */
+
+/* Add required field indicator */
+.required:after {
+    content: " *";
+    color: #f87171;
+}
+
+/* Modal animations */
+#user-modal, #view-user-modal, #confirm-modal, #reset-password-modal {
+    animation: fadeIn 0.3s ease-out;
+}
+
+.user-modal-content {
+    animation: scaleIn 0.3s ease-out;
+}
+
+/* Fade in animation */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* Scale in animation */
+@keyframes scaleIn {
+    from {
+        transform: scale(0.95);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* Hover effects for action buttons */
+.view-user-btn, .edit-user-btn, .delete-user-btn {
+    transition: all 0.2s ease;
+}
+
+.view-user-btn:hover, .edit-user-btn:hover, .delete-user-btn:hover {
+    transform: translateY(-2px);
+}
+
+/* Button loading spinner animation */
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.animate-spin {
+    animation: spin 1s linear infinite;
+}
+
+/* Highlight row on hover */
+#users-table-body tr {
+    transition: background-color 0.2s ease;
+}
+
+#users-table-body tr:hover {
+    background-color: rgba(243, 244, 246, 0.7);
+}
+
+/* Custom scrollbar for modals */
+.modal-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.modal-content::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 6px;
+}
+
+.modal-content::-webkit-scrollbar-thumb {
+    background-color: #cbd5e1;
+    border-radius: 6px;
+}
+
+.modal-content::-webkit-scrollbar-thumb:hover {
+    background-color: #94a3b8;
+}
+
+/* Make sure text inputs don't overflow */
+input[type="text"],
+input[type="email"],
+input[type="tel"],
+input[type="password"],
+input[type="url"],
+select {
+    max-width: 100%;
+}
+
+/* Toast notification tweaks */
+.toastify {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    border-radius: 0.5rem;
+    font-family: 'Inter', sans-serif;
+}
+
+/* Status badge styles */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 9999px;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.status-badge.active {
+    background-color: #dcfce7;
+    color: #166534;
+}
+
+.status-badge.inactive {
+    background-color: #fee2e2;
+    color: #991b1b;
+}
+
+/* Role badge styles */
+.role-badge {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 9999px;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.role-badge.admin {
+    background-color: #e0e7ff;
+    color: #4338ca;
+}
+
+.role-badge.utility-provider {
+    background-color: #dbeafe;
+    color: #1e40af;
+}
+
+.role-badge.user {
+    background-color: #f3f4f6;
+    color: #374151;
+}
+
+/* Responsive improvements */
+@media (max-width: 768px) {
+    .action-buttons {
+        flex-direction: column;
+        align-items: start;
+        gap: 0.5rem;
+    }
+
+    .user-avatar {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        margin-bottom: 1rem;
+    }
+
+    .user-avatar .avatar-text {
+        margin-top: 0.5rem;
+        margin-left: 0;
+    }
+}
+
+/* Focus styles for accessibility */
+button:focus,
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+    outline: 2px solid #6366f1;
+    outline-offset: 2px;
+}
+
+/* For users who prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+/* Required field indicator */
+ .required:after {
+     content: " *";
+     color: #f87171;
+ }
+
+/* Status badge styles */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 9999px;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.status-badge.active {
+    background-color: #dcfce7;
+    color: #166534;
+}
+
+.status-badge.inactive {
+    background-color: #fee2e2;
+    color: #991b1b;
+}
+
+/* Role badge styles */
+.role-badge {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 9999px;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.role-badge.admin {
+    background-color: #e0e7ff;
+    color: #4338ca;
+}
+
+.role-badge.utility-provider {
+    background-color: #dbeafe;
+    color: #1e40af;
+}
+
+.role-badge.user {
+    background-color: #f3f4f6;
+    color: #374151;
+}
+
+/* Animation for loading spinner */
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.animate-spin {
+    animation: spin 1s linear infinite;
+}

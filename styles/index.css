@@ -1,0 +1,153 @@
+/* Custom styles that are hard to replicate with pure Tailwind */
+* {
+    font-family: 'Inter', -apple-system, sans-serif;
+}
+
+.window-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+}
+
+.dot-red { background-color: #FF5F56; }
+.dot-yellow { background-color: #FFBD2E; }
+.dot-green { background-color: #27C93F; }
+
+.footer-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #D1D5DB;
+}
+
+.footer-dot.active {
+    background-color: #4361ee;
+}
+
+.required::after {
+    content: "*";
+    color: #4361ee;
+}
+
+input:focus {
+    outline: none;
+    border-color: #4361ee;
+    box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
+}
+
+@media (max-width: 768px) {
+    body {
+        padding: 0;
+        background: white;
+    }
+
+    .app-container {
+        min-height: 100vh;
+        border-radius: 0;
+        box-shadow: none;
+    }
+}
+ body {
+     font-family: 'Inter', sans-serif;
+ }
+
+/* App container styling */
+.app-container {
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+    position: relative;
+}
+
+/* Window control dots */
+.window-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+}
+
+.dot-red {
+    background-color: #ff5f57;
+}
+
+.dot-yellow {
+    background-color: #ffbd2e;
+}
+
+.dot-green {
+    background-color: #28c941;
+}
+
+/* Footer dots */
+.footer-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #d1d5db;
+}
+
+.footer-dot.active {
+    background-color: #3b82f6;
+}
+
+/* Required field indicator */
+.required::after {
+    content: "*";
+    color: #ef4444;
+    margin-left: 2px;
+}
+
+/* Loading spinner */
+.loading-spinner {
+    display: inline-block;
+    width: 1rem;
+    height: 1rem;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: #fff;
+    animation: spin 1s linear infinite;
+    margin-right: 8px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Form validation styling */
+input.border-red-500 {
+    border-color: #ef4444;
+}
+
+.error-visible {
+    display: block;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+    .app-container {
+        min-height: auto;
+    }
+}
+
+/* Toast notifications styling (supplement Toastify) */
+.notification-success {
+    background: linear-gradient(to right, #00b09b, #96c93d) !important;
+}
+
+.notification-error {
+    background: linear-gradient(to right, #ff5f6d, #ffc371) !important;
+}
+
+.notification-warning {
+    background: linear-gradient(to right, #f7b733, #fc4a1a) !important;
+}
+
+.notification-info {
+    background: linear-gradient(to right, #2193b0, #6dd5ed) !important;
+}
+
+.notification-loading {
+    background: linear-gradient(to right, #4b6cb7, #182848) !important;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
