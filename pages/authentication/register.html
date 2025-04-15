@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -640,7 +641,7 @@
                 <!-- Sign in Link (shown on all steps) -->
                 <div class="mt-4 text-sm text-center text-gray-500">
                     Already have an account?
-                    <a href="index.html" class="font-medium text-blue-600 no-underline">Sign in</a>
+                    <a href="../../index.html" class="font-medium text-blue-600 no-underline">Sign in</a>
                 </div>
             </form>
         </div>
@@ -662,7 +663,6 @@
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 <script type="module">
-    // Import notification system
     import {
         showSuccess,
         showError,
@@ -670,7 +670,7 @@
         showInfo,
         showLoading,
         completeLoading
-    } from './js/notification.js';
+    } from '../../js/utils/notificationService.js';
 
     // Mapbox initialization and geolocation functions
     function initializeMapbox() {
@@ -1557,7 +1557,7 @@
                                         // Show final success message
                                         showSuccess("Account setup completed! Redirecting to dashboard...", 3000, function() {
                                             // Redirect to dashboard after toast disappears
-                                            window.location.href = 'pages/dashboard.html';
+                                            window.location.href = '../dashboard.html';
                                         }, null, "Registration Complete");
                                     })
                                     .catch(function(error) {
@@ -1569,7 +1569,7 @@
 
                                         // Still redirect after a delay
                                         setTimeout(function() {
-                                            window.location.href = 'pages/dashboard.html';
+                                            window.location.href = '../dashboard.html';
                                         }, 3000);
                                     });
                             },
@@ -1582,7 +1582,7 @@
 
                                 // Still redirect after a delay
                                 setTimeout(function() {
-                                    window.location.href = 'pages/dashboard.html';
+                                    window.location.href = '../dashboard.html';
                                 }, 3000);
                             }
                         });

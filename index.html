@@ -5,334 +5,135 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PowerAlert - Login</title>
     <link rel="icon" type="image/x-icon" href="https://i.pinimg.com/736x/3f/bf/40/3fbf4075b391e07eaa00ec5a87647cb5.jpg">
+    <base href="http://localhost:63342/Power-Alert-System-Frontend/">
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Inter Font -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- Boxicons -->
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <!-- Toastify CSS -->
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
-
-    <style>
-        /* Custom styles that are hard to replicate with pure Tailwind */
-        * {
-            font-family: 'Inter', -apple-system, sans-serif;
-        }
-
-        .window-dot {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-        }
-
-        .dot-red { background-color: #FF5F56; }
-        .dot-yellow { background-color: #FFBD2E; }
-        .dot-green { background-color: #27C93F; }
-
-        .footer-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background-color: #D1D5DB;
-        }
-
-        .footer-dot.active {
-            background-color: #4361ee;
-        }
-
-        .required::after {
-            content: "*";
-            color: #4361ee;
-        }
-
-        input:focus {
-            outline: none;
-            border-color: #4361ee;
-            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
-        }
-
-        @media (max-width: 768px) {
-            body {
-                padding: 0;
-                background: white;
-            }
-
-            .app-container {
-                min-height: 100vh;
-                border-radius: 0;
-                box-shadow: none;
-            }
-        }
-    </style>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="styles/index.css">
 </head>
 
 <body class="flex items-center justify-center min-h-screen p-3 bg-blue-50">
-    <div class="app-container bg-white w-full max-w-[1040px] min-h-[640px] rounded-xl shadow-sm relative py-6 overflow-hidden">
-        <!-- Window Controls -->
-        <div class="absolute top-4 left-4 flex gap-1.5">
-            <div class="window-dot dot-red"></div>
-            <div class="window-dot dot-yellow"></div>
-            <div class="window-dot dot-green"></div>
-        </div>
+<div class="app-container bg-white w-full max-w-[1040px] min-h-[640px] rounded-xl shadow-sm relative py-6 overflow-hidden">
+    <!-- Window Controls -->
+    <div class="absolute top-4 left-4 flex gap-1.5">
+        <div class="window-dot dot-red"></div>
+        <div class="window-dot dot-yellow"></div>
+        <div class="window-dot dot-green"></div>
+    </div>
 
-        <!-- Brand Logo -->
-        <a href="#" class="absolute top-12 left-[-5px] flex items-center gap-2 no-underline pl-8">
-            <span class="text-lg font-semibold text-blue-600">PowerAlert ⚡</span>
-        </a>
+    <!-- Brand Logo -->
+    <a href="#" class="absolute top-12 left-[-5px] flex items-center gap-2 no-underline pl-8">
+        <span class="text-lg font-semibold text-blue-600">PowerAlert ⚡</span>
+    </a>
 
-        <!-- Main Content -->
-        <div class="flex pt-[30px] px-8 gap-20 mt-12">
-            <!-- Left Side - Steps -->
-            <div class="flex-shrink-0 w-60">
-                <!-- Step 1 -->
-                <div class="flex gap-3 mb-6 text-gray-500">
-                    <div class="flex items-center justify-center flex-shrink-0 w-5 h-5 text-xs text-white bg-blue-600 border-2 border-blue-600 rounded-full">1</div>
-                    <div class="flex flex-col gap-1">
-                        <div class="text-sm font-medium text-gray-900">Authentication</div>
-                        <div class="text-sm text-gray-500">Enter your credentials</div>
-                    </div>
-                </div>
-
-                <!-- Step 2 -->
-                <div class="flex gap-3 mb-6 text-gray-500">
-                    <div class="flex items-center justify-center flex-shrink-0 w-5 h-5 text-xs text-gray-500 border-2 border-gray-300 rounded-full">2</div>
-                    <div class="flex flex-col gap-1">
-                        <div class="text-sm font-medium text-gray-900">Verification</div>
-                        <div class="text-sm text-gray-500">Security check</div>
-                    </div>
-                </div>
-
-                <!-- Step 3 -->
-                <div class="flex gap-3 mb-6 text-gray-500">
-                    <div class="flex items-center justify-center flex-shrink-0 w-5 h-5 text-xs text-gray-500 border-2 border-gray-300 rounded-full">3</div>
-                    <div class="flex flex-col gap-1">
-                        <div class="text-sm font-medium text-gray-900">Dashboard</div>
-                        <div class="text-sm text-gray-500">Monitor your power</div>
-                    </div>
+    <!-- Main Content -->
+    <div class="flex pt-[30px] px-8 gap-20 mt-12">
+        <!-- Left Side - Steps -->
+        <div class="flex-shrink-0 w-60 md:block hidden">
+            <!-- Step 1 -->
+            <div class="flex gap-3 mb-6 text-gray-500">
+                <div class="flex items-center justify-center flex-shrink-0 w-5 h-5 text-xs text-white bg-blue-600 border-2 border-blue-600 rounded-full">1</div>
+                <div class="flex flex-col gap-1">
+                    <div class="text-sm font-medium text-gray-900">Authentication</div>
+                    <div class="text-sm text-gray-500">Enter your credentials</div>
                 </div>
             </div>
 
-            <!-- Right Side - Form -->
-            <div class="flex-grow max-w-[640px] pr-12 md:pr-6 sm:pr-0 sm:max-w-[400px] sm:mx-auto sm:w-full">
-                <!-- Form Header -->
-                <div class="mb-8">
-                    <h1 class="mb-2 text-2xl font-semibold text-gray-900">Welcome back</h1>
-                    <p class="text-sm text-gray-500">Enter your credentials to access your PowerAlert dashboard</p>
+            <!-- Step 2 -->
+            <div class="flex gap-3 mb-6 text-gray-500">
+                <div class="flex items-center justify-center flex-shrink-0 w-5 h-5 text-xs text-gray-500 border-2 border-gray-300 rounded-full">2</div>
+                <div class="flex flex-col gap-1">
+                    <div class="text-sm font-medium text-gray-900">Verification</div>
+                    <div class="text-sm text-gray-500">Security check</div>
                 </div>
+            </div>
 
-                <!-- Login Form -->
-                <form id="loginForm" action="http://localhost:8080/api/auth/login" method="post" class="w-full">
-                    <div class="flex flex-col gap-4 mb-4">
-                        <!-- Username Field -->
-                        <div>
-                            <label class="flex items-center gap-1 text-sm font-medium text-gray-900 required">Username</label><br>
-                            <input type="text" name="username" class="w-full py-2.5 px-3.5 text-sm border border-gray-300 rounded-lg text-gray-900" placeholder="Enter your username" required>
-                        </div>
-
-                        <!-- Password Field -->
-                        <div>
-                            <div class="flex items-center justify-between">
-                                <label class="flex items-center gap-1 text-sm font-medium text-gray-900 required">Password</label>
-                                <a href="passwordReset.html" class="text-sm text-blue-600 no-underline">Forgot password?</a>
-                            </div><br>
-                            <div class="relative">
-                                <input type="password" name="password" id="password" class="w-full py-2.5 px-3.5 text-sm border border-gray-300 rounded-lg text-gray-900" placeholder="••••••••" required>
-                                <button type="button" id="toggle-password" class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Remember Me -->
-                        <div class="mt-2">
-                            <label class="inline-flex items-center cursor-pointer">
-                                <input type="checkbox" class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" id="rememberMe" name="rememberMe">
-                                <span class="ml-2 text-sm text-gray-500">Remember me</span>
-                            </label>
-                        </div>
-                    </div>
-
-                    <!-- Sign in Button -->
-                    <button type="submit" class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white border-none rounded-lg text-sm font-medium cursor-pointer mt-6" id="loginBtn">Sign in</button>
-
-                    <!-- Sign up Link -->
-                    <div class="mt-4 text-sm text-center text-gray-500">
-                        Don't have an account?
-                        <a href="register.html" class="font-medium text-blue-600 no-underline">Sign up</a>
-                    </div>
-                </form>
+            <!-- Step 3 -->
+            <div class="flex gap-3 mb-6 text-gray-500">
+                <div class="flex items-center justify-center flex-shrink-0 w-5 h-5 text-xs text-gray-500 border-2 border-gray-300 rounded-full">3</div>
+                <div class="flex flex-col gap-1">
+                    <div class="text-sm font-medium text-gray-900">Dashboard</div>
+                    <div class="text-sm text-gray-500">Monitor your power</div>
+                </div>
             </div>
         </div>
 
-        <!-- Footer -->
-        <div class="absolute left-0 right-0 flex items-center justify-between px-8 text-sm text-gray-500 bottom-6 sm:relative sm:mt-12 sm:px-6 sm:flex-col sm:gap-4 sm:text-center">
-            <span>© 2025 PowerAlert. All rights reserved.</span>
-            <span>support@poweralert.com</span>
-            <div class="flex gap-2 sm:order-first sm:mb-2">
-                <div class="footer-dot active"></div>
-                <div class="footer-dot"></div>
-                <div class="footer-dot"></div>
+        <!-- Right Side - Form -->
+        <div class="flex-grow max-w-[640px] pr-12 md:pr-6 sm:pr-0 sm:max-w-[400px] sm:mx-auto sm:w-full">
+            <!-- Form Header -->
+            <div class="mb-8">
+                <h1 class="mb-2 text-2xl font-semibold text-gray-900">Welcome back</h1>
+                <p class="text-sm text-gray-500">Enter your credentials to access your PowerAlert dashboard</p>
             </div>
+
+            <!-- Login Form -->
+            <form id="login-form" class="w-full">
+                <div class="flex flex-col gap-4 mb-4">
+                    <!-- Username Field -->
+                    <div>
+                        <label for="username" class="flex items-center gap-1 text-sm font-medium text-gray-900 required">Username</label><br>
+                        <input type="text" id="username" name="username" class="w-full py-2.5 px-3.5 text-sm border border-gray-300 rounded-lg text-gray-900" placeholder="Enter your username" required>
+                        <div id="username-error" class="mt-1 text-xs text-red-500 hidden"></div>
+                    </div>
+
+                    <!-- Password Field -->
+                    <div class="gap"></div>
+                    <div>
+                        <div class="flex items-center justify-between">
+                            <label for="password" class="flex items-center gap-1 text-sm font-medium text-gray-900 required">Password</label>
+                            <a href="pages/authentication/passwordReset.html" class="text-sm text-blue-600 no-underline">Forgot password?</a>
+                        </div><br>
+                        <div class="relative">
+                            <input type="password" id="password" name="password" class="w-full py-2.5 px-3.5 text-sm border border-gray-300 rounded-lg text-gray-900" placeholder="••••••••" required>
+                            <button type="button" id="toggle-password" class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600">
+                                <i class='bx bx-show text-xl'></i>
+                            </button>
+                        </div>
+                        <div id="password-error" class="mt-1 text-xs text-red-500 hidden"></div>
+                    </div>
+
+                    <!-- Remember Me -->
+                    <div class="mt-2">
+                        <label class="inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="remember-me" class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" name="rememberMe">
+                            <span class="ml-2 text-sm text-gray-500">Remember me</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Sign in Button -->
+                <button type="submit" class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white border-none rounded-lg text-sm font-medium cursor-pointer mt-6">Sign in</button>
+
+                <!-- Sign up Link -->
+                <div class="mt-4 text-sm text-center text-gray-500">
+                    Don't have an account?
+                    <a href="pages/authentication/register.html" class="font-medium text-blue-600 no-underline">Sign up</a>                </div>
+            </form>
         </div>
     </div>
 
-    <!-- Scripts -->
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
-    <script type="module">
-        // Import notification system
-        import {
-            showSuccess,
-            showError,
-            showLoading,
-            completeLoading
-        } from './js/notification.js';
+    <!-- Footer -->
+    <div class="absolute left-0 right-0 flex items-center justify-between px-8 text-sm text-gray-500 bottom-6 sm:relative sm:mt-12 sm:px-6 sm:flex-col sm:gap-4 sm:text-center">
+        <span>© 2025 PowerAlert. All rights reserved.</span>
+        <span>support@poweralert.com</span>
+        <div class="flex gap-2 sm:order-first sm:mb-2">
+            <div class="footer-dot active"></div>
+            <div class="footer-dot"></div>
+            <div class="footer-dot"></div>
+        </div>
+    </div>
+</div>
 
-        window.onerror = function(message, source, lineno, colno, error) {
-            console.error("JavaScript error:", message, "at", source, "line:", lineno);
-            showError("An error occurred: " + message, 10000);
-            return true;
-        };
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 
-        $(document).ready(function() {
-            // Make showError and other notification functions available globally
-            window.showSuccess = showSuccess;
-            window.showError = showError;
-            window.showLoading = showLoading;
-            window.completeLoading = completeLoading;
-
-            // Toggle password visibility
-            $('#toggle-password').click(function() {
-                const passwordField = $('#password');
-                const passwordIcon = $(this).find('svg');
-
-                if (passwordField.attr('type') === 'password') {
-                    passwordField.attr('type', 'text');
-                    passwordIcon.html('<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />');
-                } else {
-                    passwordField.attr('type', 'password');
-                    passwordIcon.html('<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />');
-                }
-            });
-
-            // Check if user is already logged in
-            const authToken = localStorage.getItem('auth_token');
-            if (authToken) {
-                // If user is already logged in, redirect based on role
-                const userRole = localStorage.getItem('user_role');
-                if (userRole === 'ADMIN') {
-                    window.location.href = 'pages/dashboard.html';
-                } else if (userRole === 'UTILITY_PROVIDER') {
-                    window.location.href = 'pages/dashboard.html';
-                } else {
-                    window.location.href = 'pages/dashboard.html';
-                }
-            }
-
-            // Form submission
-            $('#loginForm').submit(function(e) {
-                e.preventDefault();
-
-                // Get form data
-                const username = $('input[name="username"]').val();
-                const password = $('input[name="password"]').val();
-                const rememberMe = $('#rememberMe').is(':checked');
-
-                // Validate inputs
-                if (!username.trim()) {
-                    showError('Please enter your username');
-                    return;
-                }
-
-                if (!password) {
-                    showError('Please enter your password');
-                    return;
-                }
-
-                // Show loading notification
-                const loadingToast = showLoading('Signing in, please wait...', 0, null, 'Authentication');
-
-                // Show loading state on button
-                $('#loginBtn').html('<svg class="inline-block w-4 h-4 mr-2 -ml-1 text-white animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Signing in...').addClass('opacity-90').prop('disabled', true);
-
-                // Prepare request data
-                const requestData = {
-                    username: username,
-                    password: password,
-                    rememberMe: rememberMe
-                };
-
-                // Send login request
-                $.ajax({
-                    url: 'http://localhost:8080/api/auth/login',
-                    type: 'POST',
-                    contentType: 'application/json',
-                    data: JSON.stringify(requestData),
-                    success: function(response) {
-                        // Check if response has expected structure
-                        if (!response.data || !response.data.token) {
-                            completeLoading(loadingToast, false, 'Invalid server response. Please try again.');
-                            resetLoginButton();
-                            return;
-                        }
-
-                        // Store complete user information in localStorage
-                        localStorage.setItem('auth_token', response.data.token);
-                        localStorage.setItem('user_role', response.data.role);
-                        localStorage.setItem('username', response.data.username);
-                        localStorage.setItem('user_id', response.data.userId);
-
-                        // Store additional user info if available
-                        if (response.data.email) localStorage.setItem('user_email', response.data.email);
-                        if (response.data.firstName) localStorage.setItem('user_firstName', response.data.firstName);
-                        if (response.data.lastName) localStorage.setItem('user_lastName', response.data.lastName);
-
-                        // Complete loading with success
-                        completeLoading(loadingToast, true, 'Login successful! Redirecting...');
-
-                        // Redirect after a short delay
-                        setTimeout(function() {
-                            window.location.href = 'pages/dashboard.html';
-                        }, 1500);
-                    },
-                    error: function(xhr) {
-                        // Reset button state
-                        resetLoginButton();
-
-                        // Prepare error message
-                        let errorMsg = 'An error occurred. Please try again.';
-
-                        if (xhr.status === 401) {
-                            errorMsg = 'Invalid username or password';
-                        } else if (xhr.status === 403) {
-                            errorMsg = 'Account is locked or disabled';
-                        } else if (xhr.responseJSON && xhr.responseJSON.message) {
-                            errorMsg = xhr.responseJSON.message;
-                        }
-
-                        // Complete loading with error
-                        completeLoading(loadingToast, false, errorMsg);
-                    }
-                });
-            });
-
-            // Function to reset login button
-            function resetLoginButton() {
-                $('#loginBtn').text('Sign in').removeClass('opacity-90').prop('disabled', false);
-            }
-
-            // Check for password reset success message in URL
-            const urlParams = new URLSearchParams(window.location.search);
-            const successMessage = urlParams.get('success');
-            if (successMessage) {
-                showSuccess(decodeURIComponent(successMessage), 7000);
-
-                // Remove the query parameter to prevent showing the message on page refresh
-                window.history.replaceState({}, document.title, window.location.pathname);
-            }
-        });
-    </script>
+<!-- Main application script -->
+<script type="module" src="./js/app.js"></script>
 </body>
 </html>

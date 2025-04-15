@@ -374,16 +374,16 @@ function createOutageCard(outage) {
                 </div>
                 <span class="text-xs font-medium text-gray-500">${relativeStartTime}</span>
             </div>
-            
+
             <h3 class="text-lg font-semibold text-gray-800 mb-1 truncate">
                 ${outage.affectedArea?.name || 'Unknown Area'} Outage
             </h3>
-            
+
             <p class="text-sm text-gray-600 mb-4 line-clamp-2">
-                ${outage.reason || 'No reason provided'} 
+                ${outage.reason || 'No reason provided'}
                 ${outage.additionalInfo ? `- ${outage.additionalInfo}` : ''}
             </p>
-            
+
             <div class="flex flex-col space-y-2 mb-4">
                 <div class="flex justify-between">
                     <div class="text-sm text-gray-600">Start Time:</div>
@@ -398,18 +398,18 @@ function createOutageCard(outage) {
                     <div class="text-sm font-medium">${duration}</div>
                 </div>
             </div>
-            
+
             <div class="mb-4">
                 <div class="flex justify-between mb-1">
                     <span class="text-xs font-medium text-gray-700">${progressLabel}</span>
                     <span class="text-xs font-medium text-gray-700">${progressPercent}%</span>
                 </div>
                 <div class="w-full bg-gray-200 rounded-full h-3 overflow-hidden shadow-inner">
-                    <div class="h-3 rounded-full transition-all duration-1000 ease-out" 
+                    <div class="h-3 rounded-full transition-all duration-1000 ease-out"
                          style="${progressBarStyle} width: ${progressPercent}%"></div>
                 </div>
             </div>
-            
+
             <div class="flex justify-between items-center border-t border-gray-100 pt-3">
                 <div class="flex items-center text-xs text-gray-600">
                     <i class="bx bxs-user-voice mr-1"></i>
@@ -556,7 +556,7 @@ function showOutageDetailModal(outage) {
                     <i class='bx bx-x text-2xl'></i>
                 </button>
             </div>
-            
+
             <div class="p-6">
                 <div class="flex flex-col md:flex-row justify-between mb-4 items-start md:items-center">
                     <h2 class="text-2xl font-bold text-gray-800 mb-2 md:mb-0">
@@ -566,7 +566,7 @@ function showOutageDetailModal(outage) {
                         ${statusIcon} ${outage.status}
                     </div>
                 </div>
-                
+
                 <div class="border-b border-gray-200 pb-4 mb-4">
                     <div class="flex flex-wrap gap-2 mb-3">
                         <span class="inline-flex items-center px-3 py-1 rounded-md text-sm font-medium bg-amber-50 text-amber-800 border border-amber-200">
@@ -579,18 +579,18 @@ function showOutageDetailModal(outage) {
                             <i class="bx bxs-time mr-1"></i> ${duration}
                         </span>
                     </div>
-                    
+
                     <p class="text-gray-700 mb-3">
                         <span class="font-medium">Reason:</span> ${outage.reason || 'No reason provided'}
                     </p>
-                    
+
                     ${outage.additionalInfo ? `
                         <p class="text-gray-700">
                             <span class="font-medium">Additional Info:</span> ${outage.additionalInfo}
                         </p>
                     ` : ''}
                 </div>
-                
+
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                     <div class="bg-gray-50 p-4 rounded-lg">
                         <h3 class="font-medium text-gray-800 mb-3">Time Information</h3>
@@ -615,7 +615,7 @@ function showOutageDetailModal(outage) {
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="bg-gray-50 p-4 rounded-lg">
                         <h3 class="font-medium text-gray-800 mb-3">Affected Information</h3>
                         <div class="space-y-2">
@@ -638,7 +638,7 @@ function showOutageDetailModal(outage) {
                         </div>
                     </div>
                 </div>
-                
+
                 ${outage.status === 'ONGOING' || outage.status === 'COMPLETED' ? `
                     <div class="mb-6">
                         <h3 class="font-medium text-gray-800 mb-3">Progress</h3>
@@ -653,29 +653,29 @@ function showOutageDetailModal(outage) {
                             <div class="h-3 rounded-full transition-all duration-1000 ease-out ${
         outage.status === 'ONGOING' ?
             'bg-gradient-to-r from-yellow-400 to-yellow-500' :
-            'bg-gradient-to-r from-green-400 to-green-500'}" 
+            'bg-gradient-to-r from-green-400 to-green-500'}"
                                  style="width: ${calculateProgressPercentage(startDate, endDate, outage.status)}%"></div>
                         </div>
                     </div>
                 ` : ''}
-                
+
                 <div class="mb-6">
                     <h3 class="font-medium text-gray-800 mb-3">Affected Area Map</h3>
                     <div class="h-48 md:h-64 w-full bg-gray-100 rounded-lg overflow-hidden relative" id="outageMapContainer">
                         <div class="absolute inset-0 flex items-center justify-center">
-                            <iframe 
-                                width="100%" 
-                                height="100%" 
-                                frameborder="0" 
-                                scrolling="no" 
-                                marginheight="0" 
-                                marginwidth="0" 
+                            <iframe
+                                width="100%"
+                                height="100%"
+                                frameborder="0"
+                                scrolling="no"
+                                marginheight="0"
+                                marginwidth="0"
                                 src="https://maps.google.com/maps?q=${latitude},${longitude}&z=13&output=embed"
                             ></iframe>
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="border-t border-gray-200 pt-4 mt-4 flex flex-wrap justify-between gap-2">
                     <button id="viewMapFullBtn" class="bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium py-2 px-4 rounded-lg transition-colors inline-flex items-center">
                         <i class='bx bx-map-alt mr-2'></i> Open in Google Maps
