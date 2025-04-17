@@ -8,6 +8,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
+            darkMode: 'class',
             theme: {
                 extend: {
                     colors: {
@@ -27,11 +28,6 @@
                     fontFamily: {
                         sans: ['Inter', 'sans-serif'],
                     },
-                    boxShadow: {
-                        'nav': '0 4px 12px rgba(0, 0, 0, 0.05)',
-                        'card': '0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025)',
-                        'button': '0 4px 6px -1px rgba(99, 102, 241, 0.2)',
-                    },
                 }
             }
         }
@@ -45,6 +41,8 @@
     <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css' rel='stylesheet' />
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js'></script>
     <link rel="stylesheet" href="../styles/dashboard.css">
+    <link rel="stylesheet" href="../styles/darkMode.css">
+    <script src="../js/ui/darkMode.js"></script>
 </head>
 <body class="bg-gray-50">
 <!-- Mobile Toggle Button -->
@@ -108,15 +106,15 @@
             </a>
 
             <div id="areas-submenu" class="submenu">
-                <a href="areas/view.html" id="areas-view" class="submenu-item">
+                <a href="../pages/areaManagement.html" id="areas-view" class="submenu-item">
                     <i class='bx bx-list-ul'></i>
                     <span>View All Areas</span>
                 </a>
-                <a href="areas/create.html" id="areas-create" class="submenu-item">
+                <a href="../pages/areaManagement.html" id="areas-create" class="submenu-item">
                     <i class='bx bx-plus'></i>
                     <span>Add New Area</span>
                 </a>
-                <a href="areas/edit.html" id="areas-edit" class="submenu-item">
+                <a href="../pages/areaManagement.html" id="areas-edit" class="submenu-item">
                     <i class='bx bx-edit'></i>
                     <span>Edit Area</span>
                 </a>
@@ -155,47 +153,21 @@
             </a>
 
             <div id="providers-submenu" class="submenu">
-                <a href="providers/view.html" id="providers-view" class="submenu-item">
+                <a href="../pages/utilityProviderManagement.html" id="providers-view" class="submenu-item">
                     <i class='bx bx-list-ul'></i>
                     <span>All Providers</span>
                 </a>
-                <a href="providers/create.html" id="providers-create" class="submenu-item">
+                <a href="../pages/utilityProviderManagement.html" id="providers-create" class="submenu-item">
                     <i class='bx bx-plus'></i>
                     <span>Add Provider</span>
                 </a>
-                <a href="providers/edit.html" id="providers-edit" class="submenu-item">
+                <a href="../pages/utilityProviderManagement.html" id="providers-edit" class="submenu-item">
                     <i class='bx bx-edit'></i>
                     <span>Edit Provider</span>
                 </a>
             </div>
         </div>
 
-        <!-- Communications Section -->
-        <div id="nav-section-comms" class="nav-section">
-            <div id="section-title-comms" class="nav-section-title">Communications</div>
-
-            <a href="notifications.html" id="nav-notifications" class="nav-item" data-page="notifications">
-                <i class='bx bxs-bell'></i>
-                <span class="nav-item-text">Notifications</span>
-            </a>
-
-            <a href="#" id="nav-feedback" class="nav-item" data-page="feedback" data-has-submenu="true">
-                <i class='bx bxs-message-square-detail'></i>
-                <span class="nav-item-text">Feedback</span>
-                <i id="feedback-dropdown" class='bx bx-chevron-down dropdown-icon'></i>
-            </a>
-
-            <div id="feedback-submenu" class="submenu">
-                <a href="feedback/view.html" id="feedback-view" class="submenu-item">
-                    <i class='bx bx-list-ul'></i>
-                    <span>All Feedback</span>
-                </a>
-                <a href="feedback/respond.html" id="feedback-respond" class="submenu-item">
-                    <i class='bx bx-message-alt-check'></i>
-                    <span>Respond to Feedback</span>
-                </a>
-            </div>
-        </div>
 
         <!-- Resources Section -->
         <div id="nav-section-resources" class="nav-section">
@@ -244,21 +216,13 @@
             </a>
 
             <div id="settings-submenu" class="submenu">
-                <a href="settings/profile.html" id="settings-profile" class="submenu-item">
+                <a href="user/profileSetting.html" id="settings-profile" class="submenu-item">
                     <i class='bx bx-user-circle'></i>
                     <span>Profile Settings</span>
                 </a>
-                <a href="settings/security.html" id="settings-security" class="submenu-item">
+                <a href="user/userSecurity.html" id="settings-security" class="submenu-item">
                     <i class='bx bx-lock-alt'></i>
                     <span>Security</span>
-                </a>
-                <a href="settings/email.html" id="settings-email" class="submenu-item">
-                    <i class='bx bx-envelope'></i>
-                    <span>Email Settings</span>
-                </a>
-                <a href="settings/notifications.html" id="settings-notifications" class="submenu-item">
-                    <i class='bx bx-bell'></i>
-                    <span>Notification Settings</span>
                 </a>
                 <div class="gap"></div>
             </div>
@@ -310,7 +274,34 @@
             <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">3</span>
         </div>
 
-        <!-- User info with avatar -->
+        <div class="relative">
+            <div id="user-avatar-container" class="w-10 h-10 rounded-full border-2 border-white shadow-lg transition-transform duration-300 transform hover:scale-105 overflow-hidden bg-gray-200 flex items-center justify-center">
+                <img id="user-avatar-image" class="w-full h-full object-cover hidden">
+                <i id="default-avatar-icon" class='bx bx-user text-lg text-gray-400'></i>
+            </div>
+            <span class="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full"></span>
+        </div>
+
+        <script>
+            // Load profile image from localStorage when the page loads
+            document.addEventListener('DOMContentLoaded', function() {
+                const profileImage = localStorage.getItem('profileImage');
+                const avatarImage = document.getElementById('user-avatar-image');
+                const defaultIcon = document.getElementById('default-avatar-icon');
+
+                if (profileImage) {
+                    // If profile image exists in localStorage, display it
+                    avatarImage.src = profileImage;
+                    avatarImage.classList.remove('hidden');
+                    defaultIcon.classList.add('hidden');
+                } else {
+                    // If no profile image, show the default icon
+                    avatarImage.classList.add('hidden');
+                    defaultIcon.classList.remove('hidden');
+                }
+            });
+        </script>
+
         <div class="hidden md:flex items-center gap-2">
             <span class="text-sm font-medium">Admin User</span>
         </div>
@@ -543,8 +534,6 @@
         </div>
     </div>
 </footer>
-
-
 
 <script>
     $(document).ready(function() {

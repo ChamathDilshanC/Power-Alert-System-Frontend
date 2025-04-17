@@ -480,6 +480,13 @@ body {
     margin-left: var(--sidebar-width);
     transition: margin-left 0.3s ease;
 }
+.footer-container-pages {
+    background-color: white;
+    border-top: 1px solid #e5e7eb;
+    padding: 3rem 2rem 1.5rem;
+    margin-top: 3rem;
+    transition: margin-left 0.3s ease;
+}
 
 @media (max-width: 768px) {
     .footer-container {

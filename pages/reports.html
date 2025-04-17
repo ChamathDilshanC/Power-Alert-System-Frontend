@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports - PowerAlert</title>
+    <link rel="icon" type="image/x-icon" href="https://i.pinimg.com/736x/3f/bf/40/3fbf4075b391e07eaa00ec5a87647cb5.jpg">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            200: '#c7d2fe',
+                            300: '#a5b4fc',
+                            400: '#818cf8',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                            800: '#3730a3',
+                            900: '#312e81',
+                        },
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <!-- Box Icons -->
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <!-- Inter Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Toastify CSS -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <!-- Toastify JS -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <!-- DatePicker -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <link rel="stylesheet" href="../styles/dashboard.css">
+    <link rel="stylesheet" href="../styles/darkMode.css">
+    <script src="../js/auth/sessionMonitor.js"></script>
+    <script src="../js/ui/darkMode.js"></script>
+
+    <style>
+        /* Dark mode styles that override dashboard.css when dark class is applied */
+        html.dark body {
+            background-color: #1f2937;
+            color: #f3f4f6;
+        }
+
+        html.dark .bg-white {
+            background-color: #111827;
+        }
+
+        html.dark .text-gray-800 {
+            color: #f3f4f6;
+        }
+
+        html.dark .text-gray-600,
+        html.dark .text-gray-700,
+        html.dark .text-gray-500 {
+            color: #9ca3af;
+        }
+
+        html.dark .bg-gray-50 {
+            background-color: #374151;
+        }
+
+        html.dark .border-gray-200,
+        html.dark .border-gray-300 {
+            border-color: #4b5563;
+        }
+
+        html.dark input,
+        html.dark select,
+        html.dark textarea {
+            background-color: #1f2937;
+            border-color: #4b5563;
+            color: #f3f4f6;
+        }
+
+        html.dark .shadow-md {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+        }
+
+        html.dark .footer-container,
+        html.dark .footer-container-pages {
+            background-color: #111827;
+            border-color: #374151;
+        }
+
+        html.dark .footer-section a {
+            color: #9ca3af;
+        }
+
+        html.dark .footer-section a:hover {
+            color: #6366f1;
+        }
+
+        html.dark .copyright {
+            color: #6b7280;
+        }
+
+        html.dark .social-links a {
+            background-color: #374151;
+            color: #9ca3af;
+        }
+
+        .report-card {
+            transition: transform 0.2s ease-in-out;
+        }
+
+        .report-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .loader {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-left-color: #6366f1;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        html.dark .loader {
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-left-color: #6366f1;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900">
+<div class="container mx-auto p-4 max-w-6xl">
+    <div class="mb-6 flex justify-between items-center">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Reports</h1>
+            <p class="text-gray-600 dark:text-gray-400">Generate and view outage reports</p>
+        </div>
+        <a href="dashboard.html" class="flex items-center gap-2 bg-primary-50 text-primary-600 dark:bg-primary-900 dark:text-primary-300 px-4 py-2 rounded-lg font-medium hover:bg-primary-100 dark:hover:bg-primary-800 transition-colors">
+            <i class='bx bx-arrow-back'></i>
+            <span>Back to Dashboard</span>
+        </a>
+    </div>
+
+    <!-- Report Filters -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden mb-6">
+        <div class="p-6">
+            <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Report Filters</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <!-- Date Range -->
+                <div>
+                    <label for="from-date" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">From Date</label>
+                    <input type="text" id="from-date" class="bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5" placeholder="Select start date">
+                </div>
+                <div>
+                    <label for="to-date" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">To Date</label>
+                    <input type="text" id="to-date" class="bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5" placeholder="Select end date">
+                </div>
+
+                <!-- Outage Type Filter -->
+                <div>
+                    <label for="outage-type" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Outage Type</label>
+                    <select id="outage-type" class="bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5">
+                        <option value="">All Types</option>
+                        <option value="SCHEDULED">Scheduled</option>
+                        <option value="EMERGENCY">Emergency</option>
+                        <option value="WEATHER">Weather-related</option>
+                        <option value="MAINTENANCE">Maintenance</option>
+                        <option value="OTHER">Other</option>
+                    </select>
+                </div>
+
+                <!-- Area Filter -->
+                <div>
+                    <label for="area-id" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Area</label>
+                    <select id="area-id" class="bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5">
+                        <option value="">All Areas</option>
+                        <!-- Areas will be populated dynamically -->
+                    </select>
+                </div>
+            </div>
+
+            <div class="mt-6 flex justify-end">
+                <button type="button" id="generate-report-btn" class="bg-primary-600 text-white py-2 px-6 rounded-lg font-medium hover:bg-primary-700 transition-colors flex items-center gap-2">
+                    <i class='bx bx-file'></i>
+                    <span>Generate Report</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Indicator -->
+    <div id="loading-indicator" class="hidden">
+        <div class="loader"></div>
+    </div>
+
+    <!-- No Data Indicator -->
+    <div id="no-data-indicator" class="hidden bg-white dark:bg-gray-800 rounded-xl shadow-md p-8 text-center">
+        <i class='bx bx-search text-6xl text-gray-400 dark:text-gray-500 mb-4'></i>
+        <h3 class="text-xl font-medium text-gray-700 dark:text-gray-300 mb-2">No Reports Found</h3>
+        <p class="text-gray-500 dark:text-gray-400">Try adjusting your filters or selecting a different date range.</p>
+    </div>
+
+    <!-- Report Summary -->
+    <div id="report-summary" class="hidden mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <!-- Total Outages Card -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 report-card">
+                <div class="flex items-center gap-4">
+                    <div class="bg-blue-100 dark:bg-blue-900 p-3 rounded-lg">
+                        <i class='bx bx-power-off text-2xl text-blue-600 dark:text-blue-300'></i>
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Outages</p>
+                        <h3 class="text-2xl font-bold text-gray-900 dark:text-gray-100" id="total-outages">0</h3>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Average Duration Card -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 report-card">
+                <div class="flex items-center gap-4">
+                    <div class="bg-green-100 dark:bg-green-900 p-3 rounded-lg">
+                        <i class='bx bx-time text-2xl text-green-600 dark:text-green-300'></i>
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Average Duration</p>
+                        <h3 class="text-2xl font-bold text-gray-900 dark:text-gray-100" id="avg-duration">0 hrs</h3>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Areas Affected Card -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 report-card">
+                <div class="flex items-center gap-4">
+                    <div class="bg-purple-100 dark:bg-purple-900 p-3 rounded-lg">
+                        <i class='bx bx-map-alt text-2xl text-purple-600 dark:text-purple-300'></i>
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Areas Affected</p>
+                        <h3 class="text-2xl font-bold text-gray-900 dark:text-gray-100" id="areas-affected">0</h3>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Customers Affected Card -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 report-card">
+                <div class="flex items-center gap-4">
+                    <div class="bg-amber-100 dark:bg-amber-900 p-3 rounded-lg">
+                        <i class='bx bx-user text-2xl text-amber-600 dark:text-amber-300'></i>
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Customers Affected</p>
+                        <h3 class="text-2xl font-bold text-gray-900 dark:text-gray-100" id="customers-affected">0</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Outage Breakdown -->
+    <div id="outage-breakdown" class="hidden">
+        <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-4">Outage Breakdown</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <!-- Outage Types -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+                <div class="p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">By Type</h3>
+                        <div class="text-xs font-medium bg-primary-50 text-primary-600 dark:bg-primary-900 dark:text-primary-300 px-2.5 py-0.5 rounded-full">
+                            <span id="outage-types-count">0</span> Types
+                        </div>
+                    </div>
+                    <div id="outage-types-list" class="space-y-4">
+                        <!-- Will be populated dynamically -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Top Affected Areas -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+                <div class="p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Top Affected Areas</h3>
+                        <div class="text-xs font-medium bg-primary-50 text-primary-600 dark:bg-primary-900 dark:text-primary-300 px-2.5 py-0.5 rounded-full">
+                            Total: <span id="total-areas">0</span>
+                        </div>
+                    </div>
+                    <div id="affected-areas-list" class="space-y-4">
+                        <!-- Will be populated dynamically -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Outages Table -->
+    <div id="recent-outages" class="hidden bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden mb-8">
+        <div class="p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Recent Outages</h3>
+                <div id="outage-count-badge" class="text-xs font-medium bg-primary-50 text-primary-600 dark:bg-primary-900 dark:text-primary-300 px-2.5 py-0.5 rounded-full">
+                    0 outages
+                </div>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                    <thead class="bg-gray-50 dark:bg-gray-700">
+                    <tr>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">ID</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Area</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Type</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Start Time</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">End Time</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Duration</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Status</th>
+                    </tr>
+                    </thead>
+                    <tbody id="outages-table-body" class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                    <!-- Will be populated dynamically -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer class="footer-container-pages mt-12">
+    <div class="footer-content">
+        <div class="footer-brand">
+            <div class="footer-logo">
+                <i class='bx bxs-bolt text-xl'></i>
+                <span>Power Alert</span>
+            </div>
+            <p class="footer-description">
+                Reliable power outage monitoring and notifications for Sri Lanka.
+            </p>
+        </div>
+
+        <div class="footer-links">
+            <div class="footer-section">
+                <h3>Quick Links</h3>
+                <ul>
+                    <li><a href="dashboard.html">Dashboard</a></li>
+                    <li><a href="outageManagement.html">Outages</a></li>
+                    <li><a href="areaManagement.html">Areas</a></li>
+                    <li><a href="reports.html">Reports</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-section">
+                <h3>Resources</h3>
+                <ul>
+                    <li><a href="#">Documentation</a></li>
+                    <li><a href="#">API</a></li>
+                    <li><a href="#">Help Center</a></li>
+                    <li><a href="#">Contact Support</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-section">
+                <h3>Legal</h3>
+                <ul>
+                    <li><a href="#">Privacy Policy</a></li>
+                    <li><a href="#">Terms of Service</a></li>
+                    <li><a href="#">Data Policy</a></li>
+                    <li><a href="#">Cookie Settings</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer-bottom">
+        <div class="copyright">
+            <p>&copy; 2025 Power Alert. All rights reserved.</p>
+        </div>
+        <div class="social-links">
+            <a href="#" aria-label="Facebook"><i class='bx bxl-facebook'></i></a>
+            <a href="#" aria-label="Twitter"><i class='bx bxl-twitter'></i></a>
+            <a href="#" aria-label="Instagram"><i class='bx bxl-instagram'></i></a>
+        </div>
+    </div>
+</footer>
+
+<!-- Include reports.js -->
+<script src="../js/reports.js"></script>
+</body>
+</html>

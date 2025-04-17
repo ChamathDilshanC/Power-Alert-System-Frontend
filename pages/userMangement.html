@@ -9,6 +9,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
+            darkMode: 'class',
             theme: {
                 extend: {
                     colors: {
@@ -28,11 +29,6 @@
                     fontFamily: {
                         sans: ['Inter', 'sans-serif'],
                     },
-                    boxShadow: {
-                        'nav': '0 4px 12px rgba(0, 0, 0, 0.05)',
-                        'card': '0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025)',
-                        'button': '0 4px 6px -1px rgba(99, 102, 241, 0.2)',
-                    },
                 }
             }
         }
@@ -48,6 +44,10 @@
     <!-- Toastify JS -->
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
     <link href="../styles/userManagement.css" rel="stylesheet">
+    <link rel="stylesheet" href="../styles/dashboard.css">
+    <link rel="stylesheet" href="../styles/darkMode.css">
+    <script src="../js/auth/sessionMonitor.js"></script>
+    <script src="../js/ui/darkMode.js"></script>
 
     <!-- Inline configuration -->
     <script>
@@ -65,7 +65,47 @@
 
     <!-- Custom JS -->
     <script src="../js/userManagement.js"></script>
-    <link rel="stylesheet" href="../styles/userManagement.css">
+    <style>
+        /* Custom styles for user management page */
+        .required::after {
+            content: " *";
+            color: #dc2626;
+        }
+
+        .role-badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.375rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .role-badge.admin {
+            background-color: rgba(220, 38, 38, 0.1);
+            color: #dc2626;
+        }
+
+        .role-badge.user {
+            background-color: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .status-badge.active {
+            background-color: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+        }
+
+        .status-badge.inactive {
+            background-color: rgba(107, 114, 128, 0.1);
+            color: #6b7280;
+        }
+    </style>
 </head>
 <body class="bg-gray-50">
 <div class="container mx-auto px-4 py-8">
@@ -104,7 +144,6 @@
                 <select id="filter-role" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5">
                     <option value="">All Roles</option>
                     <option value="ADMIN">Admin</option>
-                    <option value="UTILITY_PROVIDER">Utility Provider</option>
                     <option value="USER">User</option>
                 </select>
             </div>
@@ -225,14 +264,13 @@
                         <input type="tel" placeholder="701234567" id="phone-number" name="phoneNumber" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-r-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5" required>
                     </div>
                     <p class="mt-1 text-xs text-gray-500">Enter your phone number without spaces or hyphens</p>
-                    <p id="phone-error" class="mt-1 text-sm text-red-600 hidden">Phone number already exists. </p>
+                    <p id="phone-error" class="mt-1 text-sm text-red-600 hidden">Phone number already exists.</p>
                 </div>
 
                 <div>
                     <label for="role" class="block text-sm font-medium text-gray-700 mb-1 required">Role</label>
                     <select id="role" name="role" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5" required>
                         <option value="USER">User</option>
-                        <option value="UTILITY_PROVIDER">Utility Provider</option>
                         <option value="ADMIN">Admin</option>
                     </select>
                 </div>
@@ -272,30 +310,6 @@
                         <input id="is-active" name="isActive" type="checkbox" class="w-4 h-4 text-primary-600 bg-gray-100 rounded border-gray-300 focus:ring-primary-500 focus:ring-2" checked>
                     </div>
                     <label for="is-active" class="ml-2 text-sm font-medium text-gray-700">Account is active</label>
-                </div>
-            </div>
-
-            <!-- Utility Provider Section (hidden by default, shown when role is utility provider) -->
-            <div id="utility-provider-section" class="hidden mt-6 pt-6 border-t border-gray-200">
-                <h3 class="text-md font-medium text-gray-900 mb-3">Utility Provider Details</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label for="provider-name" class="block text-sm font-medium text-gray-700 mb-1 required">Provider Name</label>
-                        <input type="text" id="provider-name" name="providerName" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5">
-                    </div>
-                    <div>
-                        <label for="provider-type" class="block text-sm font-medium text-gray-700 mb-1 required">Provider Type</label>
-                        <select id="provider-type" name="providerType" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5">
-                            <option value="ELECTRICITY">Electricity</option>
-                            <option value="WATER">Water</option>
-                            <option value="GAS">Gas</option>
-                            <option value="INTERNET">Internet</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label for="provider-website" class="block text-sm font-medium text-gray-700 mb-1">Website</label>
-                        <input type="url" id="provider-website" name="website" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5" placeholder="https://example.com">
-                    </div>
                 </div>
             </div>
 
@@ -363,27 +377,6 @@
                             <p class="text-sm text-gray-500">Preferred Language</p>
                             <p id="view-language" class="text-sm font-medium text-gray-900">English</p>
                         </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Utility Provider details (conditionally shown) -->
-            <div id="view-provider-details" class="hidden border-t border-gray-200 pt-6 mt-4">
-                <h4 class="text-xs font-medium text-gray-500 uppercase mb-2">Utility Provider Details</h4>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-8">
-                    <div>
-                        <p class="text-sm text-gray-500">Provider Name</p>
-                        <p id="view-provider-name" class="text-sm font-medium text-gray-900">ABC Electricity</p>
-                    </div>
-                    <div>
-                        <p class="text-sm text-gray-500">Provider Type</p>
-                        <p id="view-provider-type" class="text-sm font-medium text-gray-900">Electricity</p>
-                    </div>
-                    <div id="view-website-container">
-                        <p class="text-sm text-gray-500">Website</p>
-                        <p class="text-sm font-medium text-gray-900">
-                            <a id="view-website" href="#" target="_blank" class="text-primary-600 hover:underline">https://example.com</a>
-                        </p>
                     </div>
                 </div>
             </div>
@@ -458,6 +451,63 @@
             </div>
         </form>
     </div>
+
 </div>
+<footer class="footer-container-pages">
+    <div class="footer-content">
+        <div class="footer-brand">
+            <div class="footer-logo">
+                <i class='bx bxs-bolt text-xl'></i>
+                <span>Power Alert</span>
+            </div>
+            <p class="footer-description">
+                Reliable power outage monitoring and notifications for Sri Lanka.
+            </p>
+        </div>
+
+        <div class="footer-links">
+            <div class="footer-section">
+                <h3>Quick Links</h3>
+                <ul>
+                    <li><a href="dashboard.html">Dashboard</a></li>
+                    <li><a href="outages/view.html">Outages</a></li>
+                    <li><a href="areas/view.html">Areas</a></li>
+                    <li><a href="reports.html">Reports</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-section">
+                <h3>Resources</h3>
+                <ul>
+                    <li><a href="#">Documentation</a></li>
+                    <li><a href="#">API</a></li>
+                    <li><a href="#">Help Center</a></li>
+                    <li><a href="#">Contact Support</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-section">
+                <h3>Legal</h3>
+                <ul>
+                    <li><a href="#">Privacy Policy</a></li>
+                    <li><a href="#">Terms of Service</a></li>
+                    <li><a href="#">Data Policy</a></li>
+                    <li><a href="#">Cookie Settings</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer-bottom">
+        <div class="copyright">
+            <p>&copy; 2025 Power Alert. All rights reserved.</p>
+        </div>
+        <div class="social-links">
+            <a href="#" aria-label="Facebook"><i class='bx bxl-facebook'></i></a>
+            <a href="#" aria-label="Twitter"><i class='bx bxl-twitter'></i></a>
+            <a href="#" aria-label="Instagram"><i class='bx bxl-instagram'></i></a>
+        </div>
+    </div>
+</footer>
 </body>
 </html>

@@ -149,32 +149,52 @@ export async function resetUserPassword(userId, newPassword) {
 }
 
 
-export async function toggleUserStatus(userId, currentStatus) {
-    try {
-        const newStatus = !currentStatus;
-        const actionText = newStatus ? 'Activating' : 'Deactivating';
-        const loadingToast = showLoading(`${actionText} user...`);
+function toggleUserStatus(userId, newStatus) {
+    // Show loading state
+    const confirmButton = $('#confirm-action');
+    const originalText = confirmButton.text();
+    confirmButton.prop('disabled', true).html(`<i class="bx bx-loader-alt bx-spin mr-2"></i> ${newStatus ? 'Activating' : 'Deactivating'}...`);
 
-        const response = await apiRequest({
-            endpoint: `/api/admin/users/${userId}/toggle-status`,
-            method: 'PUT',
-            data: { isActive: newStatus }
-        });
+    $.ajax({
+        url: `${CONFIG.API_BASE_URL}/api/admin/users/${userId}/toggle-status`,
+        method: 'PUT',
+        headers: {
+            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
+            'Content-Type': 'application/json'
+        },
+        data: JSON.stringify({ isActive: newStatus }),
+        success: function(response) {
+            if (response && response.code === 200) {
+                // Close the confirmation modal
+                $('#confirm-modal').addClass('hidden');
 
-        if (response && response.code === 200) {
-            const successMsg = `User ${newStatus ? 'activated' : 'deactivated'} successfully`;
-            completeLoading(loadingToast, true, successMsg);
-            return response.data;
-        } else {
-            const errorMsg = response?.message || `Failed to ${actionText.toLowerCase()} user`;
-            completeLoading(loadingToast, false, errorMsg);
-            throw new Error(errorMsg);
+                // Close the user details modal
+                $('#view-user-modal').addClass('hidden');
+
+                // Show success message
+                showSuccess(`User ${newStatus ? 'activated' : 'deactivated'} successfully`);
+
+                // Reload the user list
+                loadUsers();
+            } else {
+                showError(response?.message || 'Failed to update user status');
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error('Error toggling user status:', error);
+
+            // Check for specific error messages
+            if (xhr.responseJSON && xhr.responseJSON.message) {
+                showError(xhr.responseJSON.message);
+            } else {
+                showError('Failed to update user status. Please try again.');
+            }
+        },
+        complete: function() {
+            // Restore button state
+            confirmButton.prop('disabled', false).text(originalText);
         }
-    } catch (error) {
-        console.error('Error toggling user status:', error);
-        showError('Error updating user status: ' + error.message);
-        throw error;
-    }
+    });
 }
 
 

@@ -90,11 +90,6 @@ function setupEventListeners() {
         validatePhoneNumber($(this).val());
     });
 
-    // Role selection change (for utility provider fields)
-    $('#role').on('change', function() {
-        toggleUtilityProviderFields();
-    });
-
     // Toggle password visibility
     $('#toggle-password, #toggle-new-password').on('click', function() {
         const passwordField = $(this).closest('div').find('input');
@@ -223,6 +218,11 @@ function applyFilters() {
 
     // Filter users
     filteredUsers = users.filter(user => {
+        // Exclude UTILITY_PROVIDER users
+        if (user.role === 'UTILITY_PROVIDER') {
+            return false;
+        }
+
         // Search text filter
         const matchesSearch =
             !searchText ||
@@ -259,7 +259,54 @@ function resetFilters() {
     applyFilters();
 }
 
+function deleteUser(userId) {
+    // Show loading state
+    const confirmButton = $('#confirm-action');
+    const originalText = confirmButton.text();
+    confirmButton.prop('disabled', true).html('<i class="bx bx-loader-alt bx-spin mr-2"></i> Deleting...');
+
+    $.ajax({
+        url: `${CONFIG.API_BASE_URL}/api/admin/users/${userId}`,
+        method: 'DELETE',
+        headers: {
+            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+        },
+        success: function(response) {
+            if (response && response.code === 200) {
+                // Close the confirmation modal
+                $('#confirm-modal').addClass('hidden');
+
+                // Show success message
+                showSuccess('User deleted successfully');
+
+                // Remove user from local array
+                users = users.filter(u => u.id !== userId);
+
+                // Reload the user list
+                applyFilters();
+            } else {
+                showError(response?.message || 'Failed to delete user');
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error('Error deleting user:', error);
+
+            // Check for specific error messages
+            if (xhr.responseJSON && xhr.responseJSON.message) {
+                showError(xhr.responseJSON.message);
+            } else {
+                showError('Failed to delete user. Please try again.');
+            }
+        },
+        complete: function() {
+            // Restore button state
+            confirmButton.prop('disabled', false).text(originalText);
+        }
+    });
+}
+
 /**
+ * Render the user table with current filtered users
  * Render the user table with current filtered users
  */
 function renderUserTable() {
@@ -270,22 +317,7 @@ function renderUserTable() {
 
     // Check if we have users to display
     if (filteredUsers.length === 0) {
-        tableBody.append(`
-            <tr>
-                <td colspan="7" class="px-6 py-4 text-center">
-                    <div class="py-8">
-                        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 text-gray-400 mb-4">
-                            <i class='bx bx-user-x text-3xl'></i>
-                        </div>
-                        <h3 class="text-lg font-medium text-gray-900">No users found</h3>
-                        <p class="mt-2 text-sm text-gray-500">No users match your search criteria.</p>
-                    </div>
-                </td>
-            </tr>
-        `);
-
-        // Hide pagination
-        $('#pagination-container').hide();
+        // Your existing empty state code...
         return;
     }
 
@@ -303,6 +335,30 @@ function renderUserTable() {
         } else {
             return '<span class="status-badge inactive">Inactive</span>';
         }
+    }
+
+    function showDeleteConfirmationUser(userId) {
+        const user = users.find(u => u.id === userId);
+        if (!user) return;
+
+        // Set confirmation message
+        $('#confirm-title').text('Delete User');
+        $('#confirm-message').text(`Are you sure you want to delete user "${user.username}"? This action cannot be undone.`);
+
+        // Set icon
+        $('#confirm-icon').removeClass().addClass('bx bx-trash text-2xl');
+        $('#confirm-icon-container').removeClass().addClass('inline-flex items-center justify-center w-12 h-12 rounded-full bg-red-100 text-red-600 mb-4');
+
+        // Set button text
+        $('#confirm-action').text('Delete').removeClass().addClass('px-4 py-2 bg-red-600 text-white rounded-md font-medium hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500');
+
+        // Set callback
+        confirmationCallback = function() {
+            deleteUser(userId);
+        };
+
+        // Show modal
+        $('#confirm-modal').removeClass('hidden');
     }
 
     // Render each user
@@ -328,10 +384,8 @@ function renderUserTable() {
                         ${formatRole(user.role)}
                     </span>
                 </td>
-
-                // Replace this section in renderUserTable()
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        ${renderStatusBadge(user)}
+                <td class="px-6 py-4 whitespace-nowrap">
+                    ${renderStatusBadge(user)}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     ${formatDate(user.createdAt)}
@@ -341,13 +395,13 @@ function renderUserTable() {
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div class="flex space-x-2 justify-end">
-                        <button class="view-user-btn text-blue-600 hover:text-blue-900" data-user-id="${user.id}">
+                        <button class="view-user-btn text-blue-600 hover:text-blue-900" data-user-id="${user.id}" title="View Details">
                             <i class='bx bx-show'></i>
                         </button>
-                        <button class="edit-user-btn text-indigo-600 hover:text-indigo-900" data-user-id="${user.id}">
+                        <button class="edit-user-btn text-indigo-600 hover:text-indigo-900" data-user-id="${user.id}" title="Edit User">
                             <i class='bx bx-edit'></i>
                         </button>
-                        <button class="delete-user-btn text-red-600 hover:text-red-900" data-user-id="${user.id}">
+                        <button class="delete-user-btn text-red-600 hover:text-red-900" data-user-id="${user.id}" title="Delete User">
                             <i class='bx bx-trash'></i>
                         </button>
                     </div>
@@ -365,7 +419,7 @@ function renderUserTable() {
         });
 
         row.find('.delete-user-btn').on('click', function() {
-            showDeleteConfirmation(user.id);
+            showDeleteConfirmationUser(user.id);
         });
 
         tableBody.append(row);
@@ -374,6 +428,198 @@ function renderUserTable() {
     // Update pagination
     updatePagination();
 }
+
+function showUserDetails(userId) {
+    // Get user data
+    const user = users.find(u => u.id === userId);
+    if (!user) return;
+
+    // Fill user details
+    $('#user-initials').text(getInitials(user.username));
+    $('#view-username').text(user.username);
+    $('#view-role').text(formatRole(user.role));
+
+    // Set status badge
+    const statusBadge = $('#view-status');
+    statusBadge.removeClass('bg-green-100 text-green-800 bg-red-100 text-red-800');
+    if (user.isActive) {
+        statusBadge.addClass('bg-green-100 text-green-800');
+        statusBadge.text('Active');
+    } else {
+        statusBadge.addClass('bg-red-100 text-red-800');
+        statusBadge.text('Inactive');
+    }
+
+    // Fill contact info
+    $('#view-email').text(user.email);
+    $('#view-phone').text(user.phoneNumber || 'Not provided');
+
+    // Fill account info
+    $('#view-created').text(formatDate(user.createdAt));
+    $('#view-last-login').text(user.lastLoginAt ? formatDate(user.lastLoginAt) : 'Never');
+    $('#view-language').text(getLanguageDisplay(user.preferredLanguage || 'en'));
+
+    // Set up action buttons
+    $('#reset-password-btn').off('click').on('click', function() {
+        showResetPasswordModal(userId, user.username);
+    });
+
+    $('#toggle-status-btn').off('click').on('click', function() {
+        showToggleStatusConfirmation(userId, user.isActive);
+    });
+
+    $('#edit-user-btn').off('click').on('click', function() {
+        $('#view-user-modal').addClass('hidden');
+        showEditUserModal(userId);
+    });
+
+    // Toggle status button text
+    $('#toggle-status-btn').html(`
+        <i class='bx bx-power-off mr-2'></i> ${user.isActive ? 'Deactivate' : 'Activate'}
+    `);
+
+    // Show modal
+    $('#view-user-modal').removeClass('hidden');
+}
+
+
+function showToggleStatusConfirmation(userId, currentStatus) {
+    const user = users.find(u => u.id === userId);
+    if (!user) return;
+
+    const newStatus = !currentStatus;
+    const action = newStatus ? 'activate' : 'deactivate';
+    const actionTitle = newStatus ? 'Activate' : 'Deactivate';
+
+    // Set confirmation message
+    $('#confirm-title').text(`${actionTitle} User`);
+    $('#confirm-message').text(`Are you sure you want to ${action} user "${user.username}"?`);
+
+    // Set icon
+    $('#confirm-icon').removeClass().addClass('bx bx-power-off text-2xl');
+
+    const iconColorClass = newStatus ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600';
+    $('#confirm-icon-container').removeClass().addClass(`inline-flex items-center justify-center w-12 h-12 rounded-full ${iconColorClass} mb-4`);
+
+    // Set button text
+    $('#confirm-action').text(actionTitle);
+
+    const buttonColorClass = newStatus
+        ? 'bg-green-600 text-white rounded-md font-medium hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500'
+        : 'bg-red-600 text-white rounded-md font-medium hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500';
+
+    $('#confirm-action').removeClass().addClass(`px-4 py-2 ${buttonColorClass}`);
+
+    // Set callback
+    confirmationCallback = function() {
+        toggleUserStatus(userId, newStatus);
+    };
+
+    // Show modal
+    $('#confirm-modal').removeClass('hidden');
+}
+
+function toggleUserStatus(userId, newStatus) {
+    // Show loading state
+    const confirmButton = $('#confirm-action');
+    const originalText = confirmButton.text();
+    confirmButton.prop('disabled', true).html('<i class="bx bx-loader-alt bx-spin mr-2"></i> Processing...');
+
+    // Prepare data
+    const userData = {
+        isActive: newStatus
+    };
+
+    $.ajax({
+        url: `${CONFIG.API_BASE_URL}/api/admin/users/${userId}/status`,
+        method: 'PUT',
+        headers: {
+            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
+            'Content-Type': 'application/json'
+        },
+        data: JSON.stringify(userData),
+        success: function(response) {
+            if (response && response.code === 200) {
+                // Close the confirmation modal
+                $('#confirm-modal').addClass('hidden');
+                $('#view-user-modal').addClass('hidden');
+
+                // Show success message
+                const action = newStatus ? 'activated' : 'deactivated';
+                showSuccess(`User ${action} successfully`);
+
+                // Update user in local array
+                const userIndex = users.findIndex(u => u.id === userId);
+                if (userIndex !== -1) {
+                    users[userIndex].isActive = newStatus;
+                }
+
+                // Reload the user list
+                applyFilters();
+            } else {
+                showError(response?.message || `Failed to ${newStatus ? 'activate' : 'deactivate'} user`);
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error(`Error ${newStatus ? 'activating' : 'deactivating'} user:`, error);
+            showError(`Failed to ${newStatus ? 'activate' : 'deactivate'} user. Please try again.`);
+        },
+        complete: function() {
+            // Restore button state
+            confirmButton.prop('disabled', false).text(originalText);
+        }
+    });
+}
+
+function showResetPasswordModal(userId, username) {
+    $('#reset-user-id').val(userId);
+    $('#reset-user-name').text(username);
+    $('#new-password').val('');
+
+    $('#reset-password-modal').removeClass('hidden');
+}
+
+
+function resetUserPassword() {
+    const userId = $('#reset-user-id').val();
+    const newPassword = $('#new-password').val();
+
+    // Show loading state
+    const saveButton = $('#save-password');
+    const originalText = saveButton.text();
+    saveButton.prop('disabled', true).html('<i class="bx bx-loader-alt bx-spin"></i> Resetting...');
+
+    $.ajax({
+        url: `${CONFIG.API_BASE_URL}/api/admin/users/${userId}/reset-password`,
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
+            'Content-Type': 'application/json'
+        },
+        data: JSON.stringify({ newPassword }),
+        success: function(response) {
+            if (response && response.code === 200) {
+                // Close modal
+                $('#reset-password-modal').addClass('hidden');
+
+                // Show success message
+                showSuccess('Password reset successfully');
+            } else {
+                showError(response?.message || 'Failed to reset password');
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error('Error resetting password:', error);
+            showError('Failed to reset password. Please try again.');
+        },
+        complete: function() {
+            // Restore button state
+            saveButton.prop('disabled', false).text(originalText);
+        }
+    });
+}
+
+
 
 /**
  * Update pagination controls
@@ -494,9 +740,6 @@ function showAddUserModal() {
     $('#preferred-language').val('en');
     $('#role').val('USER');
 
-    // Check if utility provider fields should be shown
-    toggleUtilityProviderFields();
-
     // Show modal
     $('#user-modal').removeClass('hidden');
 }
@@ -538,42 +781,8 @@ function showEditUserModal(userId) {
     // Set modal title
     $('#modal-title').text('Edit User');
 
-    // Set utility provider fields if needed
-    toggleUtilityProviderFields();
-
-    // If user is utility provider, load and fill provider data
-    if (user.role === 'UTILITY_PROVIDER') {
-        loadProviderDetailsForEdit(userId);
-    }
-
     // Show modal
     $('#user-modal').removeClass('hidden');
-}
-
-/**
- * Load provider details for editing
- */
-function loadProviderDetailsForEdit(userId) {
-    $.ajax({
-        url: `${CONFIG.API_BASE_URL}/api/admin/users/${userId}/provider`,
-        method: 'GET',
-        headers: {
-            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
-        },
-        success: function(response) {
-            if (response && response.code === 200) {
-                showSuccess(`User ${newStatus ? 'activated' : 'deactivated'} successfully`);
-                loadUsers();
-                $('#view-user-modal').addClass('hidden');
-            } else {
-                showError(response?.message || 'Failed to update user status');
-            }
-        },
-        error: function(xhr, status, error) {
-            console.error('Error toggling user status:', error);
-            showError('Failed to update user status. Please try again.');
-        }
-    });
 }
 
 /**
@@ -672,7 +881,6 @@ function validatePhoneNumber(phoneNumber) {
         }
     });
 }
-
 
 /**
  * Hide user modal
@@ -806,26 +1014,6 @@ function getRoleBadgeClass(role) {
 }
 
 /**
- * Format provider type for display
- */
-function formatProviderType(type) {
-    if (!type) return 'Unknown';
-
-    switch(type) {
-        case 'ELECTRICITY':
-            return 'Electricity Provider';
-        case 'WATER':
-            return 'Water Provider';
-        case 'GAS':
-            return 'Gas Provider';
-        case 'INTERNET':
-            return 'Internet Provider';
-        default:
-            return type.charAt(0).toUpperCase() + type.slice(1).toLowerCase();
-    }
-}
-
-/**
  * Get language display name
  */
 function getLanguageDisplay(code) {
@@ -842,44 +1030,71 @@ function getLanguageDisplay(code) {
 }
 
 /**
- * Toggle utility provider fields based on role selection
- */
-function toggleUtilityProviderFields() {
-    const role = $('#role').val();
-
-    if (role === 'UTILITY_PROVIDER') {
-        $('#utility-provider-section').removeClass('hidden');
-
-        // Make provider fields required
-        $('#provider-name, #provider-type').prop('required', true);
-    } else {
-        $('#utility-provider-section').addClass('hidden');
-
-        // Make provider fields optional
-        $('#provider-name, #provider-type').prop('required', false);
-    }
-}
-
-/**
  * Save user from form data
  */
 function saveUser() {
     // Get form data
     const userId = $('#user-id').val();
     const isEditing = userId !== '';
+    const username = $('#username').val();
+    const email = $('#email').val();
 
-    // Get the phone number without the country code
-    const phoneNumber = $('#phone-number').val();
-    // Combine with country code
-    const fullPhoneNumber = "+94" + phoneNumber;
+    // Validate username and email before proceeding
+    let hasError = false;
 
-    const userData = {
-        username: $('#username').val(),
-        email: $('#email').val(),
-        phoneNumber: fullPhoneNumber, // Use the combined phone number
+    // Check for duplicate username
+    if (!isEditing) {
+        // First, check if username exists
+        $.ajax({
+            url: `${CONFIG.API_BASE_URL}/api/public/check-username?username=${encodeURIComponent(username)}`,
+            method: 'GET',
+            async: false, // Use synchronous request for simplicity
+            success: function(response) {
+                if (response && response.exists) {
+                    $('#username-error').removeClass('hidden').text(`Username "${username}" is already taken. Please choose another.`);
+                    hasError = true;
+                } else {
+                    $('#username-error').addClass('hidden');
+                }
+            }
+        });
+
+        // Then check if email exists
+        $.ajax({
+            url: `${CONFIG.API_BASE_URL}/api/public/check-email?email=${encodeURIComponent(email)}`,
+            method: 'GET',
+            async: false, // Use synchronous request for simplicity
+            success: function(response) {
+                if (response && response.exists) {
+                    $('#email-error').removeClass('hidden').text(`Email "${email}" is already registered.`);
+                    hasError = true;
+                } else {
+                    $('#email-error').addClass('hidden');
+                }
+            }
+        });
+    }
+
+    // Stop if validation failed
+    if (hasError) {
+        return;
+    }
+
+    // Get the phone number and ensure it has the correct format
+    let phoneNumber = $('#phone-number').val();
+    // Add country code if it doesn't already have one
+    if (!phoneNumber.startsWith('+94')) {
+        phoneNumber = '+94' + phoneNumber;
+    }
+
+    // Prepare user data
+    let userData = {
+        username: username,
+        email: email,
+        phoneNumber: phoneNumber,
         role: $('#role').val(),
         preferredLanguage: $('#preferred-language').val(),
-        active: $('#is-active').is(':checked')
+        isActive: $('#is-active').is(':checked')
     };
 
     // Add password for new users
@@ -887,21 +1102,22 @@ function saveUser() {
         userData.password = $('#password').val();
     }
 
-    // Add provider data if applicable
-    if (userData.role === 'UTILITY_PROVIDER') {
-        userData.provider = {
-            name: $('#provider-name').val(),
-            type: $('#provider-type').val(),
-            website: $('#provider-website').val() || null
-        };
+    // Determine the API endpoint based on whether we're editing or creating
+    let endpoint, method;
+
+    if (isEditing) {
+        endpoint = `${CONFIG.API_BASE_URL}/api/admin/users/${userId}`;
+        method = 'PUT';
+    } else {
+        // For new users, use the regular user registration endpoint
+        endpoint = `${CONFIG.API_BASE_URL}/api/admin/users`;
+        method = 'POST';
     }
 
-    // Determine API endpoint and method
-    const endpoint = isEditing
-        ? `${CONFIG.API_BASE_URL}/api/admin/users/${userId}`
-        : `${CONFIG.API_BASE_URL}/api/admin/register`;
-
-    const method = isEditing ? 'PUT' : 'POST';
+    // Show loading state
+    const saveButton = $('#save-user');
+    const originalButtonText = saveButton.text();
+    saveButton.prop('disabled', true).html('<i class="bx bx-loader-alt bx-spin"></i> Saving...');
 
     // Save user
     $.ajax({
@@ -924,279 +1140,38 @@ function saveUser() {
             }
         },
         error: function(xhr, status, error) {
-            console.error('Error saving user:', error);
+            console.error('Error saving user:', error, xhr.responseJSON);
 
-            // Check for validation errors
-            if (xhr.responseJSON && xhr.responseJSON.message) {
-                showError(xhr.responseJSON.message);
+            // Handle specific error cases
+            if (xhr.responseJSON) {
+                const errorResponse = xhr.responseJSON;
+
+                // Check for duplicate key errors
+                if (errorResponse.message && errorResponse.message.includes('Duplicate entry')) {
+                    if (errorResponse.message.includes('UK_') && errorResponse.message.includes('username')) {
+                        $('#username-error').removeClass('hidden').text(`Username "${username}" is already taken. Please choose another.`);
+                    } else if (errorResponse.message.includes('email')) {
+                        $('#email-error').removeClass('hidden').text(`Email "${email}" is already registered.`);
+                    } else if (errorResponse.message.includes('phone')) {
+                        $('#phone-error').removeClass('hidden').text(`Phone number "${phoneNumber}" is already registered.`);
+                    } else {
+                        // Generic duplicate error
+                        showError('A user with the same information already exists.');
+                    }
+                } else if (errorResponse.message) {
+                    // Show other error messages from the server
+                    showError(errorResponse.message);
+                } else {
+                    showError('Failed to save user. Please try again.');
+                }
             } else {
                 showError('Failed to save user. Please try again.');
             }
+        },
+        complete: function() {
+            // Restore button state
+            saveButton.prop('disabled', false).text(originalButtonText);
         }
     });
-}
-
-/**
- * Show user details in view modal
- */
-function showUserDetails(userId) {
-    // Get user data
-    const user = users.find(u => u.id === userId);
-    if (!user) return;
-
-    // Fill user details
-    $('#user-initials').text(getInitials(user.username));
-    $('#view-username').text(user.username);
-    $('#view-role').text(formatRole(user.role));
-
-    // Set status badge
-    const statusBadge = $('#view-status');
-    statusBadge.removeClass('bg-green-100 text-green-800 bg-red-100 text-red-800');
-    if (user.isActive) {
-        statusBadge.addClass('bg-green-100 text-green-800');
-        statusBadge.text('Active');
-    } else {
-        statusBadge.addClass('bg-red-100 text-red-800');
-        statusBadge.text('Inactive');
-    }
-
-    // Fill contact info
-    $('#view-email').text(user.email);
-    $('#view-phone').text(user.phoneNumber || 'Not provided');
-
-    // Fill account info
-    $('#view-created').text(formatDate(user.createdAt));
-    $('#view-last-login').text(user.lastLoginAt ? formatDate(user.lastLoginAt) : 'Never');
-    $('#view-language').text(getLanguageDisplay(user.preferredLanguage || 'en'));
-
-    // Set up action buttons
-    $('#reset-password-btn').off('click').on('click', function() {
-        showResetPasswordModal(userId, user.username);
-    });
-
-    $('#toggle-status-btn').off('click').on('click', function() {
-        showToggleStatusConfirmation(userId, user.isActive);
-    });
-
-    $('#edit-user-btn').off('click').on('click', function() {
-        $('#view-user-modal').addClass('hidden');
-        showEditUserModal(userId);
-    });
-
-    // Toggle status button text
-    $('#toggle-status-btn').html(`
-        <i class='bx bx-power-off mr-2'></i> ${user.isActive ? 'Deactivate' : 'Activate'}
-    `);
-
-    // Handle utility provider details
-    if (user.role === 'UTILITY_PROVIDER') {
-        loadProviderDetails(userId);
-    } else {
-        $('#view-provider-details').addClass('hidden');
-    }
-
-    // Show modal
-    $('#view-user-modal').removeClass('hidden');
-}
-
-/**
- * Load provider details for viewing
- */
-function loadProviderDetails(userId) {
-    $.ajax({
-        url: `${CONFIG.API_BASE_URL}/api/admin/users/${userId}/provider`,
-        method: 'GET',
-        headers: {
-            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
-        },
-        success: function(response) {
-            if (response && response.code === 200 && response.data) {
-                const provider = response.data;
-
-                // Fill provider details
-                $('#view-provider-name').text(provider.name || 'N/A');
-                $('#view-provider-type').text(formatProviderType(provider.type));
-
-                // Handle website link
-                if (provider.website) {
-                    $('#view-website').text(provider.website);
-                    $('#view-website').attr('href', provider.website);
-                    $('#view-website-container').show();
-                } else {
-                    $('#view-website-container').hide();
-                }
-
-                // Show provider section
-                $('#view-provider-details').removeClass('hidden');
-            } else {
-                $('#view-provider-details').addClass('hidden');
-            }
-        },
-        error: function(xhr, status, error) {
-            console.error('Error loading provider details:', error);
-            $('#view-provider-details').addClass('hidden');
-        }
-    });
-}
-
-/**
- * Show reset password modal
- */
-function showResetPasswordModal(userId, username) {
-    $('#reset-user-id').val(userId);
-    $('#reset-user-name').text(username);
-    $('#new-password').val('');
-
-    $('#reset-password-modal').removeClass('hidden');
-}
-
-/**
- * Reset user password
- */
-function resetUserPassword() {
-    const userId = $('#reset-user-id').val();
-    const newPassword = $('#new-password').val();
-
-    $.ajax({
-        url: `${CONFIG.API_BASE_URL}/api/admin/users/${userId}/reset-password`,
-        method: 'POST',
-        headers: {
-            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
-            'Content-Type': 'application/json'
-        },
-        data: JSON.stringify({ newPassword }),
-        success: function(response) {
-            if (response && response.code === 200) {
-                showSuccess('Password reset successfully');
-                $('#reset-password-modal').addClass('hidden');
-            } else {
-                showError(response?.message || 'Failed to reset password');
-            }
-        },
-        error: function(xhr, status, error) {
-            console.error('Error resetting password:', error);
-            showError('Failed to reset password. Please try again.');
-        }
-    });
-}
-
-/**
- * Show delete user confirmation
- */
-function showDeleteConfirmation(userId) {
-    const user = users.find(u => u.id === userId);
-    if (!user) return;
-
-    // Set confirmation message
-    $('#confirm-title').text('Delete User');
-    $('#confirm-message').text(`Are you sure you want to delete user "${user.username}"? This action cannot be undone.`);
-
-    // Set icon
-    $('#confirm-icon').removeClass().addClass('bx bx-trash text-2xl');
-    $('#confirm-icon-container').removeClass().addClass('inline-flex items-center justify-center w-12 h-12 rounded-full bg-red-100 text-red-600 mb-4');
-
-    // Set button text
-    $('#confirm-action').text('Delete').removeClass().addClass('px-4 py-2 bg-red-600 text-white rounded-md font-medium hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500');
-
-    // Set callback
-    confirmationCallback = function() {
-        deleteUser(userId);
-    };
-
-    // Show modal
-    $('#confirm-modal').removeClass('hidden');
-}
-
-/**
- * Show toggle status confirmation
- */
-function showToggleStatusConfirmation(userId, currentStatus) {
-    const user = users.find(u => u.id === userId);
-    if (!user) return;
-
-    const newStatus = !currentStatus;
-    const action = newStatus ? 'activate' : 'deactivate';
-    const actionTitle = newStatus ? 'Activate' : 'Deactivate';
-
-    // Set confirmation message
-    $('#confirm-title').text(`${actionTitle} User`);
-    $('#confirm-message').text(`Are you sure you want to ${action} user "${user.username}"?`);
-
-    // Set icon
-    $('#confirm-icon').removeClass().addClass('bx bx-power-off text-2xl');
-
-    const iconColorClass = newStatus ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600';
-    $('#confirm-icon-container').removeClass().addClass(`inline-flex items-center justify-center w-12 h-12 rounded-full ${iconColorClass} mb-4`);
-
-    // Set button text
-    $('#confirm-action').text(actionTitle);
-
-    const buttonColorClass = newStatus
-        ? 'bg-green-600 text-white rounded-md font-medium hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500'
-        : 'bg-red-600 text-white rounded-md font-medium hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500';
-
-    $('#confirm-action').removeClass().addClass(`px-4 py-2 ${buttonColorClass}`);
-
-    // Set callback
-    confirmationCallback = function() {
-        toggleUserStatus(userId, newStatus);
-    };
-
-    // Show modal
-    $('#confirm-modal').removeClass('hidden');
-}
-
-/**
- * Delete a user
- */
-function deleteUser(userId) {
-    $.ajax({
-        url: `${CONFIG.API_BASE_URL}/api/admin/users/${userId}`,
-        method: 'DELETE',
-        headers: {
-            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
-        },
-        success: function(response) {
-            if (response && response.code === 200) {
-                showSuccess('User deleted successfully');
-                loadUsers();
-            } else {
-                showError(response?.message || 'Failed to delete user');
-            }
-        },
-        error: function(xhr, status, error) {
-            console.error('Error deleting user:', error);
-            showError('Failed to delete user. Please try again.');
-        }
-    });
-}
-
-/**
- * Toggle user active status
- */
-function toggleUserStatus(userId, newStatus) {
-    $.ajax({
-        url: `${CONFIG.API_BASE_URL}/api/admin/users/${userId}/toggle-status`,
-        method: 'PUT',
-        headers: {
-            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
-            'Content-Type': 'application/json'
-        },
-        data: JSON.stringify({ isActive: newStatus }),
-        success: function(response) {
-            if (response && response.code === 200) {
-                showSuccess(`User ${newStatus ? 'activated' : 'deactivated'} successfully`);
-                loadUsers();
-                $('#view-user-modal').addClass('hidden');
-            } else {
-                showError(response?.message || 'Failed to update user status');
-            }
-        },
-        error: function(xhr, status, error) {
-            console.error('Error toggling user status:', error);
-            showError('Failed to update user status. Please try again.');
-        }
-    });
-
 
 }

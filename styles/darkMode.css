@@ -1,0 +1,132 @@
+/* darkMode.css - Import this in all your HTML pages */
+
+/* Dark mode styles - applied when the html element has the 'dark' class */
+html.dark body {
+    background-color: #1f2937;
+    color: #f3f4f6;
+}
+
+html.dark .bg-white {
+    background-color: #111827;
+}
+
+html.dark .text-gray-800,
+html.dark .text-gray-900 {
+    color: #f3f4f6;
+}
+
+html.dark .text-gray-600,
+html.dark .text-gray-700,
+html.dark .text-gray-500 {
+    color: #9ca3af;
+}
+
+html.dark .bg-gray-50 {
+    background-color: #374151;
+}
+
+html.dark .bg-gray-100 {
+    background-color: #1f2937;
+}
+
+html.dark .border-gray-200,
+html.dark .border-gray-300 {
+    border-color: #4b5563;
+}
+
+html.dark input,
+html.dark select,
+html.dark textarea {
+    background-color: #1f2937;
+    border-color: #4b5563;
+    color: #f3f4f6;
+}
+
+html.dark .shadow-md,
+html.dark .shadow-card,
+html.dark .shadow-lg {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+}
+
+/* Dashboard and sidebar specific styles */
+html.dark .sidebar {
+    background-color: #111827;
+    border-color: #374151;
+}
+
+html.dark .logo,
+html.dark .user-avatar {
+    border-color: #374151;
+    background-color: #111827;
+}
+
+html.dark .nav-item {
+    color: #e5e7eb;
+}
+
+html.dark .nav-section-title,
+html.dark .avatar-role {
+    color: #9ca3af;
+}
+
+html.dark .nav-item:hover {
+    background-color: rgba(79, 70, 229, 0.2);
+}
+
+html.dark .top-navbar {
+    background-color: #111827;
+    border-color: #374151;
+}
+
+html.dark .dashboard-card {
+    background-color: #1f2937;
+}
+
+html.dark .card-title {
+    color: #d1d5db;
+}
+
+html.dark .card-value {
+    color: #f9fafb;
+}
+
+/* Table styles */
+html.dark table thead {
+    background-color: #1f2937;
+}
+
+html.dark table thead th {
+    color: #d1d5db;
+}
+
+html.dark table tbody tr {
+    border-color: #374151;
+}
+
+html.dark table tbody tr:hover {
+    background-color: #1f2937;
+}
+
+/* Footer */
+html.dark .footer-container,
+html.dark .footer-container-pages {
+    background-color: #111827;
+    border-color: #374151;
+}
+
+html.dark .footer-section a {
+    color: #9ca3af;
+}
+
+html.dark .footer-section a:hover {
+    color: #6366f1;
+}
+
+html.dark .copyright {
+    color: #6b7280;
+}
+
+html.dark .social-links a {
+    background-color: #374151;
+    color: #9ca3af;
+}

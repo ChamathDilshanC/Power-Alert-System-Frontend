@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Security Settings - PowerAlert</title>
+    <link rel="icon" type="image/x-icon" href="https://i.pinimg.com/736x/3f/bf/40/3fbf4075b391e07eaa00ec5a87647cb5.jpg">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            200: '#c7d2fe',
+                            300: '#a5b4fc',
+                            400: '#818cf8',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                            800: '#3730a3',
+                            900: '#312e81',
+                        },
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <!-- Box Icons -->
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <!-- Inter Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Toastify CSS -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <!-- Toastify JS -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <!-- Dashboard CSS -->
+    <link rel="stylesheet" href="../../styles/dashboard.css">
+
+    <!-- Dark Mode Support -->
+    <link rel="stylesheet" href="../../styles/darkMode.css">
+    <script src="../../js/ui/darkMode.js"></script>
+</head>
+<body class="bg-gray-50">
+<div class="container mx-auto p-4 max-w-4xl">
+    <div class="mb-6 flex justify-between items-center">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-800">Security Settings</h1>
+            <p class="text-gray-600">Manage your account security and authentication options</p>
+        </div>
+        <a href="../dashboard.html" class="flex items-center gap-2 bg-primary-50 text-primary-600 px-4 py-2 rounded-lg font-medium hover:bg-primary-100 transition-colors">
+            <i class='bx bx-arrow-back'></i>
+            <span>Back to Dashboard</span>
+        </a>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-md overflow-hidden">
+        <div class="p-6">
+            <!-- Password Change Section -->
+            <div class="mb-10">
+                <h2 class="text-lg font-medium text-gray-900 mb-4">Change Password</h2>
+                <form id="password-form" class="space-y-4">
+                    <div>
+                        <label for="current-password" class="block text-sm font-medium text-gray-700 mb-1">Current Password</label>
+                        <div class="relative">
+                            <input type="password" id="current-password" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 pr-10" required>
+                            <button type="button" class="toggle-password absolute right-2 top-3 text-gray-500 hover:text-gray-700" data-target="current-password">
+                                <i class='bx bx-hide'></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="new-password" class="block text-sm font-medium text-gray-700 mb-1">New Password</label>
+                        <div class="relative">
+                            <input type="password" id="new-password" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 pr-10" required pattern="^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=])(?=\S+$).{8,}$">
+                            <button type="button" class="toggle-password absolute right-2 top-3 text-gray-500 hover:text-gray-700" data-target="new-password">
+                                <i class='bx bx-hide'></i>
+                            </button>
+                        </div>
+                        <p class="mt-1 text-sm text-gray-500">Password must be at least 8 characters and include uppercase, lowercase, number, and special character.</p>
+                    </div>
+
+                    <div>
+                        <label for="confirm-password" class="block text-sm font-medium text-gray-700 mb-1">Confirm New Password</label>
+                        <div class="relative">
+                            <input type="password" id="confirm-password" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 pr-10" required>
+                            <button type="button" class="toggle-password absolute right-2 top-3 text-gray-500 hover:text-gray-700" data-target="confirm-password">
+                                <i class='bx bx-hide'></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div>
+                        <button type="submit" id="change-password-btn" class="bg-primary-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-primary-700 transition-colors mt-2">
+                            Update Password
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Two-Factor Authentication Section -->
+            <div class="mb-10 pt-6 border-t border-gray-200">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <h2 class="text-lg font-medium text-gray-900">Two-Factor Authentication</h2>
+                        <p class="text-sm text-gray-500">Add an extra layer of security to your account</p>
+                    </div>
+                    <div class="status-pill bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-sm font-medium" id="2fa-status">
+                        Disabled
+                    </div>
+                </div>
+
+                <div class="bg-gray-50 rounded-lg p-4 mb-4">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0 mt-1">
+                            <i class='bx bxs-mobile text-xl text-primary-600'></i>
+                        </div>
+                        <div class="ml-3">
+                            <h3 class="text-base font-medium text-gray-800">Authenticator App</h3>
+                            <p class="text-sm text-gray-500">Use an authenticator app like Google Authenticator, Microsoft Authenticator, or Authy to get verification codes.</p>
+                            <button id="setup-2fa-btn" class="mt-2 inline-flex items-center px-3 py-2 border border-primary-300 text-sm font-medium rounded-md text-primary-700 bg-primary-50 hover:bg-primary-100">
+                                <i class='bx bx-plus-circle mr-2'></i> Set up authenticator
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-gray-50 rounded-lg p-4 mb-4">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0 mt-1">
+                            <i class='bx bxs-envelope text-xl text-primary-600'></i>
+                        </div>
+                        <div class="ml-3">
+                            <h3 class="text-base font-medium text-gray-800">Email Authentication</h3>
+                            <p class="text-sm text-gray-500">Receive verification codes via email when signing in from a new device.</p>
+                            <div class="mt-2">
+                                <label class="inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" id="email-2fa" class="sr-only peer">
+                                    <div class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
+                                    <span class="ml-3 text-sm font-medium text-gray-700">Enable Email Authentication</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-gray-50 rounded-lg p-4">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0 mt-1">
+                            <i class='bx bxs-phone text-xl text-primary-600'></i>
+                        </div>
+                        <div class="ml-3">
+                            <h3 class="text-base font-medium text-gray-800">SMS Authentication</h3>
+                            <p class="text-sm text-gray-500">Receive verification codes via SMS when signing in from a new device.</p>
+                            <div class="mt-2">
+                                <label class="inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" id="sms-2fa" class="sr-only peer">
+                                    <div class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
+                                    <span class="ml-3 text-sm font-medium text-gray-700">Enable SMS Authentication</span>
+                                </label>
+                            </div>
+                            <div class="mt-2" id="phone-input-container" style="display: none;">
+                                <div class="flex">
+                                    <input type="tel" id="phone-number" placeholder="+94 7X XXX XXXX" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5">
+                                    <button id="verify-phone-btn" class="ml-2 inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                                        Verify
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Login History Section -->
+            <div class="mb-10 pt-6 border-t border-gray-200">
+                <h2 class="text-lg font-medium text-gray-900 mb-4">Login History</h2>
+                <p class="text-sm text-gray-500 mb-4">Review your recent login activity. If you see any suspicious activity, change your password immediately.</p>
+
+                <div class="overflow-hidden border border-gray-200 rounded-lg">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date & Time</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">IP Address</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Device</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                        </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200" id="login-history-body">
+                        <!-- Data will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Account Recovery Section -->
+            <div class="pt-6 border-t border-gray-200">
+                <h2 class="text-lg font-medium text-gray-900 mb-4">Account Recovery</h2>
+                <p class="text-sm text-gray-500 mb-4">Set up recovery options to help you regain access if you're locked out of your account.</p>
+
+                <div class="space-y-4">
+                    <div>
+                        <label for="recovery-email" class="block text-sm font-medium text-gray-700 mb-1">Recovery Email</label>
+                        <div class="flex">
+                            <input type="email" id="recovery-email" placeholder="backup@example.com" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5">
+                            <button id="save-recovery-email" class="ml-2 inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                                Save
+                            </button>
+                        </div>
+                        <p class="mt-1 text-sm text-gray-500">This email will be used if you need to recover your account</p>
+                    </div>
+
+                    <div>
+                        <h3 class="text-base font-medium text-gray-800 mb-2">Security Questions</h3>
+                        <div class="space-y-3">
+                            <div>
+                                <label for="security-question-1" class="block text-sm font-medium text-gray-700 mb-1">Question 1</label>
+                                <select id="security-question-1" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5">
+                                    <option value="">Select a security question</option>
+                                    <option value="pet">What was the name of your first pet?</option>
+                                    <option value="school">What was the name of your first school?</option>
+                                    <option value="birthplace">What city were you born in?</option>
+                                    <option value="mother">What is your mother's maiden name?</option>
+                                    <option value="car">What was your first car?</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="security-answer-1" class="block text-sm font-medium text-gray-700 mb-1">Answer 1</label>
+                                <input type="text" id="security-answer-1" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5">
+                            </div>
+
+                            <div>
+                                <label for="security-question-2" class="block text-sm font-medium text-gray-700 mb-1">Question 2</label>
+                                <select id="security-question-2" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5">
+                                    <option value="">Select a security question</option>
+                                    <option value="street">What street did you grow up on?</option>
+                                    <option value="book">What is your favorite book?</option>
+                                    <option value="teacher">Who was your favorite teacher?</option>
+                                    <option value="food">What is your favorite food?</option>
+                                    <option value="meet">Where did you meet your spouse?</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="security-answer-2" class="block text-sm font-medium text-gray-700 mb-1">Answer 2</label>
+                                <input type="text" id="security-answer-2" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5">
+                            </div>
+
+                            <div>
+                                <button id="save-security-questions" class="bg-primary-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-primary-700 transition-colors mt-2">
+                                    Save Security Questions
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 2FA Setup Modal -->
+<div id="twofa-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
+    <div class="bg-white rounded-xl shadow-xl max-w-md w-full mx-4 p-6">
+        <div class="mb-4">
+            <h3 class="text-lg font-medium text-gray-900">Set Up Authenticator App</h3>
+            <p class="text-sm text-gray-600 mt-1">Follow these steps to set up two-factor authentication using an authenticator app</p>
+        </div>
+
+        <div class="mb-6">
+            <ol class="list-decimal pl-5 space-y-2 text-sm text-gray-600">
+                <li>Download and install an authenticator app like Google Authenticator, Microsoft Authenticator, or Authy on your mobile device.</li>
+                <li>Open the app and scan the QR code below.</li>
+                <li>Enter the 6-digit verification code provided by the app to verify setup.</li>
+            </ol>
+        </div>
+
+        <div class="mb-6 flex justify-center">
+            <div class="bg-gray-100 p-3 rounded-lg">
+                <img id="qr-code" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=otpauth://totp/PowerAlert:admin@example.com?secret=JBSWY3DPEHPK3PXP&issuer=PowerAlert" alt="QR Code" class="w-36 h-36">
+            </div>
+        </div>
+
+        <div class="mb-6">
+            <label for="verification-code" class="block text-sm font-medium text-gray-700 mb-1">Verification Code</label>
+            <input type="text" id="verification-code" placeholder="Enter 6-digit code" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5">
+        </div>
+
+        <div class="flex justify-end gap-3">
+            <button id="cancel-2fa" class="bg-white text-gray-700 border border-gray-300 py-2 px-4 rounded-lg font-medium hover:bg-gray-50 transition-colors">
+                Cancel
+            </button>
+            <button id="verify-2fa" class="bg-primary-600 text-white py-2 px-6 rounded-lg font-medium hover:bg-primary-700 transition-colors">
+                Verify and Activate
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Phone Verification Modal -->
+<div id="phone-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
+    <div class="bg-white rounded-xl shadow-xl max-w-md w-full mx-4 p-6">
+        <div class="mb-4">
+            <h3 class="text-lg font-medium text-gray-900">Verify Phone Number</h3>
+            <p class="text-sm text-gray-600 mt-1">We've sent a verification code to your phone number</p>
+        </div>
+
+        <div class="mb-6">
+            <label for="sms-code" class="block text-sm font-medium text-gray-700 mb-1">Verification Code</label>
+            <input type="text" id="sms-code" placeholder="Enter 6-digit code" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5">
+        </div>
+
+        <div class="flex justify-end gap-3">
+            <button id="cancel-phone" class="bg-white text-gray-700 border border-gray-300 py-2 px-4 rounded-lg font-medium hover:bg-gray-50 transition-colors">
+                Cancel
+            </button>
+            <button id="verify-sms" class="bg-primary-600 text-white py-2 px-6 rounded-lg font-medium hover:bg-primary-700 transition-colors">
+                Verify
+            </button>
+        </div>
+    </div>
+</div>
+
+<footer class="footer-container-pages mt-12">
+    <div class="footer-content">
+        <div class="footer-brand">
+            <div class="footer-logo">
+                <i class='bx bxs-bolt text-xl'></i>
+                <span>Power Alert</span>
+            </div>
+            <p class="footer-description">
+                Reliable power outage monitoring and notifications for Sri Lanka.
+            </p>
+        </div>
+
+        <div class="footer-links">
+            <div class="footer-section">
+                <h3>Quick Links</h3>
+                <ul>
+                    <li><a href="../dashboard.html">Dashboard</a></li>
+                    <li><a href="../outageManagement.html">Outages</a></li>
+                    <li><a href="../areaManagement.html">Areas</a></li>
+                    <li><a href="../reports.html">Reports</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-section">
+                <h3>Resources</h3>
+                <ul>
+                    <li><a href="#">Documentation</a></li>
+                    <li><a href="#">API</a></li>
+                    <li><a href="#">Help Center</a></li>
+                    <li><a href="#">Contact Support</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-section">
+                <h3>Legal</h3>
+                <ul>
+                    <li><a href="#">Privacy Policy</a></li>
+                    <li><a href="#">Terms of Service</a></li>
+                    <li><a href="#">Data Policy</a></li>
+                    <li><a href="#">Cookie Settings</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer-bottom">
+        <div class="copyright">
+            <p>&copy; 2025 Power Alert. All rights reserved.</p>
+        </div>
+        <div class="social-links">
+            <a href="#" aria-label="Facebook"><i class='bx bxl-facebook'></i></a>
+            <a href="#" aria-label="Twitter"><i class='bx bxl-twitter'></i></a>
+            <a href="#" aria-label="Instagram"><i class='bx bxl-instagram'></i></a>
+        </div>
+    </div>
+</footer>
+
+<script>
+    $(document).ready(function() {
+        // Password visibility toggle
+        $('.toggle-password').on('click', function() {
+            const targetId = $(this).data('target');
+            const input = $('#' + targetId);
+            const icon = $(this).find('i');
+
+            if (input.attr('type') === 'password') {
+                input.attr('type', 'text');
+                icon.removeClass('bx-hide').addClass('bx-show');
+            } else {
+                input.attr('type', 'password');
+                icon.removeClass('bx-show').addClass('bx-hide');
+            }
+        });
+
+        // Password change form
+        $('#password-form').on('submit', function(e) {
+            e.preventDefault();
+
+            const currentPassword = $('#current-password').val();
+            const newPassword = $('#new-password').val();
+            const confirmPassword = $('#confirm-password').val();
+
+            // Password validation
+            if (newPassword !== confirmPassword) {
+                showToast('New passwords do not match', 'error');
+                return;
+            }
+
+            // Password strength validation (this is also handled by HTML pattern attribute)
+            const passwordRegex = /^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=])(?=\S+$).{8,}$/;
+            if (!passwordRegex.test(newPassword)) {
+                showToast('Password does not meet security requirements', 'error');
+                return;
+            }
+
+            // In a real app, you would send this to your server
+            // Here we'll simulate an API call
+            simulateApiCall(
+                '/api/user/change-password',
+                {
+                    currentPassword: currentPassword,
+                    newPassword: newPassword
+                },
+                function(response) {
+                    showToast('Password updated successfully');
+                    $('#password-form')[0].reset();
+                },
+                function(error) {
+                    showToast(error, 'error');
+                }
+            );
+        });
+
+        // 2FA toggles and setup
+        $('#setup-2fa-btn').on('click', function() {
+            $('#twofa-modal').removeClass('hidden');
+        });
+
+        $('#cancel-2fa').on('click', function() {
+            $('#twofa-modal').addClass('hidden');
+            $('#verification-code').val('');
+        });
+
+        $('#verify-2fa').on('click', function() {
+            const code = $('#verification-code').val();
+
+            if (!code || code.length !== 6) {
+                showToast('Please enter a valid 6-digit code', 'error');
+                return;
+            }
+
+            // Simulate verification
+            simulateApiCall(
+                '/api/user/verify-2fa',
+                { code: code },
+                function(response) {
+                    $('#twofa-modal').addClass('hidden');
+                    $('#2fa-status').text('Enabled').removeClass('bg-gray-100 text-gray-600').addClass('bg-green-100 text-green-600');
+                    showToast('Two-factor authentication enabled successfully');
+                    $('#verification-code').val('');
+                },
+                function(error) {
+                    showToast(error, 'error');
+                }
+            );
+        });
+
+        // SMS authentication toggle
+        $('#sms-2fa').on('change', function() {
+            if ($(this).is(':checked')) {
+                $('#phone-input-container').slideDown();
+            } else {
+                $('#phone-input-container').slideUp();
+            }
+        });
+
+        // Phone verification
+        $('#verify-phone-btn').on('click', function() {
+            const phoneNumber = $('#phone-number').val();
+
+            if (!phoneNumber || phoneNumber.length < 10) {
+                showToast('Please enter a valid phone number', 'error');
+                return;
+            }
+
+            // Simulate sending verification code
+            simulateApiCall(
+                '/api/user/send-sms-code',
+                { phoneNumber: phoneNumber },
+                function(response) {
+                    $('#phone-modal').removeClass('hidden');
+                    showToast('Verification code sent to your phone');
+                },
+                function(error) {
+                    showToast(error, 'error');
+                }
+            );
+        });
+
+        $('#cancel-phone').on('click', function() {
+            $('#phone-modal').addClass('hidden');
+            $('#sms-code').val('');
+        });
+
+        $('#verify-sms').on('click', function() {
+            const code = $('#sms-code').val();
+
+            if (!code || code.length !== 6) {
+                showToast('Please enter a valid 6-digit code', 'error');
+                return;
+            }
+
+            // Simulate verification
+            simulateApiCall(
+                '/api/user/verify-sms',
+                { code: code },
+                function(response) {
+                    $('#phone-modal').addClass('hidden');
+                    showToast('Phone number verified successfully');
+                    $('#sms-code').val('');
+                },
+                function(error) {
+                    showToast(error, 'error');
+                }
+            );
+        });
+
+        // Recovery email
+        $('#save-recovery-email').on('click', function() {
+            const email = $('#recovery-email').val();
+
+            if (!email || !isValidEmail(email)) {
+                showToast('Please enter a valid email address', 'error');
+                return;
+            }
+
+            // Simulate saving
+            simulateApiCall(
+                '/api/user/recovery-email',
+                { email: email },
+                function(response) {
+                    showToast('Recovery email saved successfully');
+                },
+                function(error) {
+                    showToast(error, 'error');
+                }
+            );
+        });
+
+        // Security questions
+        $('#save-security-questions').on('click', function() {
+            const question1 = $('#security-question-1').val();
+            const answer1 = $('#security-answer-1').val();
+            const question2 = $('#security-question-2').val();
+            const answer2 = $('#security-answer-2').val();
+
+            if (!question1 || !answer1 || !question2 || !answer2) {
+                showToast('Please select both questions and provide answers', 'error');
+                return;
+            }
+
+            // Simulate saving
+            simulateApiCall(
+                '/api/user/security-questions',
+                {
+                    question1: question1,
+                    answer1: answer1,
+                    question2: question2,
+                    answer2: answer2
+                },
+                function(response) {
+                    showToast('Security questions saved successfully');
+                },
+                function(error) {
+                    showToast(error, 'error');
+                }
+            );
+        });
+
+        // Load mock login history data
+        loadLoginHistory();
+
+        // Simulate loading saved settings
+        loadSecuritySettings();
+    });
+
+    // Helper functions
+
+    // Validate email format
+    function isValidEmail(email) {
+        const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+        return re.test(email);
+    }
+
+    // Show toast notification
+    function showToast(message, type = 'success') {
+        let backgroundColor;
+
+        if (type === 'success') {
+            backgroundColor = "linear-gradient(to right, #4f46e5, #6366f1)";
+        } else if (type === 'error') {
+            backgroundColor = "linear-gradient(to right, #ef4444, #dc2626)";
+        } else if (type === 'warning') {
+            backgroundColor = "linear-gradient(to right, #f59e0b, #d97706)";
+        }
+
+        Toastify({
+            text: message,
+            duration: 3000,
+            close: true,
+            gravity: "top",
+            position: "right",
+            backgroundColor: backgroundColor,
+            stopOnFocus: true
+        }).showToast();
+    }
+
+    // Simulate API call with success/error callbacks
+    function simulateApiCall(endpoint, data, successCallback, errorCallback) {
+        // Show loading state
+        const loadingToast = Toastify({
+            text: "Processing...",
+            duration: -1, // Infinite duration until manually dismissed
+            close: false,
+            gravity: "top",
+            position: "right",
+            backgroundColor: "linear-gradient(to right, #6b7280, #4b5563)",
+            stopOnFocus: true
+        }).showToast();
+
+        // Simulate network delay
+        setTimeout(function() {
+            // Remove loading toast
+            loadingToast.hideToast();
+
+            // Validate current password for password change
+            if (endpoint === '/api/user/change-password' && data.currentPassword !== 'password123') {
+                if (errorCallback) errorCallback('Current password is incorrect');
+                return;
+            }
+
+            // Validate 2FA code
+            if (endpoint === '/api/user/verify-2fa' && data.code !== '123456') {
+                if (errorCallback) errorCallback('Invalid verification code');
+                return;
+            }
+
+            // Validate SMS code
+            if (endpoint === '/api/user/verify-sms' && data.code !== '123456') {
+                if (errorCallback) errorCallback('Invalid verification code');
+                return;
+            }
+
+            // Success for all other cases
+            if (successCallback) successCallback({ status: 'success', message: 'Operation completed successfully' });
+
+        }, 1500); // Simulate 1.5 second delay
+    }
+
+    // Load mock login history data
+    function loadLoginHistory() {
+        const mockData = [
+            {
+                date: '2025-04-16 14:23:45',
+                ip: '192.168.1.1',
+                device: 'Chrome on Windows',
+                location: 'Colombo, Sri Lanka',
+                status: 'success'
+            }
+    ]
+
+        const tableBody = $('#login-history-body');
+        tableBody.empty();
+
+        mockData.forEach(entry => {
+            const statusClass = entry.status === 'success'
+                ? 'bg-green-100 text-green-800'
+                : 'bg-red-100 text-red-800';
+
+            const row = `
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${entry.date}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${entry.ip}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${entry.device}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${entry.location}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusClass}">
+                                ${entry.status === 'success' ? 'Successful' : 'Failed'}
+                            </span>
+                        </td>
+                    </tr>
+                `;
+
+            tableBody.append(row);
+        });
+    }
+
+    // Load mock security settings
+    function loadSecuritySettings() {
+        // Simulate loading recovery email
+        $('#recovery-email').val('backup@example.com');
+
+        // Simulate loading security questions
+        $('#security-question-1').val('pet');
+        $('#security-answer-1').val('Fluffy');
+        $('#security-question-2').val('street');
+        $('#security-answer-2').val('Main Street');
+    }
+</script>
+</body>
+</html>

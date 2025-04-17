@@ -251,3 +251,121 @@ textarea:focus {
 .animate-spin {
     animation: spin 1s linear infinite;
 }
+
+/* Add these CSS styles to your userManagement.css file or inside a <style> tag in the HTML */
+
+/* Action button styles */
+.view-user-btn, .edit-user-btn, .delete-user-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.view-user-btn {
+    background-color: rgba(59, 130, 246, 0.1);
+}
+
+.view-user-btn:hover {
+    background-color: rgba(59, 130, 246, 0.2);
+}
+
+.edit-user-btn {
+    background-color: rgba(79, 70, 229, 0.1);
+}
+
+.edit-user-btn:hover {
+    background-color: rgba(79, 70, 229, 0.2);
+}
+
+.delete-user-btn {
+    background-color: rgba(220, 38, 38, 0.1);
+}
+
+.delete-user-btn:hover {
+    background-color: rgba(220, 38, 38, 0.2);
+}
+
+.bx {
+    font-size: 18px;
+}
+
+/* Ensure modals display properly */
+.modal {
+    z-index: 50;
+}
+
+.modal-content {
+    z-index: 51;
+}
+
+/* Adjust spacing in action column */
+.flex.space-x-2 {
+    gap: 0.5rem;
+}
+
+/* Action button styles - add these to your userManagement.css file or in a <style> tag */
+
+/* Style for action buttons container */
+.flex.space-x-2.justify-end {
+    display: flex;
+    gap: 8px;
+}
+
+/* Style for individual action buttons */
+.view-user-btn, .edit-user-btn, .delete-user-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+/* View button */
+.view-user-btn {
+    background-color: rgba(59, 130, 246, 0.1);
+    color: #3b82f6;
+}
+
+.view-user-btn:hover {
+    background-color: rgba(59, 130, 246, 0.2);
+}
+
+/* Edit button */
+.edit-user-btn {
+    background-color: rgba(79, 70, 229, 0.1);
+    color: #4f46e5;
+}
+
+.edit-user-btn:hover {
+    background-color: rgba(79, 70, 229, 0.2);
+}
+
+/* Delete button */
+.delete-user-btn {
+    background-color: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+}
+
+.delete-user-btn:hover {
+    background-color: rgba(239, 68, 68, 0.2);
+}
+
+/* Icon size */
+.bx {
+    font-size: 18px;
+}
+
+/* Make sure modals appear above other content */
+.modal {
+    z-index: 50;
+}
+
+.modal-content {
+    z-index: 51;
+}

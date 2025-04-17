@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile Settings - PowerAlert</title>
+    <link rel="icon" type="image/x-icon" href="https://i.pinimg.com/736x/3f/bf/40/3fbf4075b391e07eaa00ec5a87647cb5.jpg">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            200: '#c7d2fe',
+                            300: '#a5b4fc',
+                            400: '#818cf8',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                            800: '#3730a3',
+                            900: '#312e81',
+                        },
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <!-- Box Icons -->
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <!-- Inter Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Toastify CSS -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <!-- Toastify JS -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <link rel="stylesheet" href="../../styles/dashboard.css">
+    <link rel="stylesheet" href="../../styles/darkMode.css">
+    <script src="../../js/ui/darkMode.js"></script>
+
+    <style>
+        /* Dark mode styles that override dashboard.css when dark class is applied */
+        html.dark body {
+            background-color: #1f2937;
+            color: #f3f4f6;
+        }
+
+        html.dark .bg-white {
+            background-color: #111827;
+        }
+
+        html.dark .text-gray-800 {
+            color: #f3f4f6;
+        }
+
+        html.dark .text-gray-600,
+        html.dark .text-gray-700,
+        html.dark .text-gray-500 {
+            color: #9ca3af;
+        }
+
+        html.dark .bg-gray-50 {
+            background-color: #374151;
+        }
+
+        html.dark .border-gray-200,
+        html.dark .border-gray-300 {
+            border-color: #4b5563;
+        }
+
+        html.dark input,
+        html.dark select,
+        html.dark textarea {
+            background-color: #1f2937;
+            border-color: #4b5563;
+            color: #f3f4f6;
+        }
+
+        html.dark .shadow-md {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+        }
+
+        html.dark .footer-container,
+        html.dark .footer-container-pages {
+            background-color: #111827;
+            border-color: #374151;
+        }
+
+        html.dark .footer-section a {
+            color: #9ca3af;
+        }
+
+        html.dark .footer-section a:hover {
+            color: #6366f1;
+        }
+
+        html.dark .copyright {
+            color: #6b7280;
+        }
+
+        html.dark .social-links a {
+            background-color: #374151;
+            color: #9ca3af;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900">
+<div class="container mx-auto p-4 max-w-4xl">
+    <div class="mb-6 flex justify-between items-center">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Profile Settings</h1>
+            <p class="text-gray-600 dark:text-gray-400">Manage your account settings and preferences</p>
+        </div>
+        <a href="../../dashboard.html" class="flex items-center gap-2 bg-primary-50 text-primary-600 dark:bg-primary-900 dark:text-primary-300 px-4 py-2 rounded-lg font-medium hover:bg-primary-100 dark:hover:bg-primary-800 transition-colors">
+            <i class='bx bx-arrow-back'></i>
+            <span>Back to Dashboard</span>
+        </a>
+    </div>
+
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+        <div class="p-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Profile Image Section -->
+                <div class="md:col-span-1">
+                    <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Profile Image</h2>
+                    <div class="flex flex-col items-center">
+                        <div class="relative mb-4">
+                            <div class="w-32 h-32 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center overflow-hidden border-4 border-primary-100 dark:border-primary-900" id="profile-image-container">
+                                <img id="profile-image" src="" alt="Profile" class="w-full h-full object-cover hidden">
+                                <i class='bx bx-user text-5xl text-gray-400 dark:text-gray-500' id="default-icon"></i>
+                            </div>
+                            <button type="button" id="change-photo-btn" class="absolute bottom-0 right-0 w-8 h-8 bg-primary-600 text-white rounded-full flex items-center justify-center shadow-md hover:bg-primary-700 transition-colors">
+                                <i class='bx bx-camera'></i>
+                            </button>
+                            <input type="file" id="profile-image-input" accept="image/*" class="hidden">
+                        </div>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mb-2">Upload a profile picture</p>
+                        <button type="button" id="remove-photo-btn" class="text-sm text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 hidden">
+                            Remove photo
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Settings Section -->
+                <div class="md:col-span-2">
+                    <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Application Settings</h2>
+
+                    <div class="space-y-6">
+                        <!-- Notification Setting -->
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h3 class="text-base font-medium text-gray-900 dark:text-gray-100">Enable Notifications</h3>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">Receive notifications about outages and updates</p>
+                            </div>
+                            <label class="inline-flex items-center cursor-pointer">
+                                <input type="checkbox" id="setting-notifications" class="sr-only peer">
+                                <div class="relative w-11 h-6 bg-gray-200 dark:bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 dark:peer-focus:ring-primary-800 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
+                            </label>
+                        </div>
+
+                        <!-- Dark Mode Setting -->
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h3 class="text-base font-medium text-gray-900 dark:text-gray-100">Dark Mode</h3>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">Switch to dark theme for low-light environments</p>
+                            </div>
+                            <label class="inline-flex items-center cursor-pointer">
+                                <input type="checkbox" id="setting-dark-mode" class="sr-only peer">
+                                <div class="relative w-11 h-6 bg-gray-200 dark:bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 dark:peer-focus:ring-primary-800 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
+                            </label>
+                        </div>
+
+                        <!-- Language Setting -->
+                        <div>
+                            <h3 class="text-base font-medium text-gray-900 dark:text-gray-100 mb-2">Language</h3>
+                            <p class="text-sm text-gray-500 dark:text-gray-400 mb-2">Select your preferred language</p>
+                            <select id="setting-language" class="bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5">
+                                <option value="en">English</option>
+                                <option value="si">Sinhala</option>
+                                <option value="ta">Tamil</option>
+                            </select>
+                        </div>
+
+                        <!-- Email Frequency Setting -->
+                        <div>
+                            <h3 class="text-base font-medium text-gray-900 dark:text-gray-100 mb-2">Email Frequency</h3>
+                            <p class="text-sm text-gray-500 dark:text-gray-400 mb-2">Select how often you want to receive email updates</p>
+                            <select id="setting-email-frequency" class="bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5">
+                                <option value="immediate">Immediate</option>
+                                <option value="daily">Daily Digest</option>
+                                <option value="weekly">Weekly Summary</option>
+                                <option value="never">Never</option>
+                            </select>
+                        </div>
+
+                        <!-- Data Privacy Setting -->
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h3 class="text-base font-medium text-gray-900 dark:text-gray-100">Share Usage Data</h3>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">Allow sharing of anonymous usage data to improve our service</p>
+                            </div>
+                            <label class="inline-flex items-center cursor-pointer">
+                                <input type="checkbox" id="setting-share-data" class="sr-only peer">
+                                <div class="relative w-11 h-6 bg-gray-200 dark:bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 dark:peer-focus:ring-primary-800 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-8 border-t border-gray-200 dark:border-gray-700 pt-6 flex justify-end">
+                <button type="button" id="save-settings" class="bg-primary-600 text-white py-2 px-6 rounded-lg font-medium hover:bg-primary-700 transition-colors">
+                    Save Settings
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer class="footer-container-pages mt-12">
+    <div class="footer-content">
+        <div class="footer-brand">
+            <div class="footer-logo">
+                <i class='bx bxs-bolt text-xl'></i>
+                <span>Power Alert</span>
+            </div>
+            <p class="footer-description">
+                Reliable power outage monitoring and notifications for Sri Lanka.
+            </p>
+        </div>
+
+        <div class="footer-links">
+            <div class="footer-section">
+                <h3>Quick Links</h3>
+                <ul>
+                    <li><a href="../dashboard.html">Dashboard</a></li>
+                    <li><a href="../outageManagement.html">Outages</a></li>
+                    <li><a href="../areaManagement.html">Areas</a></li>
+                    <li><a href="../reports.html">Reports</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-section">
+                <h3>Resources</h3>
+                <ul>
+                    <li><a href="#">Documentation</a></li>
+                    <li><a href="#">API</a></li>
+                    <li><a href="#">Help Center</a></li>
+                    <li><a href="#">Contact Support</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-section">
+                <h3>Legal</h3>
+                <ul>
+                    <li><a href="#">Privacy Policy</a></li>
+                    <li><a href="#">Terms of Service</a></li>
+                    <li><a href="#">Data Policy</a></li>
+                    <li><a href="#">Cookie Settings</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer-bottom">
+        <div class="copyright">
+            <p>&copy; 2025 Power Alert. All rights reserved.</p>
+        </div>
+        <div class="social-links">
+            <a href="#" aria-label="Facebook"><i class='bx bxl-facebook'></i></a>
+            <a href="#" aria-label="Twitter"><i class='bx bxl-twitter'></i></a>
+            <a href="#" aria-label="Instagram"><i class='bx bxl-instagram'></i></a>
+        </div>
+    </div>
+</footer>
+
+<script>
+    $(document).ready(function() {
+        // Check if dark mode is enabled
+        const isDarkMode = localStorage.getItem('setting-dark-mode') === 'true';
+        if (isDarkMode) {
+            document.documentElement.classList.add('dark');
+            $('#setting-dark-mode').prop('checked', true);
+        }
+
+        // Load saved settings from localStorage
+        loadSettings();
+
+        // Handle profile image upload
+        $('#change-photo-btn').on('click', function() {
+            $('#profile-image-input').click();
+        });
+
+        $('#profile-image-input').on('change', function(e) {
+            if (e.target.files && e.target.files[0]) {
+                const reader = new FileReader();
+
+                reader.onload = function(e) {
+                    // Show the image and hide the default icon
+                    $('#profile-image').attr('src', e.target.result).removeClass('hidden');
+                    $('#default-icon').addClass('hidden');
+                    $('#remove-photo-btn').removeClass('hidden');
+                }
+
+                reader.readAsDataURL(e.target.files[0]);
+            }
+        });
+
+        // Remove profile photo
+        $('#remove-photo-btn').on('click', function() {
+            $('#profile-image').addClass('hidden').attr('src', '');
+            $('#default-icon').removeClass('hidden');
+            $('#profile-image-input').val('');
+            $('#remove-photo-btn').addClass('hidden');
+
+            // Remove from localStorage
+            localStorage.removeItem('profileImage');
+
+            showToast('Profile photo removed');
+        });
+
+        // Toggle dark mode
+        $('#setting-dark-mode').on('change', function() {
+            if ($(this).is(':checked')) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+
+            // Save immediately to avoid flashing on refresh
+            localStorage.setItem('setting-dark-mode', $(this).is(':checked'));
+        });
+
+        // Save settings
+        $('#save-settings').on('click', function() {
+            saveSettings();
+        });
+    });
+
+    function loadSettings() {
+        // Load profile image
+        const profileImage = localStorage.getItem('profileImage');
+        if (profileImage) {
+            $('#profile-image').attr('src', profileImage).removeClass('hidden');
+            $('#default-icon').addClass('hidden');
+            $('#remove-photo-btn').removeClass('hidden');
+        }
+
+        // Load other settings
+        $('#setting-notifications').prop('checked', localStorage.getItem('setting-notifications') === 'true');
+        $('#setting-language').val(localStorage.getItem('setting-language') || 'en');
+        $('#setting-email-frequency').val(localStorage.getItem('setting-email-frequency') || 'immediate');
+        $('#setting-share-data').prop('checked', localStorage.getItem('setting-share-data') === 'true');
+
+        // Dark mode is handled separately on page load to avoid flash
+    }
+
+    function saveSettings() {
+        // Save profile image
+        if ($('#profile-image').attr('src')) {
+            localStorage.setItem('profileImage', $('#profile-image').attr('src'));
+        }
+
+        // Save other settings
+        localStorage.setItem('setting-notifications', $('#setting-notifications').prop('checked'));
+        localStorage.setItem('setting-dark-mode', $('#setting-dark-mode').prop('checked'));
+        localStorage.setItem('setting-language', $('#setting-language').val());
+        localStorage.setItem('setting-email-frequency', $('#setting-email-frequency').val());
+        localStorage.setItem('setting-share-data', $('#setting-share-data').prop('checked'));
+
+        showToast('Settings saved successfully');
+
+        // Apply dark mode setting to all pages (needs to be in localStorage)
+        if ($('#setting-dark-mode').prop('checked')) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    }
+
+    function showToast(message) {
+        Toastify({
+            text: message,
+            duration: 3000,
+            close: true,
+            gravity: "top",
+            position: "right",
+            backgroundColor: document.documentElement.classList.contains('dark')
+                ? "linear-gradient(to right, #6366f1, #4f46e5)"
+                : "linear-gradient(to right, #4f46e5, #6366f1)",
+            stopOnFocus: true
+        }).showToast();
+    }
+</script>
+</body>
+</html>

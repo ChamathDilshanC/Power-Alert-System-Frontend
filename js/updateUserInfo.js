@@ -39,10 +39,10 @@
                 ${email ? `<div class="px-4 py-1 text-gray-500 text-xs">${email}</div>` : ''}
                 <div class="px-4 py-1 mb-1 text-xs italic text-gray-500">${formattedRole}</div>
                 <div class="border-t border-gray-100 my-1"></div>
-                <a href="settings/profile.html" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded">
+                <a href="../pages/user/profileSetting.html" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded">
                     <i class="bx bx-user-circle mr-2"></i> Profile
                 </a>
-                <a href="settings/security.html" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded">
+                <a href="../pages/user/userSecurity.html" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded">
                     <i class="bx bx-lock-alt mr-2"></i> Security
                 </a>
                 <div class="border-t border-gray-100 my-1"></div>
