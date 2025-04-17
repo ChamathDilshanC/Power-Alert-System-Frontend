@@ -166,26 +166,19 @@ function loadUsers() {
                 console.log("Original API response:", response.data);
 
                 users = response.data.map(user => {
-                    // Debug the user object received from the API
-                    console.log(`User ${user.username} original:`, user);
-
-                    // Check if the API is using a different property name
-                    // It might be using 'active' or 'is_active' instead of 'isActive'
-                    const activeStatus = user.isActive || user.active || user.is_active;
-
-                    console.log(`User ${user.username}: isActive=${user.isActive}, active=${user.active}, is_active=${user.is_active}`);
-
-                    // Ensure isActive is a boolean with proper default
-                    const isActive = typeof activeStatus === 'boolean' ? activeStatus :
-                        activeStatus === 1 || activeStatus === '1' ||
-                        activeStatus === true || activeStatus === 'true' ||
-                        activeStatus === 'Active';
-
-                    console.log(`User ${user.username}: Active status determined: ${isActive}`);
+                    // Normalize the active status field
+                    let isActiveValue = false;
+                    if (user.hasOwnProperty('isActive')) {
+                        isActiveValue = !!user.isActive;
+                    } else if (user.hasOwnProperty('active')) {
+                        isActiveValue = !!user.active;
+                    } else if (user.hasOwnProperty('is_active')) {
+                        isActiveValue = !!user.is_active;
+                    }
 
                     return {
                         ...user,
-                        isActive: isActive
+                        isActive: isActiveValue
                     };
                 });
 
@@ -520,18 +513,31 @@ function showToggleStatusConfirmation(userId, currentStatus) {
 }
 
 function toggleUserStatus(userId, newStatus) {
-    // Show loading state
+    // Get the full user object
+    const user = users.find(u => u.id === userId);
+    if (!user) return;
+
+    // Store button reference
     const confirmButton = $('#confirm-action');
     const originalText = confirmButton.text();
     confirmButton.prop('disabled', true).html('<i class="bx bx-loader-alt bx-spin mr-2"></i> Processing...');
 
-    // Prepare data
+    // Create update payload with the entire user object
     const userData = {
-        isActive: newStatus
+        id: userId,
+        username: user.username,
+        email: user.email,
+        phoneNumber: user.phoneNumber,
+        role: user.role,
+        preferredLanguage: user.preferredLanguage || 'en',
+        active: newStatus  // Set the new status
     };
 
+    console.log("Sending user update:", JSON.stringify(userData));
+
+    // Use the main user update endpoint
     $.ajax({
-        url: `${CONFIG.API_BASE_URL}/api/admin/users/${userId}/status`,
+        url: `${CONFIG.API_BASE_URL}/api/admin/users/${userId}`,
         method: 'PUT',
         headers: {
             'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
@@ -539,33 +545,42 @@ function toggleUserStatus(userId, newStatus) {
         },
         data: JSON.stringify(userData),
         success: function(response) {
+            console.log("Update success:", response);
             if (response && response.code === 200) {
-                // Close the confirmation modal
+                // Close modals
                 $('#confirm-modal').addClass('hidden');
                 $('#view-user-modal').addClass('hidden');
 
-                // Show success message
-                const action = newStatus ? 'activated' : 'deactivated';
-                showSuccess(`User ${action} successfully`);
-
-                // Update user in local array
+                // Update local data
                 const userIndex = users.findIndex(u => u.id === userId);
                 if (userIndex !== -1) {
+                    users[userIndex].active = newStatus;
                     users[userIndex].isActive = newStatus;
                 }
 
-                // Reload the user list
+                // Show success and refresh
+                const action = newStatus ? 'activated' : 'deactivated';
+                showSuccess(`User ${action} successfully`);
                 applyFilters();
             } else {
                 showError(response?.message || `Failed to ${newStatus ? 'activate' : 'deactivate'} user`);
             }
         },
         error: function(xhr, status, error) {
-            console.error(`Error ${newStatus ? 'activating' : 'deactivating'} user:`, error);
+            console.error("Update failed:", error, status);
+
+            // Detailed error logging
+            if (xhr.responseText) {
+                try {
+                    console.error("Server response:", JSON.parse(xhr.responseText));
+                } catch (e) {
+                    console.error("Raw response:", xhr.responseText);
+                }
+            }
+
             showError(`Failed to ${newStatus ? 'activate' : 'deactivate'} user. Please try again.`);
         },
         complete: function() {
-            // Restore button state
             confirmButton.prop('disabled', false).text(originalText);
         }
     });
@@ -1029,88 +1044,45 @@ function getLanguageDisplay(code) {
     }
 }
 
-/**
- * Save user from form data
- */
 function saveUser() {
     // Get form data
     const userId = $('#user-id').val();
     const isEditing = userId !== '';
     const username = $('#username').val();
     const email = $('#email').val();
-
-    // Validate username and email before proceeding
-    let hasError = false;
-
-    // Check for duplicate username
-    if (!isEditing) {
-        // First, check if username exists
-        $.ajax({
-            url: `${CONFIG.API_BASE_URL}/api/public/check-username?username=${encodeURIComponent(username)}`,
-            method: 'GET',
-            async: false, // Use synchronous request for simplicity
-            success: function(response) {
-                if (response && response.exists) {
-                    $('#username-error').removeClass('hidden').text(`Username "${username}" is already taken. Please choose another.`);
-                    hasError = true;
-                } else {
-                    $('#username-error').addClass('hidden');
-                }
-            }
-        });
-
-        // Then check if email exists
-        $.ajax({
-            url: `${CONFIG.API_BASE_URL}/api/public/check-email?email=${encodeURIComponent(email)}`,
-            method: 'GET',
-            async: false, // Use synchronous request for simplicity
-            success: function(response) {
-                if (response && response.exists) {
-                    $('#email-error').removeClass('hidden').text(`Email "${email}" is already registered.`);
-                    hasError = true;
-                } else {
-                    $('#email-error').addClass('hidden');
-                }
-            }
-        });
-    }
-
-    // Stop if validation failed
-    if (hasError) {
-        return;
-    }
-
-    // Get the phone number and ensure it has the correct format
     let phoneNumber = $('#phone-number').val();
+
     // Add country code if it doesn't already have one
     if (!phoneNumber.startsWith('+94')) {
         phoneNumber = '+94' + phoneNumber;
     }
 
-    // Prepare user data
+    // Create base user data without 'active' property
     let userData = {
         username: username,
         email: email,
         phoneNumber: phoneNumber,
         role: $('#role').val(),
-        preferredLanguage: $('#preferred-language').val(),
-        isActive: $('#is-active').is(':checked')
+        preferredLanguage: $('#preferred-language').val()
+        // 'active' removed for new users
     };
 
     // Add password for new users
     if (!isEditing) {
         userData.password = $('#password').val();
+    } else {
+        // Only include 'active' property when editing
+        userData.active = $('#is-active').is(':checked');
     }
 
-    // Determine the API endpoint based on whether we're editing or creating
+    // Determine the API endpoint
     let endpoint, method;
-
     if (isEditing) {
         endpoint = `${CONFIG.API_BASE_URL}/api/admin/users/${userId}`;
         method = 'PUT';
     } else {
-        // For new users, use the regular user registration endpoint
-        endpoint = `${CONFIG.API_BASE_URL}/api/admin/users`;
+        // Use admin register endpoint to preserve ADMIN role if selected
+        endpoint = `${CONFIG.API_BASE_URL}/api/admin/register`;
         method = 'POST';
     }
 
@@ -1119,7 +1091,6 @@ function saveUser() {
     const originalButtonText = saveButton.text();
     saveButton.prop('disabled', true).html('<i class="bx bx-loader-alt bx-spin"></i> Saving...');
 
-    // Save user
     $.ajax({
         url: endpoint,
         method: method,
@@ -1131,8 +1102,6 @@ function saveUser() {
         success: function(response) {
             if (response && (response.code === 200 || response.code === 201)) {
                 showSuccess(isEditing ? 'User updated successfully' : 'User created successfully');
-
-                // Reload users and hide modal
                 loadUsers();
                 hideUserModal();
             } else {
@@ -1140,38 +1109,20 @@ function saveUser() {
             }
         },
         error: function(xhr, status, error) {
-            console.error('Error saving user:', error, xhr.responseJSON);
+            console.error('Error saving user:', error);
+            console.error('Status:', status);
+            console.error('Response:', xhr.responseText);
 
-            // Handle specific error cases
-            if (xhr.responseJSON) {
-                const errorResponse = xhr.responseJSON;
-
-                // Check for duplicate key errors
-                if (errorResponse.message && errorResponse.message.includes('Duplicate entry')) {
-                    if (errorResponse.message.includes('UK_') && errorResponse.message.includes('username')) {
-                        $('#username-error').removeClass('hidden').text(`Username "${username}" is already taken. Please choose another.`);
-                    } else if (errorResponse.message.includes('email')) {
-                        $('#email-error').removeClass('hidden').text(`Email "${email}" is already registered.`);
-                    } else if (errorResponse.message.includes('phone')) {
-                        $('#phone-error').removeClass('hidden').text(`Phone number "${phoneNumber}" is already registered.`);
-                    } else {
-                        // Generic duplicate error
-                        showError('A user with the same information already exists.');
-                    }
-                } else if (errorResponse.message) {
-                    // Show other error messages from the server
-                    showError(errorResponse.message);
-                } else {
-                    showError('Failed to save user. Please try again.');
-                }
-            } else {
+            // More detailed error handling
+            try {
+                const errorObj = JSON.parse(xhr.responseText);
+                showError(errorObj.message || 'Failed to save user');
+            } catch (e) {
                 showError('Failed to save user. Please try again.');
             }
         },
         complete: function() {
-            // Restore button state
             saveButton.prop('disabled', false).text(originalButtonText);
         }
     });
-
 }
