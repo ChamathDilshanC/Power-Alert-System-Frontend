@@ -379,17 +379,6 @@ body {
     margin: 0 8px;
 }
 
-.notification-bell {
-    position: relative;
-    color: #6b7280;
-    cursor: pointer;
-    transition: color 0.2s ease;
-}
-
-.notification-bell:hover {
-    color: #4f46e5;
-}
-
 .notification-badge {
     position: absolute;
     top: -5px;
@@ -692,4 +681,390 @@ body {
     opacity: 1;
     transform: translateY(0);
 }
+/* Add this CSS to your dashboard stylesheet or include it in a style tag */
 
+/* Chat window animations */
+#chat-window {
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    transform-origin: bottom right;
+    transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+}
+
+/* Message animations */
+#chat-messages > div {
+    animation: fadeSlideIn 0.3s ease forwards;
+    opacity: 0;
+    transform: translateY(10px);
+}
+
+@keyframes fadeSlideIn {
+    0% {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Chat button animation */
+#chat-button {
+    animation: pulse 2s infinite;
+    transition: all 0.3s ease;
+}
+
+#chat-button:hover {
+    animation: none;
+    transform: scale(1.05);
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(99, 102, 241, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(99, 102, 241, 0);
+    }
+}
+
+/* Typing indicator animation */
+.typing-indicator {
+    display: flex;
+    align-items: center;
+}
+
+.typing-indicator span {
+    height: 8px;
+    width: 8px;
+    background-color: #e2e8f0;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 3px;
+    animation: typing-bounce 1.4s infinite ease-in-out both;
+}
+
+.typing-indicator span:nth-child(1) {
+    animation-delay: 0s;
+}
+
+.typing-indicator span:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.typing-indicator span:nth-child(3) {
+    animation-delay: 0.4s;
+    margin-right: 0;
+}
+
+@keyframes typing-bounce {
+    0%, 80%, 100% {
+        transform: scale(0.8);
+        opacity: 0.8;
+    }
+    40% {
+        transform: scale(1.2);
+        opacity: 1;
+    }
+}
+
+/* Custom scrollbar for chat messages */
+#chat-messages::-webkit-scrollbar {
+    width: 6px;
+}
+
+#chat-messages::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+#chat-messages::-webkit-scrollbar-thumb {
+    background: #d1d5db;
+    border-radius: 10px;
+}
+
+#chat-messages::-webkit-scrollbar-thumb:hover {
+    background: #9ca3af;
+}
+
+.chat-button {
+    position: fixed;
+    bottom: 25px;
+    right: 25px;
+    width: 60px;
+    height: 60px;
+    z-index: 999;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.chat-button-inner {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #4f46e5, #4338ca);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 15px rgba(79, 70, 229, 0.4);
+    transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    animation: pulse-chat 2s infinite;
+}
+
+.chat-button-inner i {
+    color: white;
+    font-size: 28px;
+    transition: transform 0.3s ease;
+}
+
+.chat-button:hover .chat-button-inner {
+    transform: scale(1.05) rotate(5deg);
+    box-shadow: 0 6px 20px rgba(79, 70, 229, 0.5);
+}
+
+.chat-button:hover .chat-button-inner i {
+    transform: scale(1.1);
+}
+
+.chat-button-badge {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 15px;
+    height: 15px;
+    background-color: #10b981;
+    border-radius: 50%;
+    border: 2px solid white;
+    animation: pulse-badge 1.5s infinite;
+}
+
+@keyframes pulse-chat {
+    0% {
+        box-shadow: 0 0 0 0 rgba(79, 70, 229, 0.5);
+    }
+    70% {
+        box-shadow: 0 0 0 15px rgba(79, 70, 229, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(79, 70, 229, 0);
+    }
+}
+
+@keyframes pulse-badge {
+    0% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5);
+    }
+    70% {
+        transform: scale(1);
+        box-shadow: 0 0 0 7px rgba(16, 185, 129, 0);
+    }
+    100% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+    }
+}
+
+/* For mobile responsiveness */
+@media (max-width: 640px) {
+    .chat-button {
+        bottom: 20px;
+        right: 20px;
+        width: 55px;
+        height: 55px;
+    }
+}
+
+.feature-card {
+    position: relative;
+    height: 100%;
+    min-height: 320px;
+    border-radius: 16px;
+    overflow: hidden;
+    transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.feature-card-inner {
+    position: relative;
+    z-index: 10;
+    height: 100%;
+    padding: 24px;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(229, 231, 235, 0.5);
+    border-radius: 16px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+.feature-card-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    border-radius: 16px;
+    transform: scale(0.98);
+}
+
+.feature-card:hover .feature-card-bg {
+    opacity: 0.1;
+    transform: scale(1);
+}
+
+.feature-card:hover .feature-card-inner {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.08);
+}
+
+.feature-icon-wrapper {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, rgba(79, 70, 229, 0.1) 0%, rgba(79, 70, 229, 0.2) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 16px;
+    transition: all 0.3s ease;
+}
+
+.feature-card:hover .feature-icon-wrapper {
+    transform: scale(1.1) rotate(5deg);
+    background: linear-gradient(135deg, rgba(79, 70, 229, 0.2) 0%, rgba(79, 70, 229, 0.3) 100%);
+}
+
+.feature-icon {
+    transition: transform 0.3s ease;
+}
+
+.feature-card:hover .feature-icon {
+    transform: scale(1.2);
+}
+
+.feature-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 10px;
+}
+
+.feature-description {
+    font-size: 0.95rem;
+    color: #4b5563;
+    margin-bottom: 20px;
+    flex-grow: 1;
+}
+
+.feature-stats {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.stat {
+    display: flex;
+    flex-direction: column;
+}
+
+.stat-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #4f46e5;
+}
+
+.stat-label {
+    font-size: 0.75rem;
+    color: #6b7280;
+}
+
+.feature-link {
+    display: flex;
+    align-items: center;
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: #4f46e5;
+    margin-top: auto;
+    transition: all 0.2s ease;
+}
+
+.feature-link i {
+    margin-left: 6px;
+    transition: transform 0.2s ease;
+}
+
+.feature-card:hover .feature-link {
+    color: #4338ca;
+}
+
+.feature-card:hover .feature-link i {
+    transform: translateX(4px);
+}
+
+/* Photo Feature Card */
+.photo-feature-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.photo-feature-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+}
+
+@media (max-width: 768px) {
+    .feature-card {
+        min-height: 280px;
+    }
+
+    .feature-stats {
+        flex-direction: column;
+        gap: 8px;
+    }
+}
+
+.feature-image-wrapper {
+    width: 100%;
+    height:500px;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 16px;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.feature-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.feature-image-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(to top, rgba(79, 70, 229, 0.1), transparent);
+    opacity: 0.6;
+    transition: opacity 0.3s ease;
+}
+
+.feature-card:hover .feature-image {
+    transform: scale(1.05);
+}
+
+.feature-card:hover .feature-image-overlay {
+    opacity: 0.3;
+}
+
+.gaphz {
+    margin-right: 30px;
+}

@@ -180,15 +180,15 @@
             </a>
 
             <div id="resources-submenu" class="submenu">
-                <a href="resources/view.html" id="resources-view" class="submenu-item">
+                <a href="../pages/resources.html" id="resources-view" class="submenu-item">
                     <i class='bx bx-list-ul'></i>
                     <span>All Resources</span>
                 </a>
-                <a href="resources/create.html" id="resources-create" class="submenu-item">
+                <a href="../pages/resources.html" id="resources-create" class="submenu-item">
                     <i class='bx bx-plus'></i>
                     <span>Add Resource</span>
                 </a>
-                <a href="resources/edit.html" id="resources-edit" class="submenu-item">
+                <a href="../pages/resources.html" id="resources-edit" class="submenu-item">
                     <i class='bx bx-edit'></i>
                     <span>Edit Resource</span>
                 </a>
@@ -197,6 +197,14 @@
             <a href="reports.html" id="nav-reports" class="nav-item" data-page="reports">
                 <i class='bx bxs-report'></i>
                 <span class="nav-item-text">Reports</span>
+            </a>
+        </div>
+        <!-- System Section -->
+        <div id="livechat" class="nav-section">
+            <div id="livechatcon" class="nav-section-title">Live Chat</div>
+            <a href="../pages/userChat.html" id="livechatlinkid" class="nav-item" data-page="audit">
+                <i class='bx bxs-chat'></i>
+                <span class="nav-item-text">Chat</span>
             </a>
         </div>
 
@@ -243,6 +251,7 @@
 
         </div>
 
+
     </div>
 
     <!-- User Avatar -->
@@ -262,18 +271,10 @@
         <span class="breadcrumb-separator">/</span>
         <span class="breadcrumb-item active" id="page-title">Dashboard</span>
     </div>
-    <div class="flex items-center justify-between gap-4">
-        <!-- Notification Bell with smooth animation -->
-        <div class="relative group">
-            <button class="p-2 rounded-full transition-all duration-300 hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-                    <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-                </svg>
-            </button>
-            <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">3</span>
+    <div class="flex items-center justify-between gap-7 gaphz">
+        <div class="hidden md:flex items-center gap-5">
+            <span class="text-sm font-medium">Admin User</span>
         </div>
-
         <div class="relative">
             <div id="user-avatar-container" class="w-10 h-10 rounded-full border-2 border-white shadow-lg transition-transform duration-300 transform hover:scale-105 overflow-hidden bg-gray-200 flex items-center justify-center">
                 <img id="user-avatar-image" class="w-full h-full object-cover hidden">
@@ -302,17 +303,6 @@
             });
         </script>
 
-        <div class="hidden md:flex items-center gap-2">
-            <span class="text-sm font-medium">Admin User</span>
-        </div>
-
-        <!-- Premium Button with micro-interactions -->
-        <button class="flex items-center gap-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-4 py-2 rounded-lg shadow-lg transition-all duration-300 hover:shadow-xl hover:translate-y-[1px] focus:outline-none focus:ring-2 focus:ring-purple-300">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M12 2L9.09 8.5H2l5.8 4.5-2.2 7 6.4-4.8 6.4 4.8-2.2-7 5.8-4.5h-7.09z" />
-            </svg>
-            <span class="font-medium text-sm">Upgrade Now</span>
-        </button>
     </div>
 
 </div>
@@ -325,10 +315,6 @@
 </div>
     <!--About Section-->
     <div class="main-content rounded-[20px] shadow-card bg-white  mt-4 mr-40px">
-        <!-- Background pattern -->
-        <div class="absolute top-0 right-0 -mt-10 -mr-10 w-64 h-64 bg-primary-100 rounded-full opacity-30 transform rotate-45"></div>
-        <div class="absolute bottom-0 left-0 -mb-10 -ml-10 w-48 h-48 bg-primary-100 rounded-full opacity-20 transform -rotate-45"></div>
-
         <div class="flex flex-col lg:flex-row items-center gap-8 z-10 relative">
             <!-- Left column with image -->
             <div class="flex-1 w-full lg:w-1/2 overflow-hidden rounded-xl transition-all duration-700 transform hover:scale-105" id="about-image-container">
@@ -405,6 +391,192 @@
         </div>
 
         <!-- Stats section with counter animation -->
+
+    </div>
+
+    <!-- Power Alert Future Section (Updated) -->
+    <div class="main-content rounded-[20px] shadow-card bg-white mt-4 mr-40px">
+        <div class="p-8">
+            <!-- Section Header (Line Removed) -->
+            <div class="mb-8 relative">
+                <h2 class="text-3xl font-bold text-gray-800 flex items-center">
+        <span class="text-primary-600 mr-3">
+          <i class='bx bxs-rocket'></i>
+        </span>
+                    Power Alert Future
+                </h2>
+                <p class="text-gray-600 mt-2 max-w-2xl">Exploring upcoming innovations to revolutionize how communities stay connected during utility outages.</p>
+            </div>
+
+            <!-- Feature Cards Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-4">
+
+                <!-- Feature Card 1 with Image -->
+                <div class="feature-card group">
+                    <div class="feature-card-inner">
+
+                        <!-- Image Container -->
+                        <div class="feature-image-wrapper">
+                            <img src="https://i.pinimg.com/736x/f8/ca/ab/f8caab76595123b860d0feab69e2f224.jpg"
+                                 alt="Predictive Analytics"
+                                 class="feature-image">
+                            <!-- Optional Overlay -->
+                            <div class="feature-image-overlay"></div>
+                        </div>
+
+                        <h3 class="feature-title">Predictive Analytics</h3>
+                        <p class="feature-description">Machine learning algorithms to predict potential outages before they occur, enabling proactive measures.</p>
+
+                        <div class="feature-stats">
+                            <div class="stat">
+                                <span class="stat-value">87%</span>
+                                <span class="stat-label">Accuracy Rate</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-value">2-4h</span>
+                                <span class="stat-label">Early Warning</span>
+                            </div>
+                        </div>
+
+                        <a href="#" class="feature-link">
+                            Explore Feature
+                            <i class='bx bx-right-arrow-alt'></i>
+                        </a>
+                    </div>
+                    <div class="feature-card-bg"></div>
+                </div>
+
+                <!-- Feature Card 2 -->
+                <div class="feature-card group">
+                    <div class="feature-card-inner">
+                        <!-- Image Container -->
+                        <div class="feature-image-wrapper">
+                            <img src="https://i.pinimg.com/736x/e5/2e/d2/e52ed230048cf45505f7862b56b19a99.jpg"
+                                 alt="Predictive Analytics"
+                                 class="feature-image">
+                            <!-- Optional Overlay -->
+                            <div class="feature-image-overlay"></div>
+                        </div>
+                        <h3 class="feature-title">IoT Integration</h3>
+                        <p class="feature-description">Connect smart home devices to automatically respond to outages and optimize resource usage.</p>
+
+                        <div class="feature-stats">
+                            <div class="stat">
+                                <span class="stat-value">30+</span>
+                                <span class="stat-label">Compatible Devices</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-value">18%</span>
+                                <span class="stat-label">Energy Saved</span>
+                            </div>
+                        </div>
+
+                        <a href="#" class="feature-link">
+                            Explore Feature
+                            <i class='bx bx-right-arrow-alt'></i>
+                        </a>
+                    </div>
+                    <div class="feature-card-bg"></div>
+                </div>
+
+                <!-- Feature Card 3 -->
+                <div class="feature-card group">
+                    <div class="feature-card-inner">
+                        <!-- Image Container -->
+                        <div class="feature-image-wrapper">
+                            <img src="https://i.pinimg.com/736x/bd/08/23/bd082339c19d176818c1f62d2c799b87.jpg"
+                                 alt="Predictive Analytics"
+                                 class="feature-image">
+                            <!-- Optional Overlay -->
+                            <div class="feature-image-overlay"></div>
+                        </div>
+                        <h3 class="feature-title">Community Grid</h3>
+                        <p class="feature-description">Decentralized system allowing neighbors to share power resources during critical outages.</p>
+
+                        <div class="feature-stats">
+                            <div class="stat">
+                                <span class="stat-value">12</span>
+                                <span class="stat-label">Pilot Communities</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-value">63%</span>
+                                <span class="stat-label">Resilience Boost</span>
+                            </div>
+                        </div>
+
+                        <a href="#" class="feature-link">
+                            Explore Feature
+                            <i class='bx bx-right-arrow-alt'></i>
+                        </a>
+                    </div>
+                    <div class="feature-card-bg"></div>
+                </div>
+
+            </div>
+
+            <!-- New Photo Card -->
+            <div class="photo-feature-card mt-8 rounded-2xl overflow-hidden shadow-lg">
+                <div class="flex flex-col lg:flex-row">
+                    <!-- Photo Section -->
+                    <div class="w-full lg:w-1/2 h-64 lg:h-auto relative overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1553877522-43269d4ea984?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80"
+                             alt="Smart Energy Management"
+                             class="w-full h-full object-cover transition-transform duration-700 hover:scale-110">
+                        <div class="absolute inset-0 bg-gradient-to-tr from-primary-900/60 to-transparent"></div>
+                        <div class="absolute bottom-4 left-4 text-white">
+                            <span class="px-2 py-1 bg-primary-500 rounded-md text-xs font-semibold">Coming Soon</span>
+                        </div>
+                    </div>
+
+                    <!-- Content Section -->
+                    <div class="w-full lg:w-1/2 p-6 lg:p-8 bg-white">
+                        <h3 class="text-2xl font-bold text-gray-800 mb-3">Smart Energy Management</h3>
+                        <p class="text-gray-600 mb-4">
+                            Our upcoming platform will help households and businesses optimize their energy usage with AI-powered recommendations and real-time monitoring.
+                        </p>
+
+                        <div class="grid grid-cols-2 gap-4 mb-6">
+                            <div class="border border-gray-100 rounded-lg p-3 bg-gray-50">
+                                <div class="text-primary-600 font-bold text-xl">42%</div>
+                                <div class="text-gray-500 text-sm">Avg. Energy Savings</div>
+                            </div>
+                            <div class="border border-gray-100 rounded-lg p-3 bg-gray-50">
+                                <div class="text-primary-600 font-bold text-xl">Q3 2025</div>
+                                <div class="text-gray-500 text-sm">Expected Launch</div>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between">
+                            <div class="flex -space-x-2">
+                                <div class="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-xs text-primary-600 font-bold border-2 border-white">CH</div>
+                                <div class="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center text-xs text-purple-600 font-bold border-2 border-white">TM</div>
+                                <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-xs text-blue-600 font-bold border-2 border-white">KL</div>
+                            </div>
+                            <a href="#" class="inline-flex items-center px-4 py-2 rounded-lg bg-primary-50 text-primary-600 font-medium hover:bg-primary-100 transition-colors">
+                                Learn More
+                                <i class='bx bx-right-arrow-alt ml-2'></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CTA Section -->
+            <div class="flex flex-col md:flex-row items-center justify-between mt-8 p-6 bg-gradient-to-r from-primary-50 to-indigo-50 rounded-xl overflow-hidden relative">
+                <div class="absolute top-0 right-0 w-64 h-64 bg-primary-100 rounded-full opacity-50 transform translate-x-1/2 -translate-y-1/2"></div>
+
+                <div class="z-10 mb-6 md:mb-0">
+                    <h3 class="text-xl font-bold text-gray-800">Want to shape the future?</h3>
+                    <p class="text-gray-600 mt-1">Join our beta testing program and be the first to experience these innovations.</p>
+                </div>
+
+                <button class="z-10 bg-primary-600 hover:bg-primary-700 text-white font-medium py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 flex items-center">
+                    Join Beta Program
+                    <i class='bx bx-chevron-right ml-2'></i>
+                </button>
+            </div>
+
+        </div>
         <div class="stats-section mt-12 pt-8 border-t border-gray-100">
             <h3 class="text-xl font-semibold text-gray-800 mb-6 text-center">Our Impact</h3>
 
@@ -439,7 +611,6 @@
             </div>
         </div>
     </div>
-    
 <!-- Updated Main Content with Recent Outages -->
 <div class="main-content" id="mainContent"></div>
 
@@ -476,8 +647,16 @@
     </div>
 </div>
 
-</div>
 
+
+</div>
+<!-- Chat Button -->
+<a href="../pages/userChat.html" class="chat-button">
+    <div class="chat-button-inner">
+        <i class='bx bxs-message-dots'></i>
+    </div>
+    <span class="chat-button-badge"></span>
+</a>
 <footer class="footer-container">
     <div class="footer-content">
         <div class="footer-brand">
@@ -495,8 +674,8 @@
                 <h3>Quick Links</h3>
                 <ul>
                     <li><a href="dashboard.html">Dashboard</a></li>
-                    <li><a href="outages/view.html">Outages</a></li>
-                    <li><a href="areas/view.html">Areas</a></li>
+                    <li><a href="outages.html">Outages</a></li>
+                    <li><a href="areaManagement.html">Areas</a></li>
                     <li><a href="reports.html">Reports</a></li>
                 </ul>
             </div>

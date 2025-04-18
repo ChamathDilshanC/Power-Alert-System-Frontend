@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Chat - PowerAlert</title>
+    <link rel="icon" type="image/x-icon" href="https://i.pinimg.com/736x/3f/bf/40/3fbf4075b391e07eaa00ec5a87647cb5.jpg">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            200: '#c7d2fe',
+                            300: '#a5b4fc',
+                            400: '#818cf8',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                            800: '#3730a3',
+                            900: '#312e81',
+                        },
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <!-- Box Icons -->
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <!-- Inter Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Toastify CSS -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <!-- Toastify JS -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <link rel="stylesheet" href="../styles/dashboard.css">
+    <link rel="stylesheet" href="../styles/darkMode.css">
+    <link href="../styles/dashboard.css">
+    <script src="../js/ui/darkMode.js"></script>
+    <link rel="stylesheet" href="../styles/chat.css">
+
+    <!-- Inline configuration -->
+    <script>
+        // Define CONFIG globally to ensure it's available before other scripts load
+        const CONFIG = {
+            API_BASE_URL: 'http://localhost:8080',
+            API_VERSION: 'v1',
+            API_TIMEOUT: 30000
+        };
+        window.CONFIG = CONFIG;
+    </script>
+
+</head>
+<body class="bg-gray-50 dark:bg-gray-900">
+<div class="container mx-auto px-4 py-8">
+    <!-- Header Section -->
+    <div class="flex justify-between items-center mb-8">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-800 dark:text-white">User Chat</h1>
+            <p class="text-gray-600 dark:text-gray-400">Chat with other users in the system</p>
+        </div>
+        <div>
+            <a href="dashboard.html" class="flex items-center gap-2 bg-primary-50 dark:bg-gray-800 text-primary-600 dark:text-primary-400 px-4 py-2 rounded-lg font-medium hover:bg-primary-100 dark:hover:bg-gray-700 transition-colors">
+                <i class='bx bx-arrow-back'></i>
+                <span>Back to Dashboard</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Chat Container -->
+    <div class="chat-container">
+        <!-- Chat Messages -->
+        <div id="chat-messages" class="chat-messages">
+            <!-- Messages will be populated by JavaScript -->
+            <div class="flex justify-center items-center h-full">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 dark:border-primary-400"></div>
+                <p class="ml-3 text-gray-500 dark:text-gray-400">Loading messages...</p>
+            </div>
+        </div>
+
+        <!-- Chat Input -->
+        <div class="chat-input">
+            <form id="message-form" class="chat-form">
+                <input type="text" id="message-input" class="bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5" placeholder="Type your message...">
+                <button type="submit" class="inline-flex items-center justify-center bg-primary-600 hover:bg-primary-700 text-white rounded-lg p-2.5 transition-colors">
+                    <i class='bx bx-send text-xl'></i>
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<footer class="footer-container-pages">
+    <div class="footer-content">
+        <div class="footer-brand">
+            <div class="footer-logo">
+                <i class='bx bxs-bolt text-xl'></i>
+                <span>Power Alert</span>
+            </div>
+            <p class="footer-description">
+                Reliable power outage monitoring and notifications for Sri Lanka.
+            </p>
+        </div>
+
+        <div class="footer-links">
+            <div class="footer-section">
+                <h3>Quick Links</h3>
+                <ul>
+                    <li><a href="dashboard.html">Dashboard</a></li>
+                    <li><a href="outages/view.html">Outages</a></li>
+                    <li><a href="areaManagement.html">Areas</a></li>
+                    <li><a href="reports.html">Reports</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-section">
+                <h3>Resources</h3>
+                <ul>
+                    <li><a href="#">Documentation</a></li>
+                    <li><a href="#">API</a></li>
+                    <li><a href="#">Help Center</a></li>
+                    <li><a href="#">Contact Support</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-section">
+                <h3>Legal</h3>
+                <ul>
+                    <li><a href="#">Privacy Policy</a></li>
+                    <li><a href="#">Terms of Service</a></li>
+                    <li><a href="#">Data Policy</a></li>
+                    <li><a href="#">Cookie Settings</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer-bottom">
+        <div class="copyright">
+            <p>&copy; 2025 Power Alert. All rights reserved.</p>
+        </div>
+        <div class="social-links">
+            <a href="#" aria-label="Facebook"><i class='bx bxl-facebook'></i></a>
+            <a href="#" aria-label="Twitter"><i class='bx bxl-twitter'></i></a>
+            <a href="#" aria-label="Instagram"><i class='bx bxl-instagram'></i></a>
+        </div>
+    </div>
+</footer>
+
+<script src="../js/services/simpleChatService.js"></script>
+<script src="../js/simpleChat.js"></script>
+<script src="../js/error-handler.js"></script>
+</body>
+</html>

@@ -1,12 +1,16 @@
 <!DOCTYPE html>
-<html lang="en" class="light">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reports - PowerAlert</title>
+    <title>PowerAlert Live Dashboard</title>
     <link rel="icon" type="image/x-icon" href="https://i.pinimg.com/736x/3f/bf/40/3fbf4075b391e07eaa00ec5a87647cb5.jpg">
-    <!-- Tailwind CSS -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -32,371 +36,777 @@
                 }
             }
         }
+
+        // Define CONFIG globally to match your project setup
+        const CONFIG = {
+            API_BASE_URL: 'http://localhost:8080'
+        };
     </script>
-    <!-- Box Icons -->
-    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
-    <!-- Inter Font -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Toastify CSS -->
-    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
-    <!-- Toastify JS -->
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
-    <!-- DatePicker -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-    <link rel="stylesheet" href="../styles/dashboard.css">
-    <link rel="stylesheet" href="../styles/darkMode.css">
-    <script src="../js/auth/sessionMonitor.js"></script>
-    <script src="../js/ui/darkMode.js"></script>
-
     <style>
-        /* Dark mode styles that override dashboard.css when dark class is applied */
-        html.dark body {
-            background-color: #1f2937;
-            color: #f3f4f6;
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f9fa;
         }
-
-        html.dark .bg-white {
-            background-color: #111827;
+        .stat-card {
+            border-radius: 16px;
+            background-color: white;
+            transition: all 0.3s ease;
         }
-
-        html.dark .text-gray-800 {
-            color: #f3f4f6;
-        }
-
-        html.dark .text-gray-600,
-        html.dark .text-gray-700,
-        html.dark .text-gray-500 {
-            color: #9ca3af;
-        }
-
-        html.dark .bg-gray-50 {
-            background-color: #374151;
-        }
-
-        html.dark .border-gray-200,
-        html.dark .border-gray-300 {
-            border-color: #4b5563;
-        }
-
-        html.dark input,
-        html.dark select,
-        html.dark textarea {
-            background-color: #1f2937;
-            border-color: #4b5563;
-            color: #f3f4f6;
-        }
-
-        html.dark .shadow-md {
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
-        }
-
-        html.dark .footer-container,
-        html.dark .footer-container-pages {
-            background-color: #111827;
-            border-color: #374151;
-        }
-
-        html.dark .footer-section a {
-            color: #9ca3af;
-        }
-
-        html.dark .footer-section a:hover {
-            color: #6366f1;
-        }
-
-        html.dark .copyright {
-            color: #6b7280;
-        }
-
-        html.dark .social-links a {
-            background-color: #374151;
-            color: #9ca3af;
-        }
-
-        .report-card {
-            transition: transform 0.2s ease-in-out;
-        }
-
-        .report-card:hover {
+        .stat-card:hover {
             transform: translateY(-5px);
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.05);
         }
-
-        .loader {
-            border: 4px solid rgba(0, 0, 0, 0.1);
-            border-left-color: #6366f1;
+        .toggle-btn {
+            width: 36px;
+            height: 20px;
+            background-color: #e5e7eb;
+            border-radius: 10px;
+            position: relative;
+            transition: background-color 0.3s ease;
+        }
+        .toggle-btn.active {
+            background-color: #4f46e5;
+        }
+        .toggle-btn::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 16px;
+            height: 16px;
+            background-color: white;
             border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 20px auto;
+            transition: transform 0.3s ease;
         }
-
-        html.dark .loader {
-            border: 4px solid rgba(255, 255, 255, 0.1);
-            border-left-color: #6366f1;
+        .toggle-btn.active::after {
+            transform: translateX(16px);
         }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        .loading-pulse {
+            animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: .5;
+            }
         }
     </style>
 </head>
-<body class="bg-gray-50 dark:bg-gray-900">
-<div class="container mx-auto p-4 max-w-6xl">
-    <div class="mb-6 flex justify-between items-center">
-        <div>
-            <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Reports</h1>
-            <p class="text-gray-600 dark:text-gray-400">Generate and view outage reports</p>
+<body class="p-6">
+<div class="max-w-7xl mx-auto">
+    <header class="flex justify-between items-center mb-8">
+        <div class="flex items-center">
+            <i class='bx bxs-bolt text-primary-600 text-3xl mr-3'></i>
+            <h1 class="text-xl font-bold text-gray-800">PowerAlert Live Dashboard</h1>
         </div>
-        <a href="dashboard.html" class="flex items-center gap-2 bg-primary-50 text-primary-600 dark:bg-primary-900 dark:text-primary-300 px-4 py-2 rounded-lg font-medium hover:bg-primary-100 dark:hover:bg-primary-800 transition-colors">
-            <i class='bx bx-arrow-back'></i>
-            <span>Back to Dashboard</span>
-        </a>
-    </div>
-
-    <!-- Report Filters -->
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden mb-6">
-        <div class="p-6">
-            <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Report Filters</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <!-- Date Range -->
-                <div>
-                    <label for="from-date" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">From Date</label>
-                    <input type="text" id="from-date" class="bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5" placeholder="Select start date">
-                </div>
-                <div>
-                    <label for="to-date" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">To Date</label>
-                    <input type="text" id="to-date" class="bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5" placeholder="Select end date">
-                </div>
-
-                <!-- Outage Type Filter -->
-                <div>
-                    <label for="outage-type" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Outage Type</label>
-                    <select id="outage-type" class="bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5">
-                        <option value="">All Types</option>
-                        <option value="SCHEDULED">Scheduled</option>
-                        <option value="EMERGENCY">Emergency</option>
-                        <option value="WEATHER">Weather-related</option>
-                        <option value="MAINTENANCE">Maintenance</option>
-                        <option value="OTHER">Other</option>
-                    </select>
-                </div>
-
-                <!-- Area Filter -->
-                <div>
-                    <label for="area-id" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Area</label>
-                    <select id="area-id" class="bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5">
-                        <option value="">All Areas</option>
-                        <!-- Areas will be populated dynamically -->
-                    </select>
-                </div>
-            </div>
-
-            <div class="mt-6 flex justify-end">
-                <button type="button" id="generate-report-btn" class="bg-primary-600 text-white py-2 px-6 rounded-lg font-medium hover:bg-primary-700 transition-colors flex items-center gap-2">
-                    <i class='bx bx-file'></i>
-                    <span>Generate Report</span>
-                </button>
-            </div>
+        <div class="flex items-center gap-4">
+            <a href="dashboard.html" class="flex items-center gap-2 text-primary-600 hover:text-primary-700">
+                <i class='bx bx-arrow-back'></i>
+                <span>Back to Dashboard</span>
+            </a>
+            <button id="refresh-btn" class="p-2 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600">
+                <i class='bx bx-refresh text-xl'></i>
+            </button>
         </div>
-    </div>
+    </header>
 
-    <!-- Loading Indicator -->
-    <div id="loading-indicator" class="hidden">
-        <div class="loader"></div>
-    </div>
-
-    <!-- No Data Indicator -->
-    <div id="no-data-indicator" class="hidden bg-white dark:bg-gray-800 rounded-xl shadow-md p-8 text-center">
-        <i class='bx bx-search text-6xl text-gray-400 dark:text-gray-500 mb-4'></i>
-        <h3 class="text-xl font-medium text-gray-700 dark:text-gray-300 mb-2">No Reports Found</h3>
-        <p class="text-gray-500 dark:text-gray-400">Try adjusting your filters or selecting a different date range.</p>
-    </div>
-
-    <!-- Report Summary -->
-    <div id="report-summary" class="hidden mb-6">
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <!-- Total Outages Card -->
-            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 report-card">
-                <div class="flex items-center gap-4">
-                    <div class="bg-blue-100 dark:bg-blue-900 p-3 rounded-lg">
-                        <i class='bx bx-power-off text-2xl text-blue-600 dark:text-blue-300'></i>
-                    </div>
-                    <div>
-                        <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Outages</p>
-                        <h3 class="text-2xl font-bold text-gray-900 dark:text-gray-100" id="total-outages">0</h3>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Average Duration Card -->
-            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 report-card">
-                <div class="flex items-center gap-4">
-                    <div class="bg-green-100 dark:bg-green-900 p-3 rounded-lg">
-                        <i class='bx bx-time text-2xl text-green-600 dark:text-green-300'></i>
-                    </div>
-                    <div>
-                        <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Average Duration</p>
-                        <h3 class="text-2xl font-bold text-gray-900 dark:text-gray-100" id="avg-duration">0 hrs</h3>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Areas Affected Card -->
-            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 report-card">
-                <div class="flex items-center gap-4">
-                    <div class="bg-purple-100 dark:bg-purple-900 p-3 rounded-lg">
-                        <i class='bx bx-map-alt text-2xl text-purple-600 dark:text-purple-300'></i>
-                    </div>
-                    <div>
-                        <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Areas Affected</p>
-                        <h3 class="text-2xl font-bold text-gray-900 dark:text-gray-100" id="areas-affected">0</h3>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Customers Affected Card -->
-            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 report-card">
-                <div class="flex items-center gap-4">
-                    <div class="bg-amber-100 dark:bg-amber-900 p-3 rounded-lg">
-                        <i class='bx bx-user text-2xl text-amber-600 dark:text-amber-300'></i>
-                    </div>
-                    <div>
-                        <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Customers Affected</p>
-                        <h3 class="text-2xl font-bold text-gray-900 dark:text-gray-100" id="customers-affected">0</h3>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Outage Breakdown -->
-    <div id="outage-breakdown" class="hidden">
-        <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-4">Outage Breakdown</h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            <!-- Outage Types -->
-            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
-                <div class="p-6">
-                    <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">By Type</h3>
-                        <div class="text-xs font-medium bg-primary-50 text-primary-600 dark:bg-primary-900 dark:text-primary-300 px-2.5 py-0.5 rounded-full">
-                            <span id="outage-types-count">0</span> Types
-                        </div>
-                    </div>
-                    <div id="outage-types-list" class="space-y-4">
-                        <!-- Will be populated dynamically -->
-                    </div>
-                </div>
-            </div>
-
-            <!-- Top Affected Areas -->
-            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
-                <div class="p-6">
-                    <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Top Affected Areas</h3>
-                        <div class="text-xs font-medium bg-primary-50 text-primary-600 dark:bg-primary-900 dark:text-primary-300 px-2.5 py-0.5 rounded-full">
-                            Total: <span id="total-areas">0</span>
-                        </div>
-                    </div>
-                    <div id="affected-areas-list" class="space-y-4">
-                        <!-- Will be populated dynamically -->
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Recent Outages Table -->
-    <div id="recent-outages" class="hidden bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden mb-8">
-        <div class="p-6">
+    <!-- System Stats Section -->
+    <h2 class="text-xl font-semibold text-gray-800 mb-4">System Overview</h2>
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-8" id="system-stats">
+        <!-- Loading state initially shown -->
+        <div class="stat-card p-5 shadow-sm border border-gray-100 loading-pulse">
             <div class="flex justify-between items-center mb-4">
-                <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Recent Outages</h3>
-                <div id="outage-count-badge" class="text-xs font-medium bg-primary-50 text-primary-600 dark:bg-primary-900 dark:text-primary-300 px-2.5 py-0.5 rounded-full">
-                    0 outages
-                </div>
+                <div class="p-2 rounded-full bg-gray-200 h-10 w-10"></div>
+                <div class="h-5 w-10 bg-gray-200 rounded-full"></div>
             </div>
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                    <thead class="bg-gray-50 dark:bg-gray-700">
-                    <tr>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">ID</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Area</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Type</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Start Time</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">End Time</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Duration</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Status</th>
-                    </tr>
-                    </thead>
-                    <tbody id="outages-table-body" class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                    <!-- Will be populated dynamically -->
-                    </tbody>
-                </table>
+            <div class="h-4 w-24 bg-gray-200 rounded mb-2"></div>
+            <div class="flex justify-between items-center mt-1">
+                <div class="h-6 w-12 bg-gray-200 rounded"></div>
+                <div class="h-4 w-16 bg-gray-200 rounded"></div>
+            </div>
+        </div>
+        <div class="stat-card p-5 shadow-sm border border-gray-100 loading-pulse">
+            <div class="flex justify-between items-center mb-4">
+                <div class="p-2 rounded-full bg-gray-200 h-10 w-10"></div>
+                <div class="h-5 w-10 bg-gray-200 rounded-full"></div>
+            </div>
+            <div class="h-4 w-24 bg-gray-200 rounded mb-2"></div>
+            <div class="flex justify-between items-center mt-1">
+                <div class="h-6 w-12 bg-gray-200 rounded"></div>
+                <div class="h-4 w-16 bg-gray-200 rounded"></div>
+            </div>
+        </div>
+        <div class="stat-card p-5 shadow-sm border border-gray-100 loading-pulse">
+            <div class="flex justify-between items-center mb-4">
+                <div class="p-2 rounded-full bg-gray-200 h-10 w-10"></div>
+                <div class="h-5 w-10 bg-gray-200 rounded-full"></div>
+            </div>
+            <div class="h-4 w-24 bg-gray-200 rounded mb-2"></div>
+            <div class="flex justify-between items-center mt-1">
+                <div class="h-6 w-12 bg-gray-200 rounded"></div>
+                <div class="h-4 w-16 bg-gray-200 rounded"></div>
+            </div>
+        </div>
+        <div class="stat-card p-5 shadow-sm border border-gray-100 loading-pulse">
+            <div class="flex justify-between items-center mb-4">
+                <div class="p-2 rounded-full bg-gray-200 h-10 w-10"></div>
+                <div class="h-5 w-10 bg-gray-200 rounded-full"></div>
+            </div>
+            <div class="h-4 w-24 bg-gray-200 rounded mb-2"></div>
+            <div class="flex justify-between items-center mt-1">
+                <div class="h-6 w-12 bg-gray-200 rounded"></div>
+                <div class="h-4 w-16 bg-gray-200 rounded"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- API Endpoints Section -->
+    <h2 class="text-xl font-semibold text-gray-800 mb-4">Outage Status</h2>
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-8" id="outage-status">
+        <!-- Loading state initially shown -->
+        <div class="stat-card p-5 shadow-sm border border-gray-100 loading-pulse">
+            <div class="flex justify-between items-center mb-4">
+                <div class="p-2 rounded-full bg-gray-200 h-10 w-10"></div>
+                <div class="h-5 w-10 bg-gray-200 rounded-full"></div>
+            </div>
+            <div class="h-4 w-24 bg-gray-200 rounded mb-2"></div>
+            <div class="flex justify-between items-center mt-1">
+                <div class="h-6 w-12 bg-gray-200 rounded"></div>
+                <div class="h-4 w-16 bg-gray-200 rounded"></div>
+            </div>
+        </div>
+        <div class="stat-card p-5 shadow-sm border border-gray-100 loading-pulse">
+            <div class="flex justify-between items-center mb-4">
+                <div class="p-2 rounded-full bg-gray-200 h-10 w-10"></div>
+                <div class="h-5 w-10 bg-gray-200 rounded-full"></div>
+            </div>
+            <div class="h-4 w-24 bg-gray-200 rounded mb-2"></div>
+            <div class="flex justify-between items-center mt-1">
+                <div class="h-6 w-12 bg-gray-200 rounded"></div>
+                <div class="h-4 w-16 bg-gray-200 rounded"></div>
+            </div>
+        </div>
+        <div class="stat-card p-5 shadow-sm border border-gray-100 loading-pulse">
+            <div class="flex justify-between items-center mb-4">
+                <div class="p-2 rounded-full bg-gray-200 h-10 w-10"></div>
+                <div class="h-5 w-10 bg-gray-200 rounded-full"></div>
+            </div>
+            <div class="h-4 w-24 bg-gray-200 rounded mb-2"></div>
+            <div class="flex justify-between items-center mt-1">
+                <div class="h-6 w-12 bg-gray-200 rounded"></div>
+                <div class="h-4 w-16 bg-gray-200 rounded"></div>
+            </div>
+        </div>
+        <div class="stat-card p-5 shadow-sm border border-gray-100 loading-pulse">
+            <div class="flex justify-between items-center mb-4">
+                <div class="p-2 rounded-full bg-gray-200 h-10 w-10"></div>
+                <div class="h-5 w-10 bg-gray-200 rounded-full"></div>
+            </div>
+            <div class="h-4 w-24 bg-gray-200 rounded mb-2"></div>
+            <div class="flex justify-between items-center mt-1">
+                <div class="h-6 w-12 bg-gray-200 rounded"></div>
+                <div class="h-4 w-16 bg-gray-200 rounded"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Area Stats Section -->
+    <h2 class="text-xl font-semibold text-gray-800 mb-4">Area Stats</h2>
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4" id="area-stats">
+        <!-- Loading state initially shown -->
+        <div class="stat-card p-5 shadow-sm border border-gray-100 loading-pulse">
+            <div class="flex justify-between items-center mb-4">
+                <div class="p-2 rounded-full bg-gray-200 h-10 w-10"></div>
+                <div class="h-5 w-10 bg-gray-200 rounded-full"></div>
+            </div>
+            <div class="h-4 w-24 bg-gray-200 rounded mb-2"></div>
+            <div class="flex justify-between items-center mt-1">
+                <div class="h-6 w-12 bg-gray-200 rounded"></div>
+                <div class="h-4 w-16 bg-gray-200 rounded"></div>
+            </div>
+        </div>
+        <div class="stat-card p-5 shadow-sm border border-gray-100 loading-pulse">
+            <div class="flex justify-between items-center mb-4">
+                <div class="p-2 rounded-full bg-gray-200 h-10 w-10"></div>
+                <div class="h-5 w-10 bg-gray-200 rounded-full"></div>
+            </div>
+            <div class="h-4 w-24 bg-gray-200 rounded mb-2"></div>
+            <div class="flex justify-between items-center mt-1">
+                <div class="h-6 w-12 bg-gray-200 rounded"></div>
+                <div class="h-4 w-16 bg-gray-200 rounded"></div>
+            </div>
+        </div>
+        <div class="stat-card p-5 shadow-sm border border-gray-100 loading-pulse">
+            <div class="flex justify-between items-center mb-4">
+                <div class="p-2 rounded-full bg-gray-200 h-10 w-10"></div>
+                <div class="h-5 w-10 bg-gray-200 rounded-full"></div>
+            </div>
+            <div class="h-4 w-24 bg-gray-200 rounded mb-2"></div>
+            <div class="flex justify-between items-center mt-1">
+                <div class="h-6 w-12 bg-gray-200 rounded"></div>
+                <div class="h-4 w-16 bg-gray-200 rounded"></div>
+            </div>
+        </div>
+        <div class="stat-card p-5 shadow-sm border border-gray-100 loading-pulse">
+            <div class="flex justify-between items-center mb-4">
+                <div class="p-2 rounded-full bg-gray-200 h-10 w-10"></div>
+                <div class="h-5 w-10 bg-gray-200 rounded-full"></div>
+            </div>
+            <div class="h-4 w-24 bg-gray-200 rounded mb-2"></div>
+            <div class="flex justify-between items-center mt-1">
+                <div class="h-6 w-12 bg-gray-200 rounded"></div>
+                <div class="h-4 w-16 bg-gray-200 rounded"></div>
             </div>
         </div>
     </div>
 </div>
 
-<footer class="footer-container-pages mt-12">
-    <div class="footer-content">
-        <div class="footer-brand">
-            <div class="footer-logo">
-                <i class='bx bxs-bolt text-xl'></i>
-                <span>Power Alert</span>
-            </div>
-            <p class="footer-description">
-                Reliable power outage monitoring and notifications for Sri Lanka.
-            </p>
-        </div>
-
-        <div class="footer-links">
-            <div class="footer-section">
-                <h3>Quick Links</h3>
-                <ul>
-                    <li><a href="dashboard.html">Dashboard</a></li>
-                    <li><a href="outageManagement.html">Outages</a></li>
-                    <li><a href="areaManagement.html">Areas</a></li>
-                    <li><a href="reports.html">Reports</a></li>
-                </ul>
-            </div>
-
-            <div class="footer-section">
-                <h3>Resources</h3>
-                <ul>
-                    <li><a href="#">Documentation</a></li>
-                    <li><a href="#">API</a></li>
-                    <li><a href="#">Help Center</a></li>
-                    <li><a href="#">Contact Support</a></li>
-                </ul>
-            </div>
-
-            <div class="footer-section">
-                <h3>Legal</h3>
-                <ul>
-                    <li><a href="#">Privacy Policy</a></li>
-                    <li><a href="#">Terms of Service</a></li>
-                    <li><a href="#">Data Policy</a></li>
-                    <li><a href="#">Cookie Settings</a></li>
-                </ul>
-            </div>
-        </div>
-    </div>
-
-    <div class="footer-bottom">
-        <div class="copyright">
-            <p>&copy; 2025 Power Alert. All rights reserved.</p>
-        </div>
-        <div class="social-links">
-            <a href="#" aria-label="Facebook"><i class='bx bxl-facebook'></i></a>
-            <a href="#" aria-label="Twitter"><i class='bx bxl-twitter'></i></a>
-            <a href="#" aria-label="Instagram"><i class='bx bxl-instagram'></i></a>
-        </div>
+<footer class="mt-12 py-6 border-t border-gray-200">
+    <div class="max-w-7xl mx-auto text-center text-sm text-gray-500">
+        &copy; 2025 PowerAlert. All rights reserved.
     </div>
 </footer>
 
-<!-- Include reports.js -->
-<script src="../js/reports.js"></script>
+<script>
+    // Track the authentication token
+    let authToken = localStorage.getItem('poweralert_auth_token');
+
+    // Fetch data from your server on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        fetchSystemStats();
+        fetchOutageStatus();
+        fetchAreaStats();
+
+        // Set up refresh button
+        document.getElementById('refresh-btn').addEventListener('click', function() {
+            this.classList.add('animate-spin');
+
+            // Refresh all data
+            fetchSystemStats();
+            fetchOutageStatus();
+            fetchAreaStats();
+
+            // Show notification
+            Toastify({
+                text: "Refreshing dashboard data...",
+                duration: 3000,
+                gravity: "top",
+                position: "right",
+                style: {
+                    background: "#4f46e5",
+                }
+            }).showToast();
+
+            // Stop the spinning after 1 second
+            setTimeout(() => {
+                this.classList.remove('animate-spin');
+            }, 1000);
+        });
+    });
+
+    // Function to handle API errors
+    function handleApiError(error) {
+        console.error('API Error:', error);
+
+        // Show error notification
+        Toastify({
+            text: "Error fetching data from server",
+            duration: 3000,
+            gravity: "top",
+            position: "right",
+            style: {
+                background: "#ef4444",
+            }
+        }).showToast();
+
+        // If unauthorized, we might want to redirect to login
+        if (error.status === 401) {
+            // localStorage.removeItem('poweralert_auth_token');
+            // window.location.href = 'login.html';
+        }
+    }
+
+    // Function to fetch system statistics
+    function fetchSystemStats() {
+        // Make API calls to get user count
+        fetch(`${CONFIG.API_BASE_URL}/api/admin/users`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`
+            }
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw response;
+                }
+                return response.json();
+            })
+            .then(data => {
+                const userCount = data.data ? data.data.length : 0;
+
+                // Make API call to get areas count
+                return fetch(`${CONFIG.API_BASE_URL}/api/public/areas`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw response;
+                        }
+                        return response.json();
+                    })
+                    .then(areasData => {
+                        const areaCount = areasData.data ? areasData.data.length : 0;
+
+                        // Make API call to get active outages
+                        return fetch(`${CONFIG.API_BASE_URL}/api/public/outages/active`, {
+                            method: 'GET',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                        })
+                            .then(response => {
+                                if (!response.ok) {
+                                    throw response;
+                                }
+                                return response.json();
+                            })
+                            .then(outagesData => {
+                                const outageCount = outagesData.data ? outagesData.data.length : 0;
+
+                                // Make API call to get providers
+                                return fetch(`${CONFIG.API_BASE_URL}/api/public/utility-providers`, {
+                                    method: 'GET',
+                                    headers: {
+                                        'Content-Type': 'application/json'
+                                    }
+                                })
+                                    .then(response => {
+                                        if (!response.ok) {
+                                            throw response;
+                                        }
+                                        return response.json();
+                                    })
+                                    .then(providersData => {
+                                        const providerCount = providersData.data ? providersData.data.length : 0;
+
+                                        // Now update the UI with all counts
+                                        updateSystemStatsUI(userCount, areaCount, outageCount, providerCount);
+                                    });
+                            });
+                    });
+            })
+            .catch(handleApiError);
+    }
+
+    // Function to update system stats UI
+    function updateSystemStatsUI(userCount, areaCount, outageCount, providerCount) {
+        const systemStatsContainer = document.getElementById('system-stats');
+
+        // Replace loading state with actual data
+        systemStatsContainer.innerHTML = `
+                <!-- Users Card -->
+                <div class="stat-card p-5 shadow-sm border border-gray-100">
+                    <div class="flex justify-between items-center mb-4">
+                        <div class="p-2 rounded-full bg-blue-100">
+                            <i class='bx bx-user text-blue-600 text-xl'></i>
+                        </div>
+                        <div class="toggle-btn active"></div>
+                    </div>
+                    <h2 class="text-sm font-medium text-gray-500">Users</h2>
+                    <div class="flex justify-between items-center mt-1">
+                        <p class="text-lg font-semibold text-gray-800">${userCount}</p>
+                        <span class="text-xs text-gray-500">Total registered</span>
+                    </div>
+                </div>
+
+                <!-- Areas Card -->
+                <div class="stat-card p-5 shadow-sm border border-gray-100">
+                    <div class="flex justify-between items-center mb-4">
+                        <div class="p-2 rounded-full bg-green-100">
+                            <i class='bx bx-map text-green-600 text-xl'></i>
+                        </div>
+                        <div class="toggle-btn active"></div>
+                    </div>
+                    <h2 class="text-sm font-medium text-gray-500">Service Areas</h2>
+                    <div class="flex justify-between items-center mt-1">
+                        <p class="text-lg font-semibold text-gray-800">${areaCount}</p>
+                        <span class="text-xs text-gray-500">Coverage zones</span>
+                    </div>
+                </div>
+
+                <!-- Active Outages Card -->
+                <div class="stat-card p-5 shadow-sm border border-gray-100">
+                    <div class="flex justify-between items-center mb-4">
+                        <div class="p-2 rounded-full bg-red-100">
+                            <i class='bx bx-power-off text-red-600 text-xl'></i>
+                        </div>
+                        <div class="toggle-btn active"></div>
+                    </div>
+                    <h2 class="text-sm font-medium text-gray-500">Active Outages</h2>
+                    <div class="flex justify-between items-center mt-1">
+                        <p class="text-lg font-semibold text-gray-800">${outageCount}</p>
+                        <span class="text-xs ${outageCount > 0 ? 'text-red-500' : 'text-green-500'}">${outageCount > 0 ? 'Currently active' : 'All clear'}</span>
+                    </div>
+                </div>
+
+                <!-- Utility Providers Card -->
+                <div class="stat-card p-5 shadow-sm border border-gray-100">
+                    <div class="flex justify-between items-center mb-4">
+                        <div class="p-2 rounded-full bg-purple-100">
+                            <i class='bx bx-building text-purple-600 text-xl'></i>
+                        </div>
+                        <div class="toggle-btn active"></div>
+                    </div>
+                    <h2 class="text-sm font-medium text-gray-500">Utility Providers</h2>
+                    <div class="flex justify-between items-center mt-1">
+                        <p class="text-lg font-semibold text-gray-800">${providerCount}</p>
+                        <span class="text-xs text-gray-500">Registered providers</span>
+                    </div>
+                </div>
+            `;
+
+        // Initialize toggle buttons
+        initializeToggleButtons();
+    }
+
+    // Function to fetch outage status
+    function fetchOutageStatus() {
+        // Get all outages
+        fetch(`${CONFIG.API_BASE_URL}/api/public/outages/all`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw response;
+                }
+                return response.json();
+            })
+            .then(data => {
+                const outages = data.data || [];
+
+                // Count outages by type and status
+                let scheduledCount = 0;
+                let emergencyCount = 0;
+                let resolvedCount = 0;
+                let inProgressCount = 0;
+
+                outages.forEach(outage => {
+                    if (outage.type === 'SCHEDULED') scheduledCount++;
+                    if (outage.type === 'EMERGENCY') emergencyCount++;
+                    if (outage.status === 'RESOLVED') resolvedCount++;
+                    if (outage.status === 'IN_PROGRESS') inProgressCount++;
+                });
+
+                updateOutageStatusUI(scheduledCount, emergencyCount, resolvedCount, inProgressCount);
+            })
+            .catch(handleApiError);
+    }
+
+    // Function to update outage status UI
+    function updateOutageStatusUI(scheduledCount, emergencyCount, resolvedCount, inProgressCount) {
+        const outageStatusContainer = document.getElementById('outage-status');
+
+        // Replace loading state with actual data
+        outageStatusContainer.innerHTML = `
+                <!-- Scheduled Outages -->
+                <div class="stat-card p-5 shadow-sm border border-gray-100">
+                    <div class="flex justify-between items-center mb-4">
+                        <div class="p-2 rounded-full bg-blue-100">
+                            <i class='bx bx-calendar text-blue-600 text-xl'></i>
+                        </div>
+                        <div class="toggle-btn active"></div>
+                    </div>
+                    <h2 class="text-sm font-medium text-gray-500">Scheduled Outages</h2>
+                    <div class="flex justify-between items-center mt-1">
+                        <p class="text-lg font-semibold text-gray-800">${scheduledCount}</p>
+                        <span class="text-xs text-blue-500">Planned</span>
+                    </div>
+                </div>
+
+                <!-- Emergency Outages -->
+                <div class="stat-card p-5 shadow-sm border border-gray-100">
+                    <div class="flex justify-between items-center mb-4">
+                        <div class="p-2 rounded-full bg-red-100">
+                            <i class='bx bx-error-alt text-red-600 text-xl'></i>
+                        </div>
+                        <div class="toggle-btn active"></div>
+                    </div>
+                    <h2 class="text-sm font-medium text-gray-500">Emergency Outages</h2>
+                    <div class="flex justify-between items-center mt-1">
+                        <p class="text-lg font-semibold text-gray-800">${emergencyCount}</p>
+                        <span class="text-xs text-red-500">Unplanned</span>
+                    </div>
+                </div>
+
+                <!-- Resolved Outages -->
+                <div class="stat-card p-5 shadow-sm border border-gray-100">
+                    <div class="flex justify-between items-center mb-4">
+                        <div class="p-2 rounded-full bg-green-100">
+                            <i class='bx bx-check-circle text-green-600 text-xl'></i>
+                        </div>
+                        <div class="toggle-btn active"></div>
+                    </div>
+                    <h2 class="text-sm font-medium text-gray-500">Resolved Outages</h2>
+                    <div class="flex justify-between items-center mt-1">
+                        <p class="text-lg font-semibold text-gray-800">${resolvedCount}</p>
+                        <span class="text-xs text-green-500">Completed</span>
+                    </div>
+                </div>
+
+                <!-- In Progress Outages -->
+                <div class="stat-card p-5 shadow-sm border border-gray-100">
+                    <div class="flex justify-between items-center mb-4">
+                        <div class="p-2 rounded-full bg-yellow-100">
+                            <i class='bx bx-loader text-yellow-600 text-xl'></i>
+                        </div>
+                        <div class="toggle-btn active"></div>
+                    </div>
+                    <h2 class="text-sm font-medium text-gray-500">In Progress</h2>
+                    <div class="flex justify-between items-center mt-1">
+                        <p class="text-lg font-semibold text-gray-800">${inProgressCount}</p>
+                        <span class="text-xs text-yellow-500">Being addressed</span>
+                    </div>
+                </div>
+            `;
+
+        // Initialize toggle buttons
+        initializeToggleButtons();
+    }
+
+    // Function to fetch area stats
+    function fetchAreaStats() {
+        // Get areas and their outage history
+        fetch(`${CONFIG.API_BASE_URL}/api/public/areas`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw response;
+                }
+                return response.json();
+            })
+            .then(data => {
+                const areas = data.data || [];
+
+                // Get all outages to calculate stats
+                return fetch(`${CONFIG.API_BASE_URL}/api/public/outages/all`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw response;
+                        }
+                        return response.json();
+                    })
+                    .then(outagesData => {
+                        const outages = outagesData.data || [];
+
+                        // Count outages by area
+                        const areaOutageCounts = {};
+                        areas.forEach(area => {
+                            areaOutageCounts[area.id] = {
+                                name: area.name,
+                                count: 0
+                            };
+                        });
+
+                        outages.forEach(outage => {
+                            if (outage.areaId && areaOutageCounts[outage.areaId]) {
+                                areaOutageCounts[outage.areaId].count++;
+                            }
+                        });
+
+                        // Sort areas by outage count to find the most affected areas
+                        const sortedAreas = Object.values(areaOutageCounts)
+                            .sort((a, b) => b.count - a.count)
+                            .slice(0, 4); // Take top 4 areas
+
+                        updateAreaStatsUI(sortedAreas, areas.length);
+                    });
+            })
+            .catch(handleApiError);
+    }
+
+    // Function to update area stats UI
+    function updateAreaStatsUI(topAreas, totalAreaCount) {
+        const areaStatsContainer = document.getElementById('area-stats');
+
+        // If we have less than 4 areas, add a total count card
+        if (topAreas.length < 4) {
+            topAreas.push({
+                name: "Total Areas",
+                count: "-", // Not applicable for this card
+                isTotal: true
+            });
+        }
+
+        // Generate HTML for each area card
+        let areaCardsHTML = '';
+
+        topAreas.forEach((area, index) => {
+            const isTotal = area.isTotal;
+
+            // Different styles and content for total area card
+            const iconClass = isTotal ? 'bx-map-alt' : 'bx-map-pin';
+            const bgColor = isTotal ? 'indigo' : ['red', 'yellow', 'green', 'blue'][index % 4];
+            const title = isTotal ? 'Total Areas' : area.name;
+            const count = isTotal ? totalAreaCount : area.count;
+            const subtext = isTotal ? 'Service coverage' : 'Outage count';
+
+            areaCardsHTML += `
+                    <div class="stat-card p-5 shadow-sm border border-gray-100">
+                        <div class="flex justify-between items-center mb-4">
+                            <div class="p-2 rounded-full bg-${bgColor}-100">
+                                <i class='bx ${iconClass} text-${bgColor}-600 text-xl'></i>
+                            </div>
+                            <div class="toggle-btn active"></div>
+                        </div>
+                        <h2 class="text-sm font-medium text-gray-500">${title}</h2>
+                        <div class="flex justify-between items-center mt-1">
+                            <p class="text-lg font-semibold text-gray-800">${count}</p>
+                            <span class="text-xs text-gray-500">${subtext}</span>
+                        </div>
+                    </div>
+                `;
+        });
+
+        // Replace loading state with actual data
+        areaStatsContainer.innerHTML = areaCardsHTML;
+
+        // Initialize toggle buttons
+        initializeToggleButtons();
+    }
+
+    // Function to initialize toggle buttons
+    function initializeToggleButtons() {
+        document.querySelectorAll('.toggle-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                this.classList.toggle('active');
+            });
+        });
+    }
+
+    // Function to format date
+    function formatDate(dateString) {
+        if (!dateString) return 'N/A';
+
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+        });
+    }
+
+    // Function to check if API is available
+    function checkApiStatus() {
+        fetch(`${CONFIG.API_BASE_URL}/api/health`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw response;
+                }
+
+                // API is available
+                Toastify({
+                    text: "API connection established successfully",
+                    duration: 3000,
+                    gravity: "top",
+                    position: "right",
+                    style: {
+                        background: "#10b981",
+                    }
+                }).showToast();
+            })
+            .catch(error => {
+                // Show error notification
+                Toastify({
+                    text: "Cannot connect to API server",
+                    duration: 3000,
+                    gravity: "top",
+                    position: "right",
+                    style: {
+                        background: "#ef4444",
+                    }
+                }).showToast();
+
+                // Add offline mode notification
+                const header = document.querySelector('header');
+                const offlineAlert = document.createElement('div');
+                offlineAlert.className = 'bg-red-100 text-red-800 p-3 rounded-lg mt-4 flex items-center justify-between';
+                offlineAlert.innerHTML = `
+                    <div class="flex items-center">
+                        <i class='bx bx-wifi-off text-xl mr-2'></i>
+                        <span>Cannot connect to API server. Showing offline mode.</span>
+                    </div>
+                    <button class="retry-connection bg-red-200 hover:bg-red-300 text-red-800 px-3 py-1 rounded-md text-sm">
+                        Retry
+                    </button>
+                `;
+
+                // Insert after header
+                header.parentNode.insertBefore(offlineAlert, header.nextSibling);
+
+                // Add retry handler
+                offlineAlert.querySelector('.retry-connection').addEventListener('click', function() {
+                    offlineAlert.remove();
+                    checkApiStatus();
+                });
+
+                // Show mock data for offline mode
+                showOfflineModeData();
+            });
+    }
+
+    // Function to show offline mode data
+    function showOfflineModeData() {
+        // Update system stats
+        updateSystemStatsUI(847, 42, 7, 12);
+
+        // Update outage status
+        updateOutageStatusUI(5, 2, 15, 3);
+
+        // Update area stats
+        updateAreaStatsUI([
+            { name: "Colombo Central", count: 8 },
+            { name: "Kandy North", count: 6 },
+            { name: "Galle District", count: 4 },
+            { name: "Jaffna Region", count: 3 }
+        ], 42);
+
+        // Show offline mode notification
+        Toastify({
+            text: "Showing offline mode with sample data",
+            duration: 5000,
+            gravity: "top",
+            position: "right",
+            style: {
+                background: "#f59e0b",
+            }
+        }).showToast();
+    }
+
+    // Check API status when page loads
+    checkApiStatus();
+</script>
 </body>
 </html>

@@ -51,10 +51,7 @@ function initAreaManagement() {
     setupModals();
 }
 
-/**
- * Load areas from the API
- */
-function loadAreas() {
+function loadAreas(callback) {
     // Show loading indicator
     $('#loading-row').show();
     $('#empty-state').hide();
@@ -69,13 +66,26 @@ function loadAreas() {
         success: function(response) {
             // Process the response
             if (response && response.code === 200 && response.data) {
-                areas = response.data;
+                console.log('Areas loaded from API:', response.data);
+
+                // Ensure areas have utility providers array
+                areas = response.data.map(area => {
+                    if (!area.utilityProviders) {
+                        area.utilityProviders = [];
+                    }
+                    return area;
+                });
 
                 // Populate district and province filters
                 populateFilters();
 
                 // Apply filters and display areas
                 applyFilters();
+
+                // Execute callback if provided
+                if (typeof callback === 'function') {
+                    callback();
+                }
             } else {
                 // Show empty state
                 showEmptyState("No areas found", "There are no areas in the system.");
@@ -93,9 +103,7 @@ function loadAreas() {
     });
 }
 
-/**
- * Load utility providers from the API
- */
+
 function loadUtilityProviders() {
     $.ajax({
         url: `${CONFIG.API_BASE_URL}/api/provider/all`,
@@ -106,15 +114,43 @@ function loadUtilityProviders() {
         success: function(response) {
             if (response && response.code === 200 && response.data) {
                 providers = response.data;
+                console.log('Utility providers loaded successfully:', providers.length);
             } else {
                 console.error('No providers found or invalid response');
             }
         },
         error: function(xhr, status, error) {
             console.error('Error loading utility providers:', error);
+            // Don't throw an error here, just log it
         }
     });
 }
+
+function getAreaWithProviders(areaId) {
+    return new Promise((resolve, reject) => {
+        $.ajax({
+            url: `${CONFIG.API_BASE_URL}/api/public/areas/${areaId}/utility-providers`,
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+            },
+            success: function(response) {
+                if (response && response.code === 200) {
+                    console.log(`Utility providers for area ${areaId}:`, response.data);
+                    resolve(response.data);
+                } else {
+                    console.error('Failed to get providers for area:', response);
+                    resolve([]);
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error(`Error getting providers for area ${areaId}:`, error);
+                resolve([]);
+            }
+        });
+    });
+}
+
 
 /**
  * Populate district and province filter dropdowns
@@ -207,9 +243,6 @@ function resetFilters() {
     applyFilters();
 }
 
-/**
- * Render the area table with current filtered areas
- */
 function renderAreaTable() {
     const tableBody = $('#areas-table-body');
 
@@ -223,7 +256,7 @@ function renderAreaTable() {
     }
 
     // Hide empty state
-    $('#empty-state').addClass('hidden');
+    $('#empty-state').removeClass('hidden');
 
     // Show pagination
     $('#pagination-container').show();
@@ -233,10 +266,16 @@ function renderAreaTable() {
     const endIndex = Math.min(startIndex + pageSize, filteredAreas.length);
     const pageAreas = filteredAreas.slice(startIndex, endIndex);
 
+    // Log the areas being rendered for debugging
+    console.log('Rendering areas:', pageAreas);
+
     // Render each area
     pageAreas.forEach(area => {
         // Format utility providers
         let providerHtml = 'None';
+
+        // Debug log for this specific area's providers
+        console.log(`Rendering area ${area.id}: ${area.name} with providers:`, area.utilityProviders);
 
         if (area.utilityProviders && area.utilityProviders.length > 0) {
             providerHtml = area.utilityProviders.map(provider => {
@@ -305,60 +344,6 @@ function renderAreaTable() {
     // Update pagination
     updatePagination();
 }
-
-const row = $(`
-            <tr>
-                <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0 h-10 w-10 rounded-full bg-primary-100 text-primary-600 flex items-center justify-center">
-                            <i class="bx bx-map"></i>
-                        </div>
-                        <div class="ml-4">
-                            <div class="text-sm font-medium text-gray-900">${area.name}</div>
-                        </div>
-                    </div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="text-sm text-gray-900">${area.district}</div>
-                    <div class="text-sm text-gray-500">${area.province}</div>
-                </td>
-                <td class="px-6 py-4">
-                    <div class="flex flex-wrap">
-                        ${providerHtml}
-                    </div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <div class="flex space-x-2 justify-end">
-                        <button class="view-area-btn text-blue-600 hover:text-blue-900" data-area-id="${area.id}" title="View Details">
-                            <i class='bx bx-show'></i>
-                        </button>
-                        <button class="edit-area-btn text-indigo-600 hover:text-indigo-900" data-area-id="${area.id}" title="Edit Area">
-                            <i class='bx bx-edit'></i>
-                        </button>
-                        <button class="delete-area-btn text-red-600 hover:text-red-900" data-area-id="${area.id}" title="Delete Area">
-                            <i class='bx bx-trash'></i>
-                        </button>
-                    </div>
-                </td>
-            </tr>
-        `);
-
-// Add event listeners
-row.find('.view-area-btn').on('click', function() {
-    showAreaDetails(area.id);
-});
-
-row.find('.edit-area-btn').on('click', function() {
-    showEditAreaModal(area.id);
-});
-
-row.find('.delete-area-btn').on('click', function() {
-    showDeleteConfirmation(area.id);
-});
-
-// Update pagination
-updatePagination();
-
 
 function handleMapSelection(coordinates) {
     // Show loading state
@@ -923,9 +908,6 @@ function showEditAreaModal(areaId) {
     $('#area-modal').removeClass('hidden');
 }
 
-/**
- * Show area details
- */
 function showAreaDetails(areaId) {
     // Get area data
     const area = areas.find(a => a.id === areaId);
@@ -941,13 +923,41 @@ function showAreaDetails(areaId) {
     $('#view-district').text(area.district);
     $('#view-province').text(area.province);
 
-    // Display utility providers
-    renderProvidersInView(area.utilityProviders || []);
+    // First load up-to-date providers for this area
+    getUpToDateAreaProviders(areaId)
+        .then(providers => {
+            console.log(`Got ${providers.length} providers for area ${areaId}:`, providers);
 
-    // Initialize map
-    setTimeout(() => {
-        initViewMap(areaId);
-    }, 100);
+            // Update the providers in our local data
+            const areaIndex = areas.findIndex(a => a.id === areaId);
+            if (areaIndex !== -1) {
+                areas[areaIndex].utilityProviders = providers;
+
+                // Also update in filtered areas if needed
+                const filteredIndex = filteredAreas.findIndex(a => a.id === areaId);
+                if (filteredIndex !== -1) {
+                    filteredAreas[filteredIndex].utilityProviders = providers;
+                }
+            }
+
+            // Display utility providers with the latest data
+            renderProvidersInView(providers);
+
+            // Initialize map
+            setTimeout(() => {
+                initViewMap(areaId);
+            }, 100);
+        })
+        .catch(error => {
+            console.error('Error fetching providers:', error);
+            // Fall back to using the providers we already have
+            renderProvidersInView(area.utilityProviders || []);
+
+            // Initialize map
+            setTimeout(() => {
+                initViewMap(areaId);
+            }, 100);
+        });
 
     // Set up action buttons
     $('#delete-area-btn').off('click').on('click', function() {
@@ -962,6 +972,31 @@ function showAreaDetails(areaId) {
 
     // Show modal
     $('#view-area-modal').removeClass('hidden');
+}
+
+function getUpToDateAreaProviders(areaId) {
+    return new Promise((resolve, reject) => {
+        $.ajax({
+            url: `${CONFIG.API_BASE_URL}/api/public/areas/${areaId}/utility-providers`,
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+            },
+            success: function(response) {
+                if (response && response.code === 200) {
+                    console.log(`Retrieved ${response.data.length} providers for area ${areaId}:`, response.data);
+                    resolve(response.data);
+                } else {
+                    console.error('Failed to get utility providers:', response);
+                    resolve([]);
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error(`Error getting utility providers for area ${areaId}:`, error);
+                reject(error);
+            }
+        });
+    });
 }
 
 /**
@@ -1065,9 +1100,6 @@ function showProviderModal() {
     $('#provider-modal').removeClass('hidden');
 }
 
-/**
- * Add provider to area
- */
 function addProviderToArea() {
     const providerId = $('#provider-select').val();
 
@@ -1093,18 +1125,39 @@ function addProviderToArea() {
         success: function(response) {
             if (response && response.code === 200) {
                 showSuccess('Utility provider added successfully');
-
-                // Update area data
-                const areaIndex = areas.findIndex(a => a.id === currentAreaId);
-                if (areaIndex !== -1) {
-                    areas[areaIndex] = response.data;
-                }
+                console.log('Provider added response:', response);
 
                 // Close provider modal
                 $('#provider-modal').addClass('hidden');
 
-                // Refresh area details
-                showAreaDetails(currentAreaId);
+                // Get fresh providers data for the area
+                getUpToDateAreaProviders(currentAreaId)
+                    .then(providers => {
+                        console.log(`After adding, got ${providers.length} providers for area ${currentAreaId}:`, providers);
+
+                        // Update local data
+                        const areaIndex = areas.findIndex(a => a.id === currentAreaId);
+                        if (areaIndex !== -1) {
+                            areas[areaIndex].utilityProviders = providers;
+
+                            // Update filtered areas as well
+                            const filteredIndex = filteredAreas.findIndex(a => a.id === currentAreaId);
+                            if (filteredIndex !== -1) {
+                                filteredAreas[filteredIndex].utilityProviders = providers;
+                            }
+                        }
+
+                        // Refresh the area details view
+                        renderProvidersInView(providers);
+
+                        // Refresh the table to show updated data
+                        renderAreaTable();
+                    })
+                    .catch(error => {
+                        console.error('Error fetching updated providers:', error);
+                        // Refresh the page as a fallback
+                        window.location.reload();
+                    });
             } else {
                 showError(response?.message || 'Failed to add utility provider');
             }
@@ -1119,6 +1172,9 @@ function addProviderToArea() {
         }
     });
 }
+
+
+
 
 /**
  * Show confirmation for removing provider
@@ -1147,9 +1203,6 @@ function showRemoveProviderConfirmation(providerId) {
     $('#confirm-modal').removeClass('hidden');
 }
 
-/**
- * Remove provider from area
- */
 function removeProviderFromArea(providerId) {
     // Show loading state
     const confirmButton = $('#confirm-action');
@@ -1165,18 +1218,37 @@ function removeProviderFromArea(providerId) {
         success: function(response) {
             if (response && response.code === 200) {
                 showSuccess('Utility provider removed successfully');
-
-                // Update area data
-                const areaIndex = areas.findIndex(a => a.id === currentAreaId);
-                if (areaIndex !== -1) {
-                    areas[areaIndex] = response.data;
-                }
+                console.log('Provider removed response:', response);
 
                 // Close confirmation modal
                 $('#confirm-modal').addClass('hidden');
 
-                // Refresh area details
-                showAreaDetails(currentAreaId);
+                // Get fresh providers data
+                getUpToDateAreaProviders(currentAreaId)
+                    .then(providers => {
+                        // Update local data
+                        const areaIndex = areas.findIndex(a => a.id === currentAreaId);
+                        if (areaIndex !== -1) {
+                            areas[areaIndex].utilityProviders = providers;
+
+                            // Update filtered areas as well
+                            const filteredIndex = filteredAreas.findIndex(a => a.id === currentAreaId);
+                            if (filteredIndex !== -1) {
+                                filteredAreas[filteredIndex].utilityProviders = providers;
+                            }
+                        }
+
+                        // Refresh the area details view
+                        renderProvidersInView(providers);
+
+                        // Refresh the table
+                        renderAreaTable();
+                    })
+                    .catch(error => {
+                        console.error('Error fetching updated providers after removal:', error);
+                        // Refresh the page as a fallback
+                        window.location.reload();
+                    });
             } else {
                 showError(response?.message || 'Failed to remove utility provider');
             }
@@ -1191,6 +1263,7 @@ function removeProviderFromArea(providerId) {
         }
     });
 }
+
 
 /**
  * Show delete confirmation

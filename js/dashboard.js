@@ -1,6 +1,245 @@
 localStorage.getItem('userRole') !== 'ADMIN' && localStorage.getItem('auth_token') === null ? window.location.href = '../index.html' : null;
 $('current-year').textContent = new Date().getFullYear();
 
+// Simple authentication check - add this to dashboard.js
+document.addEventListener('DOMContentLoaded', function() {
+    checkAuth();
+});
+
+function checkAuth() {
+    // Get token from localStorage
+    const token = localStorage.getItem('auth_token');
+
+    // If no token, show session expired dialog
+    if (!token) {
+        showSessionExpiredDialog();
+        return;
+    }
+
+    // Simple GET request to validate token
+    fetch('http://localhost:8080/api/auth/check', {
+        method: 'GET',
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    })
+        .then(response => {
+            if (!response.ok) {
+                // Token invalid, show session expired dialog
+                localStorage.clear();
+                showSessionExpiredDialog();
+            }
+        })
+        .catch(error => {
+            console.error('Auth check failed:', error);
+            localStorage.clear();
+            showSessionExpiredDialog();
+        });
+}
+
+function showSessionExpiredDialog() {
+    // Create the session expired dialog styles
+    const styleEl = document.createElement('style');
+    styleEl.textContent = `
+        .session-dialog-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .session-dialog {
+            background-color: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            width: 90%;
+            max-width: 400px;
+            overflow: hidden;
+            transform: translateY(20px);
+            opacity: 0;
+            transition: transform 0.4s ease, opacity 0.3s ease;
+        }
+        
+        .session-dialog-header {
+            padding: 1.25rem;
+            background-color: #4f46e5;
+            color: white;
+            display: flex;
+            align-items: center;
+        }
+        
+        .session-dialog-icon {
+            background-color: rgba(255, 255, 255, 0.2);
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 9999px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 0.75rem;
+        }
+        
+        .session-dialog-title {
+            font-weight: 600;
+            font-size: 1.125rem;
+        }
+        
+        .session-dialog-body {
+            padding: 1.5rem;
+            color: #4b5563;
+        }
+        
+        .session-dialog-message {
+            margin-bottom: 1.5rem;
+            line-height: 1.5;
+        }
+        
+        .session-dialog-footer {
+            padding: 1rem 1.5rem;
+            background-color: #f9fafb;
+            display: flex;
+            justify-content: flex-end;
+        }
+        
+        .session-dialog-button {
+            background-color: #4f46e5;
+            color: white;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .session-dialog-button:hover {
+            background-color: #4338ca;
+        }
+        
+        .session-dialog-visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .session-dialog-overlay-visible {
+            opacity: 1;
+        }
+        
+        .session-timer {
+            margin-top: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .session-timer-bar {
+            width: 100%;
+            height: 4px;
+            background-color: #e5e7eb;
+            border-radius: 999px;
+            overflow: hidden;
+            margin-top: 0.5rem;
+        }
+        
+        .session-timer-progress {
+            height: 100%;
+            background-color: #4f46e5;
+            width: 100%;
+            border-radius: 999px;
+            animation: timer 5s linear forwards;
+        }
+        
+        .session-timer-text {
+            font-size: 0.875rem;
+            color: #6b7280;
+            text-align: center;
+            margin-bottom: 0.5rem;
+        }
+        
+        @keyframes timer {
+            from { width: 100%; }
+            to { width: 0%; }
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+    `;
+    document.head.appendChild(styleEl);
+
+    // Create the dialog HTML
+    const dialog = document.createElement('div');
+    dialog.className = 'session-dialog-overlay';
+    dialog.innerHTML = `
+        <div class="session-dialog">
+            <div class="session-dialog-header">
+                <div class="session-dialog-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20" height="20">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                </div>
+                <h3 class="session-dialog-title">Session Expired</h3>
+            </div>
+            <div class="session-dialog-body">
+                <p class="session-dialog-message">Your session has expired. Please log in again to continue.</p>
+                <div class="session-timer">
+                    <div>
+                        <div class="session-timer-text">Redirecting in <span id="countdown">5</span> seconds</div>
+                        <div class="session-timer-bar">
+                            <div class="session-timer-progress"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="session-dialog-footer">
+                <button class="session-dialog-button">Log In Now</button>
+            </div>
+        </div>
+    `;
+
+    // Add the dialog to the document
+    document.body.appendChild(dialog);
+
+    // Animate the dialog in
+    setTimeout(() => {
+        dialog.classList.add('session-dialog-overlay-visible');
+        dialog.querySelector('.session-dialog').classList.add('session-dialog-visible');
+    }, 10);
+
+    // Set up the countdown
+    let countdown = 5;
+    const countdownEl = dialog.querySelector('#countdown');
+    const countdownInterval = setInterval(() => {
+        countdown--;
+        if (countdownEl) {
+            countdownEl.textContent = countdown;
+        }
+
+        if (countdown <= 0) {
+            clearInterval(countdownInterval);
+            window.location.href = '../index.html';
+        }
+    }, 1000);
+
+    // Set up button click handler
+    const button = dialog.querySelector('.session-dialog-button');
+    if (button) {
+        button.addEventListener('click', () => {
+            clearInterval(countdownInterval);
+            window.location.href = '../index.html';
+        });
+    }
+}
 
 // Function to format date
 function formatDate(date) {
