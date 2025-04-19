@@ -26,6 +26,11 @@ The PowerAlert frontend provides an intuitive, responsive interface built with m
 - **Accessibility**: WCAG-compliant design elements
 - **Dark/Light Mode**: Comfortable viewing in any environment
 
+
+![Screenshot 2025-04-19 211151](https://github.com/user-attachments/assets/a6c29068-5b2c-4fd2-9eac-32b2f8e6f937)
+![Screenshot 2025-04-19 211243](https://github.com/user-attachments/assets/f54f54fa-1238-4bf5-b14c-d18950ccbe3f)
+
+
 ## 🏗️ Project Structure
 
 ```
