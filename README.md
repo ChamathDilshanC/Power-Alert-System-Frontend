@@ -4,9 +4,6 @@
 
 PowerAlert is a comprehensive utility notification service designed to help Sri Lankans manage frequent power outages and water supply disruptions through timely alerts and useful information.
 
-![Logo1-removebg-preview](https://github.com/user-attachments/assets/5b45f5f6-d6e2-495b-b854-b6c19f238bd5)
-
-
 ## 📱 Frontend Overview
 
 The PowerAlert frontend provides an intuitive, responsive interface built with modern web technologies:
