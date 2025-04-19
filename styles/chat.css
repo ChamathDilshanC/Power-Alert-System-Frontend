@@ -117,6 +117,10 @@
     color: #059669;
 }
 
+.role-utility {
+    background-color: rgba(37, 99, 235, 0.15);
+    color: #3b82f6;
+}
 /* Date divider in chat */
 .date-divider {
     display: flex;

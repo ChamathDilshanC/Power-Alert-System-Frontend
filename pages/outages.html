@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Outage Management - PowerAlert</title>
+    <link rel="icon" type="image/x-icon" href="https://i.pinimg.com/736x/3f/bf/40/3fbf4075b391e07eaa00ec5a87647cb5.jpg">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            200: '#c7d2fe',
+                            300: '#a5b4fc',
+                            400: '#818cf8',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                            800: '#3730a3',
+                            900: '#312e81',
+                        },
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <!-- Mapbox -->
+    <script src='https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.js'></script>
+    <link href='https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.css' rel='stylesheet' />
+    <script src='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.3.0/mapbox-gl-draw.js'></script>
+    <link rel='stylesheet' href='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.3.0/mapbox-gl-draw.css' type='text/css' />
+    <!-- Datetime picker -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <!-- Box Icons -->
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <!-- Inter Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Toastify CSS -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <!-- Toastify JS -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <link rel="stylesheet" href="../styles/dashboard.css">
+    <link rel="stylesheet" href="../styles/darkMode.css">
+    <script src="../js/ui/darkMode.js"></script>
+
+    <!-- Inline configuration -->
+    <script>
+        // Define CONFIG globally to ensure it's available before other scripts load
+        const CONFIG = {
+            API_BASE_URL: 'http://localhost:8080',
+            API_VERSION: 'v1',
+            API_TIMEOUT: 30000,
+            MAPBOX_TOKEN: 'pk.eyJ1IjoiY2hhbWF0aDQ5OTciLCJhIjoiY204bXhqN2N2MGtuMDJscGw2bDk1N3RpNyJ9.tzXMf6U8UAd0GY1GR-iuTQ',
+            DEFAULT_MAP_CENTER: [80.6337, 7.8731], // Sri Lanka center coordinates
+            DEFAULT_MAP_ZOOM: 7
+        };
+        window.CONFIG = CONFIG;
+    </script>
+
+    <style>
+        /* Custom styles for outage management page */
+        .required::after {
+            content: " *";
+            color: #dc2626;
+        }
+
+        .outage-type-badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.375rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .outage-type-badge.electricity {
+            background-color: rgba(234, 179, 8, 0.1);
+            color: #ca8a04;
+        }
+
+        .outage-type-badge.water {
+            background-color: rgba(59, 130, 246, 0.1);
+            color: #3b82f6;
+        }
+
+        .outage-type-badge.gas {
+            background-color: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+        }
+
+        .outage-status-badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .outage-status-badge.scheduled {
+            background-color: rgba(59, 130, 246, 0.1);
+            color: #3b82f6;
+        }
+
+        .outage-status-badge.ongoing {
+            background-color: rgba(234, 179, 8, 0.1);
+            color: #ca8a04;
+        }
+
+        .outage-status-badge.completed {
+            background-color: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+        }
+
+        .outage-status-badge.cancelled {
+            background-color: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+        }
+
+        .tab-active {
+            border-color: #4f46e5;
+            color: #4f46e5;
+        }
+
+        #map {
+            width: 100%;
+            height: 400px;
+            border-radius: 0.5rem;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+<div class="container mx-auto px-4 py-8">
+    <!-- Header Section -->
+    <div class="flex justify-between items-center mb-8">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-800">Outage Management</h1>
+            <p class="text-gray-600">Create and manage utility outages and notifications</p>
+        </div>
+        <div class="flex gap-3">
+            <a href="dashboard.html" class="flex items-center gap-2 bg-primary-50 text-primary-600 px-4 py-2 rounded-lg font-medium hover:bg-primary-100 transition-colors">
+                <i class='bx bx-arrow-back'></i>
+                <span>Back to Dashboard</span>
+            </a>
+            <button id="create-outage-btn" class="flex items-center gap-2 bg-primary-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-primary-700 transition-colors">
+                <i class='bx bx-plus'></i>
+                <span>Create New Outage</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Tabs Navigation -->
+    <div class="border-b border-gray-200 mb-6">
+        <div class="flex -mb-px">
+            <button id="active-outages-tab" class="tab-item px-6 py-3 border-b-2 tab-active">
+                Active Outages
+            </button>
+            <button id="scheduled-outages-tab" class="tab-item px-6 py-3 border-b-2 border-transparent text-gray-500 hover:text-gray-700">
+                Scheduled Outages
+            </button>
+            <button id="completed-outages-tab" class="tab-item px-6 py-3 border-b-2 border-transparent text-gray-500 hover:text-gray-700">
+                Completed Outages
+            </button>
+            <button id="cancelled-outages-tab" class="tab-item px-6 py-3 border-b-2 border-transparent text-gray-500 hover:text-gray-700">
+                Cancelled Outages
+            </button>
+        </div>
+    </div>
+
+    <!-- Filters and Search Section -->
+    <div class="bg-white p-4 rounded-xl shadow-card mb-6">
+        <div class="flex flex-col md:flex-row gap-4">
+            <div class="flex-1">
+                <label for="search-outages" class="block text-sm font-medium text-gray-700 mb-1">Search Outages</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                        <i class='bx bx-search text-gray-400'></i>
+                    </div>
+                    <input type="text" id="search-outages" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full pl-10 p-2.5" placeholder="Search by area, reason, or provider...">
+                </div>
+            </div>
+            <div class="md:w-48">
+                <label for="filter-type" class="block text-sm font-medium text-gray-700 mb-1">Outage Type</label>
+                <select id="filter-type" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5">
+                    <option value="">All Types</option>
+                    <option value="ELECTRICITY">Electricity</option>
+                    <option value="WATER">Water</option>
+                    <option value="GAS">Gas</option>
+                </select>
+            </div>
+            <div class="md:w-48">
+                <label for="filter-area" class="block text-sm font-medium text-gray-700 mb-1">Area</label>
+                <select id="filter-area" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5">
+                    <option value="">All Areas</option>
+                    <!-- Will be populated dynamically -->
+                </select>
+            </div>
+            <div class="md:w-48 flex items-end">
+                <button id="reset-filters" class="bg-gray-100 hover:bg-gray-200 text-gray-700 py-2.5 px-4 rounded-lg font-medium transition-colors w-full">
+                    Reset Filters
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Outages Table -->
+    <div class="bg-white rounded-xl shadow-card overflow-hidden mb-6">
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                <tr>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Area</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Start Time</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">End Time</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Provider</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                </tr>
+                </thead>
+                <tbody id="outages-table-body" class="bg-white divide-y divide-gray-200">
+                <!-- Outage rows will be populated by JavaScript -->
+                <tr id="loading-row">
+                    <td colspan="7" class="px-6 py-12 text-center">
+                        <div class="flex justify-center">
+                            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+                        </div>
+                        <p class="mt-2 text-sm text-gray-500">Loading outages...</p>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Empty State (initially hidden) -->
+        <div id="empty-state" class="hidden py-12 text-center">
+            <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 text-gray-400 mb-4">
+                <i class='bx bx-bolt-circle text-3xl'></i>
+            </div>
+            <h3 class="text-lg font-medium text-gray-900">No outages found</h3>
+            <p class="mt-2 text-sm text-gray-500" id="empty-state-message">No outages match your search criteria.</p>
+            <button id="clear-search-btn" class="mt-4 inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                Clear Search
+            </button>
+        </div>
+
+        <!-- Pagination -->
+        <div id="pagination-container" class="px-6 py-3 flex items-center justify-between border-t border-gray-200">
+            <div class="flex-1 flex justify-between items-center">
+                <div class="text-sm text-gray-700">
+                    Showing <span id="page-start">1</span> to <span id="page-end">10</span> of <span id="total-items">50</span> outages
+                </div>
+                <div class="flex space-x-2">
+                    <button id="prev-page" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                        Previous
+                    </button>
+                    <div id="page-numbers" class="flex space-x-1">
+                        <!-- Page numbers will be inserted here -->
+                    </div>
+                    <button id="next-page" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                        Next
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Create/Edit Outage Modal (initially hidden) -->
+<div id="outage-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden modal">
+    <div class="bg-white rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto mx-4 modal-content">
+        <div class="flex justify-between items-center border-b border-gray-200 px-6 py-4">
+            <h2 id="modal-title" class="text-xl font-semibold text-gray-800">Create New Outage</h2>
+            <button id="close-modal" class="text-gray-400 hover:text-gray-500 focus:outline-none">
+                <i class='bx bx-x text-2xl'></i>
+            </button>
+        </div>
+        <form id="outage-form" class="p-6">
+            <input type="hidden" id="outage-id">
+
+            <!-- Outage Details -->
+            <div class="mb-6">
+                <h3 class="text-md font-medium text-gray-900 mb-3">Outage Details</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label for="outage-type" class="block text-sm font-medium text-gray-700 mb-1 required">Outage Type</label>
+                        <select id="outage-type" name="type" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5" required>
+                            <option value="">Select Type</option>
+                            <option value="ELECTRICITY">Electricity</option>
+                            <option value="WATER">Water</option>
+                            <option value="GAS">Gas</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="outage-status" class="block text-sm font-medium text-gray-700 mb-1 required">Outage Status</label>
+                        <select id="outage-status" name="status" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5" required>
+                            <option value="SCHEDULED">Scheduled</option>
+                            <option value="ONGOING">Ongoing</option>
+                            <option value="COMPLETED">Completed</option>
+                            <option value="CANCELLED">Cancelled</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="start-time" class="block text-sm font-medium text-gray-700 mb-1 required">Start Time</label>
+                        <input type="text" id="start-time" name="startTime" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 datepicker" placeholder="Select date and time" required>
+                    </div>
+
+                    <div>
+                        <label for="end-time" class="block text-sm font-medium text-gray-700 mb-1 required">Estimated End Time</label>
+                        <input type="text" id="end-time" name="estimatedEndTime" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 datepicker" placeholder="Select date and time" required>
+                    </div>
+
+                    <div class="md:col-span-2">
+                        <label for="reason" class="block text-sm font-medium text-gray-700 mb-1 required">Reason</label>
+                        <input type="text" id="reason" name="reason" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5" placeholder="e.g., Scheduled maintenance, Emergency repair" required>
+                    </div>
+
+                    <div class="md:col-span-2">
+                        <label for="additional-info" class="block text-sm font-medium text-gray-700 mb-1">Additional Information</label>
+                        <textarea id="additional-info" name="additionalInfo" rows="3" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5" placeholder="Provide any additional details about the outage"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Area Selection -->
+            <div class="mb-6">
+                <h3 class="text-md font-medium text-gray-900 mb-3">Affected Area</h3>
+
+                <!-- Area Selection Tabs -->
+                <div class="border-b border-gray-200 mb-4">
+                    <div class="flex -mb-px">
+                        <button type="button" id="select-area-tab" class="area-tab-item px-4 py-2 border-b-2 border-primary-500 text-primary-600 font-medium">
+                            Select Existing Area
+                        </button>
+                        <button type="button" id="draw-area-tab" class="area-tab-item px-4 py-2 border-b-2 border-transparent text-gray-500 hover:text-gray-700 font-medium">
+                            Draw Custom Area
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Select Existing Area (initially visible) -->
+                <div id="select-area-container">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="area-select" class="block text-sm font-medium text-gray-700 mb-1 required">Select Area</label>
+                            <select id="area-select" name="areaId" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5" required>
+                                <option value="">Select Area</option>
+                                <!-- Will be populated dynamically -->
+                            </select>
+                            <p class="mt-1 text-xs text-gray-500">Select an existing predefined area</p>
+                        </div>
+
+                        <div class="md:col-span-2 mt-4">
+                            <div id="area-preview-map" class="h-64 bg-gray-100 rounded-lg hidden">
+                                <!-- Map will be displayed here when an area is selected -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Draw Custom Area (initially hidden) -->
+                <div id="draw-area-container" class="hidden">
+                    <p class="text-sm text-gray-500 mb-3">Use the drawing tools to define the affected geographical area on the map.</p>
+
+                    <div id="map" class="h-96 bg-gray-100 rounded-lg mb-4"></div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="area-name" class="block text-sm font-medium text-gray-700 mb-1 required">Area Name</label>
+                            <input type="text" id="area-name" name="areaName" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5" placeholder="Enter a name for this area">
+                        </div>
+
+                        <div>
+                            <label for="area-district" class="block text-sm font-medium text-gray-700 mb-1 required">District</label>
+                            <select id="area-district" name="district" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5">
+                                <option value="">Select District</option>
+                                <option value="Colombo">Colombo</option>
+                                <option value="Gampaha">Gampaha</option>
+                                <option value="Kalutara">Kalutara</option>
+                                <option value="Kandy">Kandy</option>
+                                <option value="Matale">Matale</option>
+                                <option value="Nuwara Eliya">Nuwara Eliya</option>
+                                <option value="Galle">Galle</option>
+                                <option value="Matara">Matara</option>
+                                <option value="Hambantota">Hambantota</option>
+                                <option value="Jaffna">Jaffna</option>
+                                <!-- More districts will be added -->
+                            </select>
+                        </div>
+
+                        <div>
+                            <label for="area-city" class="block text-sm font-medium text-gray-700 mb-1">City</label>
+                            <input type="text" id="area-city" name="city" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5" placeholder="Enter the city name">
+                        </div>
+
+                        <div>
+                            <label for="area-postal-code" class="block text-sm font-medium text-gray-700 mb-1">Postal Code</label>
+                            <input type="text" id="area-postal-code" name="postalCode" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5" placeholder="Enter postal code">
+                        </div>
+
+                        <input type="hidden" id="area-geojson" name="geographicalAreaJson">
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <label for="utility-provider" class="block text-sm font-medium text-gray-700 mb-1 required">Utility Provider</label>
+                <select id="utility-provider" name="utilityProviderId" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5" required>
+                    <option value="">Select Utility Provider</option>
+                    <!-- Will be populated dynamically -->
+                </select>
+            </div>
+
+            <!-- Notification Settings -->
+            <div class="mb-6">
+                <h3 class="text-md font-medium text-gray-900 mb-3">Notification Settings</h3>
+                <div class="space-y-4">
+                    <div class="flex items-center">
+                        <input id="send-email" name="sendEmail" type="checkbox" class="w-4 h-4 text-primary-600 bg-gray-100 rounded border-gray-300 focus:ring-primary-500 focus:ring-2" checked>
+                        <label for="send-email" class="ml-2 text-sm font-medium text-gray-700">Send email notifications to affected users</label>
+                    </div>
+
+                    <div class="flex items-center">
+                        <input id="send-sms" name="sendSMS" type="checkbox" class="w-4 h-4 text-primary-600 bg-gray-100 rounded border-gray-300 focus:ring-primary-500 focus:ring-2" checked>
+                        <label for="send-sms" class="ml-2 text-sm font-medium text-gray-700">Send SMS notifications to affected users</label>
+                    </div>
+
+                    <div class="flex items-center">
+                        <input id="send-push" name="sendPush" type="checkbox" class="w-4 h-4 text-primary-600 bg-gray-100 rounded border-gray-300 focus:ring-primary-500 focus:ring-2" checked>
+                        <label for="send-push" class="ml-2 text-sm font-medium text-gray-700">Send push notifications to mobile app users</label>
+                    </div>
+
+                    <div class="flex items-center">
+                        <input id="send-whatsapp" name="sendWhatsApp" type="checkbox" class="w-4 h-4 text-primary-600 bg-gray-100 rounded border-gray-300 focus:ring-primary-500 focus:ring-2">
+                        <label for="send-whatsapp" class="ml-2 text-sm font-medium text-gray-700">Send WhatsApp notifications (if available)</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-8 flex justify-end gap-3">
+                <button type="button" id="cancel-form" class="bg-white text-gray-700 border border-gray-300 py-2 px-4 rounded-lg font-medium hover:bg-gray-50 transition-colors">
+                    Cancel
+                </button>
+                <button type="submit" id="save-outage" class="bg-primary-600 text-white py-2 px-6 rounded-lg font-medium hover:bg-primary-700 transition-colors">
+                    Save Outage
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- View Outage Details Modal (initially hidden) -->
+<div id="view-outage-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden modal">
+    <div class="bg-white rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto mx-4 modal-content">
+        <div class="flex justify-between items-center border-b border-gray-200 px-6 py-4">
+            <h2 id="view-modal-title" class="text-xl font-semibold text-gray-800">Outage Details</h2>
+            <button id="close-view-modal" class="text-gray-400 hover:text-gray-500 focus:outline-none">
+                <i class='bx bx-x text-2xl'></i>
+            </button>
+        </div>
+        <div class="p-6">
+            <!-- Header information -->
+            <div class="flex flex-col sm:flex-row justify-between mb-6">
+                <div>
+                    <div class="flex items-center mb-2">
+                        <span id="view-outage-type" class="outage-type-badge electricity">Electricity</span>
+                        <span id="view-outage-status" class="outage-status-badge scheduled ml-2">Scheduled</span>
+                    </div>
+                    <h3 id="view-outage-area" class="text-xl font-semibold text-gray-900">Colombo District</h3>
+                    <p id="view-outage-reason" class="text-sm text-gray-600 mt-1">Scheduled maintenance on power grid</p>
+                </div>
+                <div class="mt-4 sm:mt-0 flex flex-col items-end">
+                    <div class="text-sm text-gray-500">Provider:</div>
+                    <div id="view-outage-provider" class="text-sm font-medium text-gray-900">Ceylon Electricity Board</div>
+                </div>
+            </div>
+
+            <!-- Outage times -->
+            <div class="bg-gray-50 p-4 rounded-lg mb-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <div class="text-sm text-gray-500">Start Time</div>
+                        <div id="view-outage-start" class="text-sm font-medium text-gray-900">April 20, 2025, 9:00 AM</div>
+                    </div>
+                    <div>
+                        <div class="text-sm text-gray-500">Estimated End Time</div>
+                        <div id="view-outage-end" class="text-sm font-medium text-gray-900">April 20, 2025, 5:00 PM</div>
+                    </div>
+                    <div>
+                        <div class="text-sm text-gray-500">Duration</div>
+                        <div id="view-outage-duration" class="text-sm font-medium text-gray-900">8 hours</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Additional Information -->
+            <div class="mb-6">
+                <h4 class="text-sm font-medium text-gray-500 uppercase mb-2">Additional Information</h4>
+                <p id="view-outage-info" class="text-sm text-gray-900">Teams will be replacing transformers and upgrading power lines. Please ensure electronic devices are properly shut down prior to outage. We apologize for any inconvenience caused.</p>
+            </div>
+
+            <!-- Affected Area Map -->
+            <div class="mb-6">
+                <h4 class="text-sm font-medium text-gray-500 uppercase mb-2">Affected Area</h4>
+                <div id="view-outage-map" class="h-64 bg-gray-100 rounded-lg"></div>
+            </div>
+
+            <!-- Outage Updates -->
+            <div class="mb-6">
+                <h4 class="text-sm font-medium text-gray-500 uppercase mb-2">Outage Updates</h4>
+                <div id="outage-updates" class="space-y-4">
+                    <!-- Updates will be dynamically added here -->
+                    <div class="p-3 border border-gray-200 rounded-lg bg-white">
+                        <div class="flex justify-between mb-1">
+                            <div class="text-sm font-medium text-gray-900">Status changed to Ongoing</div>
+                            <div class="text-xs text-gray-500">April 20, 2025, 9:05 AM</div>
+                        </div>
+                        <p class="text-sm text-gray-600">Work has commenced on schedule and is progressing as planned.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notification Stats -->
+            <div class="mb-6">
+                <h4 class="text-sm font-medium text-gray-500 uppercase mb-2">Notification Statistics</h4>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="bg-gray-50 p-3 rounded-lg">
+                        <div class="text-sm text-gray-500">Email Notifications</div>
+                        <div id="email-notification-count" class="text-xl font-medium text-gray-900">245</div>
+                        <div class="text-xs text-gray-500">Sent</div>
+                    </div>
+                    <div class="bg-gray-50 p-3 rounded-lg">
+                        <div class="text-sm text-gray-500">SMS Notifications</div>
+                        <div id="sms-notification-count" class="text-xl font-medium text-gray-900">183</div>
+                        <div class="text-xs text-gray-500">Sent</div>
+                    </div>
+                    <div class="bg-gray-50 p-3 rounded-lg">
+                        <div class="text-sm text-gray-500">Push Notifications</div>
+                        <div id="push-notification-count" class="text-xl font-medium text-gray-900">92</div>
+                        <div class="text-xs text-gray-500">Sent</div>
+                    </div>
+                    <div class="bg-gray-50 p-3 rounded-lg">
+                        <div class="text-sm text-gray-500">Users Affected</div>
+                        <div id="users-affected-count" class="text-xl font-medium text-gray-900">312</div>
+                        <div class="text-xs text-gray-500">Estimated</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="border-t border-gray-200 pt-6 mt-6 flex flex-wrap gap-3 justify-end">
+                <button id="update-status-btn" class="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                    <i class='bx bx-refresh mr-2'></i> Update Status
+                </button>
+                <button id="add-update-btn" class="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                    <i class='bx bx-message-square-add mr-2'></i> Add Update
+                </button>
+                <button id="send-notifications-btn" class="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                    <i class='bx bx-notification mr-2'></i> Send Notifications
+                </button>
+                <button id="cancel-outage-btn" class="inline-flex items-center px-3 py-2 border border-red-300 text-sm font-medium rounded-md text-red-700 bg-white hover:bg-red-50">
+                    <i class='bx bx-x-circle mr-2'></i> Cancel Outage
+                </button>
+                <button id="edit-outage-btn" class="inline-flex items-center px-4 py-2 bg-primary-600 text-white text-sm font-medium rounded-md hover:bg-primary-700">
+                    <i class='bx bx-edit-alt mr-2'></i> Edit Outage
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Update Modal (initially hidden) -->
+<div id="add-update-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden modal">
+    <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-6 modal-content">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-medium text-gray-900">Add Outage Update</h3>
+            <button id="close-update-modal" class="text-gray-400 hover:text-gray-500 focus:outline-none">
+                <i class='bx bx-x text-2xl'></i>
+            </button>
+        </div>
+        <form id="update-form">
+            <input type="hidden" id="update-outage-id">
+
+            <div class="mb-4">
+                <label for="update-status" class="block text-sm font-medium text-gray-700 mb-1">New Status (Optional)</label>
+                <select id="update-status" name="newStatus" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5">
+                    <option value="">Keep Current Status</option>
+                    <option value="ONGOING">Ongoing</option>
+                    <option value="COMPLETED">Completed</option>
+                    <option value="CANCELLED">Cancelled</option>
+                </select>
+            </div>
+
+            <div class="mb-4">
+                <label for="update-end-time" class="block text-sm font-medium text-gray-700 mb-1">Update Estimated End Time (Optional)</label>
+                <input type="text" id="update-end-time" name="updatedEstimatedEndTime" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 datepicker" placeholder="Select new end time">
+            </div>
+
+            <div class="mb-4">
+                <label for="update-info" class="block text-sm font-medium text-gray-700 mb-1 required">Update Information</label>
+                <textarea id="update-info" name="updateInfo" rows="3" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5" placeholder="Provide information about the update" required></textarea>
+            </div>
+
+            <div class="mb-4">
+                <label for="update-reason" class="block text-sm font-medium text-gray-700 mb-1">Reason for Update (Optional)</label>
+                <input type="text" id="update-reason" name="reason" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5" placeholder="Reason for update or delay">
+            </div>
+
+            <div class="flex justify-end gap-3 mt-4">
+                <button type="button" id="cancel-update" class="bg-white text-gray-700 border border-gray-300 py-2 px-4 rounded-lg font-medium hover:bg-gray-50 transition-colors">
+                    Cancel
+                </button>
+                <button type="submit" id="save-update" class="bg-primary-600 text-white py-2 px-6 rounded-lg font-medium hover:bg-primary-700 transition-colors">
+                    Save Update
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Confirmation Modal (initially hidden) -->
+<div id="confirm-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden modal">
+    <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-6 modal-content">
+        <div class="text-center mb-4">
+            <div id="confirm-icon-container" class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-red-100 text-red-600 mb-4">
+                <i id="confirm-icon" class='bx bx-trash text-2xl'></i>
+            </div>
+            <h3 id="confirm-title" class="text-lg font-medium text-gray-900">Cancel Outage</h3>
+            <p id="confirm-message" class="mt-2 text-sm text-gray-500">Are you sure you want to cancel this outage? This will send cancellation notifications to all affected users.</p>
+        </div>
+        <div class="flex justify-center gap-3 mt-4">
+            <button id="cancel-confirm" class="px-4 py-2 bg-white text-gray-700 border border-gray-300 rounded-md font-medium hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+                Go Back
+            </button>
+            <button id="confirm-action" class="px-4 py-2 bg-red-600 text-white rounded-md font-medium hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                Confirm Cancel
+            </button>
+        </div>
+    </div>
+</div>
+
+<footer class="footer-container-pages">
+    <div class="footer-content">
+        <div class="footer-brand">
+            <div class="footer-logo">
+                <i class='bx bxs-bolt text-xl'></i>
+                <span>Power Alert</span>
+            </div>
+            <p class="footer-description">
+                Reliable power outage monitoring and notifications for Sri Lanka.
+            </p>
+        </div>
+
+        <div class="footer-links">
+            <div class="footer-section">
+                <h3>Quick Links</h3>
+                <ul>
+                    <li><a href="dashboard.html">Dashboard</a></li>
+                    <li><a href="outages/view.html">Outages</a></li>
+                    <li><a href="areaManagement.html">Areas</a></li>
+                    <li><a href="reports.html">Reports</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-section">
+                <h3>Resources</h3>
+                <ul>
+                    <li><a href="#">Documentation</a></li>
+                    <li><a href="#">API</a></li>
+                    <li><a href="#">Help Center</a></li>
+                    <li><a href="#">Contact Support</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-section">
+                <h3>Legal</h3>
+                <ul>
+                    <li><a href="#">Privacy Policy</a></li>
+                    <li><a href="#">Terms of Service</a></li>
+                    <li><a href="#">Data Policy</a></li>
+                    <li><a href="#">Cookie Settings</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer-bottom">
+        <div class="copyright">
+            <p>&copy; 2025 Power Alert. All rights reserved.</p>
+        </div>
+        <div class="social-links">
+            <a href="#" aria-label="Facebook"><i class='bx bxl-facebook'></i></a>
+            <a href="#" aria-label="Twitter"><i class='bx bxl-twitter'></i></a>
+            <a href="#" aria-label="Instagram"><i class='bx bxl-instagram'></i></a>
+        </div>
+    </div>
+</footer>
+<!--<script src="../js/error-handler.js"></script>-->
+<script src="../js/outages.js"></script>
+</body>
+</html>

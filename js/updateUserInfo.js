@@ -250,13 +250,13 @@
             case 'utility provider':
                 // Hide administrative items
                 $('#nav-section-users').hide();
-                $('#nav-resources, #resources-submenu').hide();
                 $('#nav-reports').hide();
                 $('#nav-audit').hide();
                 $('#settings-email').hide();
                 $('#nav-areas').hide();
                 $('#areas-submenu').hide();
-
+                $('#resources-create').hide();
+                $('#resources-edit').hide();
                 // Show only relevant submenu items
                 $('#outages-view, #outages-create, #outages-edit, #outages-history').show();
                 $('#feedback-view').show();
@@ -267,12 +267,13 @@
             default:
                 // Hide administrative items and provider items
                 $('#nav-section-users').hide();
-                $('#nav-resources, #resources-submenu').hide();
                 $('#nav-reports').hide();
                 $('#nav-audit').hide();
                 $('#settings-email').hide();
                 $('#nav-areas').hide();
                 $('#areas-submenu').hide();
+                $('#resources-create').hide();
+                $('#resources-edit').hide();
 
                 // Hide outage management
                 $('#outages-create').hide();

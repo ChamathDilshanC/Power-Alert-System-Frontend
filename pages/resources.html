@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Alternative Resources - PowerAlert</title>
+    <title>Alternative Resources Management - PowerAlert</title>
     <link rel="icon" type="image/x-icon" href="https://i.pinimg.com/736x/3f/bf/40/3fbf4075b391e07eaa00ec5a87647cb5.jpg">
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -43,52 +43,99 @@
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
     <!-- Toastify JS -->
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
-    <!-- Mapbox CSS -->
-    <link href="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.css" rel="stylesheet">
-    <!-- Mapbox JS -->
-    <script src="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.js"></script>
-    <!-- Styles -->
     <link rel="stylesheet" href="../styles/dashboard.css">
     <link rel="stylesheet" href="../styles/darkMode.css">
     <script src="../js/ui/darkMode.js"></script>
 
     <!-- Inline configuration -->
     <script>
+        // Define CONFIG globally to ensure it's available before other scripts load
         const CONFIG = {
             API_BASE_URL: 'http://localhost:8080',
             API_VERSION: 'v1',
             API_TIMEOUT: 30000,
             MAPBOX_TOKEN: 'pk.eyJ1IjoiY2hhbWF0aDQ5OTciLCJhIjoiY204bXhqN2N2MGtuMDJscGw2bDk1N3RpNyJ9.tzXMf6U8UAd0GY1GR-iuTQ',
-            DEFAULT_MAP_CENTER: [80.6337, 7.8731],
+            DEFAULT_MAP_CENTER: [80.6337, 7.8731], // Sri Lanka center coordinates
             DEFAULT_MAP_ZOOM: 7
         };
         window.CONFIG = CONFIG;
     </script>
 
+    <!-- Custom JS will be added later -->
     <style>
-        .resource-card {
-            transition: transform 0.3s;
+        /* Custom styles for alternative resources management page */
+        .required::after {
+            content: " *";
+            color: #dc2626;
         }
-        .resource-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+
+        .type-badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.375rem;
+            font-size: 0.75rem;
+            font-weight: 500;
         }
-        .resource-badge {
-            position: absolute;
-            top: 10px;
-            right: 10px;
+
+        .type-badge.solar {
+            background-color: rgba(251, 191, 36, 0.1);
+            color: #d97706;
         }
-        .map-container {
-            height: 400px;
+
+        .type-badge.generator {
+            background-color: rgba(79, 70, 229, 0.1);
+            color: #4f46e5;
+        }
+
+        .type-badge.battery {
+            background-color: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+        }
+
+        .type-badge.other {
+            background-color: rgba(107, 114, 128, 0.1);
+            color: #6b7280;
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .status-badge.active {
+            background-color: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+        }
+
+        .status-badge.inactive {
+            background-color: rgba(107, 114, 128, 0.1);
+            color: #6b7280;
+        }
+
+        /* Image preview styles */
+        .image-preview {
             width: 100%;
-            border-radius: 0.75rem;
+            height: 150px;
+            position: relative;
             overflow: hidden;
+            background-color: #f3f4f6;
+            border: 2px dashed #d1d5db;
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-        .shadow-card {
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+
+        .image-preview img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
         }
-        .admin-controls {
-            display: none;
+
+        .image-preview .placeholder {
+            color: #9ca3af;
+            text-align: center;
         }
     </style>
 </head>
@@ -97,340 +144,252 @@
     <!-- Header Section -->
     <div class="flex justify-between items-center mb-8">
         <div>
-            <h1 class="text-2xl font-bold text-gray-800">Alternative Resources</h1>
-            <p class="text-gray-600">Find power sources and charging stations during outages</p>
+            <h1 class="text-2xl font-bold text-gray-800">Alternative Resources Management</h1>
+            <p class="text-gray-600">Manage alternative power resources for areas during outages</p>
         </div>
         <div class="flex gap-3">
             <a href="dashboard.html" class="flex items-center gap-2 bg-primary-50 text-primary-600 px-4 py-2 rounded-lg font-medium hover:bg-primary-100 transition-colors">
                 <i class='bx bx-arrow-back'></i>
                 <span>Back to Dashboard</span>
             </a>
-            <button id="add-resource-btn" class="admin-controls flex items-center gap-2 bg-primary-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-primary-700 transition-colors">
+            <button id="add-resource-btn" class="flex items-center gap-2 bg-primary-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-primary-700 transition-colors">
                 <i class='bx bx-plus'></i>
                 <span>Add New Resource</span>
             </button>
         </div>
     </div>
 
-    <!-- Filters Section -->
+    <!-- Filters and Search Section -->
     <div class="bg-white p-4 rounded-xl shadow-card mb-6">
         <div class="flex flex-col md:flex-row gap-4">
             <div class="flex-1">
-                <label for="search-resources-field" class="block text-sm font-medium text-gray-700 mb-1">Search Resources</label>
+                <label for="search-resources" class="block text-sm font-medium text-gray-700 mb-1">Search Resources</label>
                 <div class="relative">
                     <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                         <i class='bx bx-search text-gray-400'></i>
                     </div>
-                    <input type="text" id="search-resources-field" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full pl-10 p-2.5" placeholder="Search by name, address, type...">
+                    <input type="text" id="search-resources" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full pl-10 p-2.5" placeholder="Search by name, description, or address...">
                 </div>
             </div>
             <div class="md:w-48">
-                <label for="filter-area-select" class="block text-sm font-medium text-gray-700 mb-1">Area</label>
-                <select id="filter-area-select" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5">
-                    <option value="">All Areas</option>
-                    <!-- Areas will be populated dynamically -->
+                <label for="filter-type" class="block text-sm font-medium text-gray-700 mb-1">Resource Type</label>
+                <select id="filter-type" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5">
+                    <option value="WATER_SUPPLY">Water Supply</option>
+                    <option value="CHARGING_STATION">Charging Station</option>
+                    <option value="GENERATOR">Generator</option>
+                    <option value="BATTERY">Battery</option>
+                    <option value="SOLAR">Solar</option>
                 </select>
             </div>
             <div class="md:w-48">
-                <label for="filter-type-select" class="block text-sm font-medium text-gray-700 mb-1">Resource Type</label>
-                <select id="filter-type-select" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5">
-                    <option value="">All Types</option>
-                    <option value="CHARGING_STATION">EV Charging Station</option>
-                    <option value="GENERATOR">Generator</option>
-                    <option value="WATER_SUPPLY">Water Supply</option>
+                <label for="filter-area" class="block text-sm font-medium text-gray-700 mb-1">Area</label>
+                <select id="filter-area" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5">
+                    <option value="">All Areas</option>
+                    <!-- Areas will be populated by JavaScript -->
+                </select>
+            </div>
+            <div class="md:w-48">
+                <label for="filter-status" class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                <select id="filter-status" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5">
+                    <option value="">All Status</option>
+                    <option value="true">Active</option>
+                    <option value="false">Inactive</option>
                 </select>
             </div>
             <div class="md:w-48 flex items-end">
-                <button id="reset-filters-btn" class="bg-gray-100 hover:bg-gray-200 text-gray-700 py-2.5 px-4 rounded-lg font-medium transition-colors w-full">
+                <button id="reset-filters" class="bg-gray-100 hover:bg-gray-200 text-gray-700 py-2.5 px-4 rounded-lg font-medium transition-colors w-full">
                     Reset Filters
                 </button>
             </div>
         </div>
-
-        <!-- Area Filter Checkboxes -->
-        <div class="mt-4">
-            <label class="block text-sm font-medium text-gray-700 mb-2">Filter by Areas</label>
-            <div id="area-checkboxes" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-2 max-h-32 overflow-y-auto p-2 bg-gray-50 rounded-lg">
-                <!-- Area checkboxes will be populated dynamically -->
-                <div class="flex items-center">
-                    <div class="animate-pulse h-5 w-5 bg-gray-200 rounded mr-2"></div>
-                    <div class="animate-pulse h-4 w-24 bg-gray-200 rounded"></div>
-                </div>
-                <div class="flex items-center">
-                    <div class="animate-pulse h-5 w-5 bg-gray-200 rounded mr-2"></div>
-                    <div class="animate-pulse h-4 w-20 bg-gray-200 rounded"></div>
-                </div>
-                <div class="flex items-center">
-                    <div class="animate-pulse h-5 w-5 bg-gray-200 rounded mr-2"></div>
-                    <div class="animate-pulse h-4 w-16 bg-gray-200 rounded"></div>
-                </div>
-            </div>
-        </div>
     </div>
 
-    <!-- Map View -->
-    <div class="bg-white rounded-xl shadow-card mb-6 overflow-hidden">
-        <div class="p-4 border-b border-gray-200">
-            <h2 class="text-lg font-semibold text-gray-800 flex items-center">
-                <i class='bx bx-map-alt mr-2 text-primary-500'></i>
-                Map View
-            </h2>
-        </div>
-        <div id="map" class="map-container"></div>
-    </div>
-
-    <!-- Resources Grid -->
-    <div class="bg-white rounded-xl shadow-card p-4 mb-6">
-        <div class="flex justify-between items-center mb-4">
-            <h2 class="text-lg font-semibold text-gray-800 flex items-center">
-                <i class='bx bx-list-ul mr-2 text-primary-500'></i>
-                Available Resources
-            </h2>
-            <div class="text-sm text-gray-500">
-                Showing <span id="resource-count">0</span> resources
-            </div>
-        </div>
-
-        <!-- Loading state -->
-        <div id="loading-resources" class="py-12 text-center">
-            <div class="flex justify-center">
-                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
-            </div>
-            <p class="mt-2 text-sm text-gray-500">Loading resources...</p>
+    <!-- Resources Table -->
+    <div class="bg-white rounded-xl shadow-card overflow-hidden mb-6">
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                <tr>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Image</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Resource</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Area</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                </tr>
+                </thead>
+                <tbody id="resources-table-body" class="bg-white divide-y divide-gray-200">
+                <!-- Resource rows will be populated by JavaScript -->
+                <tr id="loading-row">
+                    <td colspan="7" class="px-6 py-12 text-center">
+                        <div class="flex justify-center">
+                            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+                        </div>
+                        <p class="mt-2 text-sm text-gray-500">Loading resources...</p>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
         </div>
 
-        <!-- Empty state -->
-        <div id="empty-resources" class="hidden py-12 text-center">
+        <!-- Empty State (initially hidden) -->
+        <div id="empty-state" class="hidden py-12 text-center">
             <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 text-gray-400 mb-4">
-                <i class='bx bx-map-pin text-3xl'></i>
+                <i class='bx bx-plug text-3xl'></i>
             </div>
             <h3 class="text-lg font-medium text-gray-900">No resources found</h3>
-            <p class="mt-2 text-sm text-gray-500" id="empty-resources-message">No resources match your search criteria.</p>
-            <button id="clear-resource-search-btn" class="mt-4 inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+            <p class="mt-2 text-sm text-gray-500" id="empty-state-message">No alternative resources match your search criteria.</p>
+            <button id="clear-search-btn" class="mt-4 inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
                 Clear Search
             </button>
         </div>
 
-        <!-- Resources grid -->
-        <div id="resources-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-4">
-            <!-- Resources cards will be populated by JavaScript -->
-        </div>
-    </div>
-</div>
-
-<!-- Resource Details Modal -->
-<div id="resource-details-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden modal">
-    <div class="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto mx-4 modal-content">
-        <div class="flex justify-between items-center border-b border-gray-200 px-6 py-4">
-            <h2 id="resource-modal-title" class="text-xl font-semibold text-gray-800">Resource Details</h2>
-            <button id="close-resource-modal" class="text-gray-400 hover:text-gray-500 focus:outline-none">
-                <i class='bx bx-x text-2xl'></i>
-            </button>
-        </div>
-        <div class="p-6">
-            <div id="resource-image-container" class="mb-4 rounded-lg overflow-hidden bg-gray-100 h-48 flex items-center justify-center">
-                <img id="resource-image" src="" alt="Resource" class="w-full h-full object-cover hidden">
-                <div id="resource-image-placeholder" class="text-gray-400 flex flex-col items-center">
-                    <i class='bx bx-map-alt text-5xl'></i>
-                    <span class="text-sm mt-2">No image available</span>
+        <!-- Pagination -->
+        <div id="pagination-container" class="px-6 py-3 flex items-center justify-between border-t border-gray-200">
+            <div class="flex-1 flex justify-between items-center">
+                <div class="text-sm text-gray-700">
+                    Showing <span id="page-start">1</span> to <span id="page-end">10</span> of <span id="total-items">50</span> resources
                 </div>
-            </div>
-
-            <!-- Mini map in resource details -->
-            <div id="resource-mini-map" class="mb-4 rounded-lg overflow-hidden h-48">
-                <!-- Mini map will be initialized here -->
-            </div>
-
-            <div class="mb-6">
-                <h3 id="resource-name" class="text-xl font-semibold text-gray-900">Resource Name</h3>
-                <div class="flex items-center mt-1">
-                    <span id="resource-type-badge" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800 mr-2">
-                        Type
-                    </span>
-                    <span id="resource-area" class="text-sm text-gray-500">Area</span>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                <div>
-                    <h4 class="text-xs font-medium text-gray-500 uppercase mb-2">Contact & Hours</h4>
-                    <div class="space-y-3">
-                        <div class="flex items-start">
-                            <i class='bx bx-phone text-gray-400 mt-0.5 mr-2'></i>
-                            <div>
-                                <p class="text-sm text-gray-500">Contact Number</p>
-                                <p id="resource-contact" class="text-sm font-medium text-gray-900">Not available</p>
-                            </div>
-                        </div>
-                        <div class="flex items-start">
-                            <i class='bx bx-time text-gray-400 mt-0.5 mr-2'></i>
-                            <div>
-                                <p class="text-sm text-gray-500">Operating Hours</p>
-                                <p id="resource-hours" class="text-sm font-medium text-gray-900">Not available</p>
-                            </div>
-                        </div>
+                <div class="flex space-x-2">
+                    <button id="prev-page" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                        Previous
+                    </button>
+                    <div id="page-numbers" class="flex space-x-1">
+                        <!-- Page numbers will be inserted here -->
                     </div>
+                    <button id="next-page" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                        Next
+                    </button>
                 </div>
-                <div>
-                    <h4 class="text-xs font-medium text-gray-500 uppercase mb-2">Location</h4>
-                    <div class="space-y-3">
-                        <div class="flex items-start">
-                            <i class='bx bx-map text-gray-400 mt-0.5 mr-2'></i>
-                            <div>
-                                <p class="text-sm text-gray-500">Address</p>
-                                <p id="resource-address" class="text-sm font-medium text-gray-900">Not available</p>
-                            </div>
-                        </div>
-                        <div class="flex items-start">
-                            <i class='bx bx-current-location text-gray-400 mt-0.5 mr-2'></i>
-                            <div>
-                                <p class="text-sm text-gray-500">Coordinates</p>
-                                <p id="resource-coordinates" class="text-sm font-medium text-gray-900">Not available</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div>
-                <h4 class="text-xs font-medium text-gray-500 uppercase mb-2">Description</h4>
-                <p id="resource-description" class="text-sm text-gray-700">No description available.</p>
-            </div>
-
-            <div class="border-t border-gray-200 pt-6 mt-6 flex justify-end gap-3 admin-controls">
-                <button id="edit-resource-btn" class="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
-                    <i class='bx bx-edit mr-1.5'></i> Edit
-                </button>
-                <button id="delete-resource-btn" class="inline-flex items-center px-3 py-2 border border-red-300 text-sm font-medium rounded-md text-red-700 bg-white hover:bg-red-50">
-                    <i class='bx bx-trash mr-1.5'></i> Delete
-                </button>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Add/Edit Resource Modal -->
-<div id="resource-form-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden modal">
+<!-- Add/Edit Resource Modal (initially hidden) -->
+<div id="resource-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden modal">
     <div class="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto mx-4 modal-content">
         <div class="flex justify-between items-center border-b border-gray-200 px-6 py-4">
-            <h2 id="form-modal-title" class="text-xl font-semibold text-gray-800">Add New Resource</h2>
-            <button id="close-form-modal" class="text-gray-400 hover:text-gray-500 focus:outline-none">
+            <h2 id="modal-title" class="text-xl font-semibold text-gray-800">Add New Resource</h2>
+            <button id="close-modal" class="text-gray-400 hover:text-gray-500 focus:outline-none">
                 <i class='bx bx-x text-2xl'></i>
             </button>
         </div>
         <form id="resource-form" class="p-6">
             <input type="hidden" id="resource-id">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Basic Information -->
+
+            <!-- Basic Information Section -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                 <div class="md:col-span-2">
                     <h3 class="text-md font-medium text-gray-900 mb-3">Basic Information</h3>
                 </div>
 
                 <div>
-                    <label for="resource-name-input" class="block text-sm font-medium text-gray-700 mb-1 required">Name</label>
-                    <input type="text" id="resource-name-input" name="name" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5" required>
+                    <label for="name" class="block text-sm font-medium text-gray-700 mb-1 required">Resource Name</label>
+                    <input type="text" id="name" name="name" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5" required>
                 </div>
 
                 <div>
-                    <label for="resource-type-input" class="block text-sm font-medium text-gray-700 mb-1 required">Type</label>
-                    <select id="resource-type-input" name="type" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5" required>
-                        <option value="CHARGING_STATION">EV Charging Station</option>
-                        <option value="GENERATOR">Generator</option>
+                    <label for="type" class="block text-sm font-medium text-gray-700 mb-1 required">Resource Type</label>
+                    <select id="type" name="type" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5" required>
                         <option value="WATER_SUPPLY">Water Supply</option>
+                        <option value="CHARGING_STATION">Charging Station</option>
+                        <option value="GENERATOR">Generator</option>
+                        <option value="BATTERY">Battery</option>
+                        <option value="SOLAR">Solar</option>
                     </select>
                 </div>
 
                 <div class="md:col-span-2">
-                    <label for="resource-description-input" class="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                    <textarea id="resource-description-input" name="description" rows="3" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5"></textarea>
+                    <label for="description" class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                    <textarea id="description" name="description" rows="3" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5"></textarea>
                 </div>
 
-                <!-- Location Information -->
+                <div>
+                    <label for="area-id" class="block text-sm font-medium text-gray-700 mb-1 required">Area</label>
+                    <select id="area-id" name="areaId" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5" required>
+                        <!-- Areas will be populated by JavaScript -->
+                    </select>
+                </div>
+
+                <div>
+                    <label for="is-active" class="flex items-center">
+                        <input id="is-active" name="isActive" type="checkbox" class="w-4 h-4 text-primary-600 bg-gray-100 rounded border-gray-300 focus:ring-primary-500 focus:ring-2" checked>
+                        <span class="ml-2 text-sm font-medium text-gray-700">Resource is active</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Location Information Section -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                 <div class="md:col-span-2">
                     <h3 class="text-md font-medium text-gray-900 mb-3">Location Information</h3>
                 </div>
 
                 <div class="md:col-span-2">
-                    <label for="resource-address-input" class="block text-sm font-medium text-gray-700 mb-1 required">Address</label>
-                    <input type="text" id="resource-address-input" name="address" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5" required>
+                    <label for="address" class="block text-sm font-medium text-gray-700 mb-1 required">Address</label>
+                    <input type="text" id="address" name="address" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5" required>
                 </div>
 
                 <div>
-                    <label for="resource-area-input" class="block text-sm font-medium text-gray-700 mb-1 required">Area</label>
-                    <select id="resource-area-input" name="areaId" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5" required>
-                        <option value="">Select an area</option>
-                        <!-- Areas will be populated dynamically -->
-                    </select>
+                    <label for="latitude" class="block text-sm font-medium text-gray-700 mb-1 required">Latitude</label>
+                    <input type="number" id="latitude" name="latitude" step="0.000001" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5" required>
                 </div>
 
-                <div class="flex gap-4">
-                    <div class="flex-1">
-                        <label for="resource-latitude-input" class="block text-sm font-medium text-gray-700 mb-1 required">Latitude</label>
-                        <input type="number" step="any" id="resource-latitude-input" name="latitude" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5" required>
-                    </div>
-                    <div class="flex-1">
-                        <label for="resource-longitude-input" class="block text-sm font-medium text-gray-700 mb-1 required">Longitude</label>
-                        <input type="number" step="any" id="resource-longitude-input" name="longitude" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5" required>
-                    </div>
+                <div>
+                    <label for="longitude" class="block text-sm font-medium text-gray-700 mb-1 required">Longitude</label>
+                    <input type="number" id="longitude" name="longitude" step="0.000001" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5" required>
                 </div>
+            </div>
 
-                <div class="md:col-span-2 mb-4">
-                    <p class="text-sm font-medium text-gray-700 mb-2">Area Boundary Map</p>
-                    <div id="location-selection-map" class="h-48 w-full rounded-lg"></div>
-                    <div id="area-display" class="mt-2 text-sm text-gray-600"></div>
-                </div>
-
-                <!-- Contact Information -->
+            <!-- Contact Information Section -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                 <div class="md:col-span-2">
                     <h3 class="text-md font-medium text-gray-900 mb-3">Contact Information</h3>
                 </div>
 
                 <div>
-                    <label for="resource-contact-input" class="block text-sm font-medium text-gray-700 mb-1">Contact Number</label>
-                    <input type="tel" id="resource-contact-input" name="contactNumber" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5">
+                    <label for="contact-number" class="block text-sm font-medium text-gray-700 mb-1">Contact Number</label>
+                    <input type="tel" id="contact-number" name="contactNumber" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5">
                 </div>
 
                 <div>
-                    <label for="resource-hours-input" class="block text-sm font-medium text-gray-700 mb-1">Operating Hours</label>
-                    <input type="text" id="resource-hours-input" name="operatingHours" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5" placeholder="e.g. Mon-Fri: 9AM-5PM">
+                    <label for="operating-hours" class="block text-sm font-medium text-gray-700 mb-1">Operating Hours</label>
+                    <input type="text" id="operating-hours" name="operatingHours" placeholder="e.g., Mon-Fri: 9AM-5PM" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5">
                 </div>
+            </div>
 
-                <!-- Image Upload (Only for admin) -->
-                <div class="md:col-span-2 admin-controls">
+            <!-- Resource Image Section -->
+            <div class="grid grid-cols-1 gap-6 mb-8">
+                <div>
                     <h3 class="text-md font-medium text-gray-900 mb-3">Resource Image</h3>
-                    <div class="flex items-center justify-center w-full">
-                        <label for="resource-image-upload" class="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
-                            <div class="flex flex-col items-center justify-center pt-5 pb-6">
-                                <i class='bx bx-upload text-gray-400 text-3xl'></i>
-                                <p class="mb-2 text-sm text-gray-500"><span class="font-semibold">Click to upload</span> or drag and drop</p>
-                                <p class="text-xs text-gray-500">SVG, PNG, JPG or GIF (MAX. 2MB)</p>
-                            </div>
-                            <input id="resource-image-upload" type="file" class="hidden" accept="image/*">
-                        </label>
-                    </div>
-                    <div id="image-preview-container" class="mt-3 hidden">
-                        <div class="relative">
-                            <img id="image-preview" src="#" alt="Preview" class="h-32 w-auto rounded-lg">
-                            <button type="button" id="remove-image" class="absolute top-1 right-1 bg-white rounded-full p-1 shadow-sm hover:bg-gray-100">
-                                <i class='bx bx-x text-gray-600'></i>
-                            </button>
-                        </div>
-                    </div>
                 </div>
 
-                <!-- Status Toggle (Admin only) -->
-                <div class="md:col-span-2 admin-controls">
-                    <div class="flex items-center">
-                        <div class="flex items-center h-5">
-                            <input id="resource-active" name="isActive" type="checkbox" class="w-4 h-4 text-primary-600 bg-gray-100 rounded border-gray-300 focus:ring-primary-500 focus:ring-2" checked>
+                <div>
+                    <div class="image-preview mb-3" id="image-preview">
+                        <div class="placeholder">
+                            <i class='bx bx-image-alt text-3xl'></i>
+                            <p>No image selected</p>
                         </div>
-                        <label for="resource-active" class="ml-2 text-sm font-medium text-gray-700">Resource is active and visible to users</label>
                     </div>
+                    <input type="file" id="image-upload" name="imageUpload" accept="image/*" class="hidden">
+                    <div class="flex gap-2">
+                        <button type="button" id="select-image-btn" class="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-medium transition-colors">
+                            <i class='bx bx-image-add'></i>
+                            <span>Select Image</span>
+                        </button>
+                        <button type="button" id="remove-image-btn" class="flex items-center gap-2 bg-gray-50 hover:bg-gray-100 text-gray-700 px-4 py-2 rounded-lg font-medium transition-colors border border-gray-300 hidden">
+                            <i class='bx bx-trash'></i>
+                            <span>Remove</span>
+                        </button>
+                    </div>
+                    <p class="mt-1 text-xs text-gray-500">Recommended image size: 800x600 pixels. Max file size: 5MB.</p>
                 </div>
             </div>
 
             <div class="mt-8 flex justify-end gap-3">
-                <button type="button" id="cancel-resource-form" class="bg-white text-gray-700 border border-gray-300 py-2 px-4 rounded-lg font-medium hover:bg-gray-50 transition-colors">
+                <button type="button" id="cancel-form" class="bg-white text-gray-700 border border-gray-300 py-2 px-4 rounded-lg font-medium hover:bg-gray-50 transition-colors">
                     Cancel
                 </button>
                 <button type="submit" id="save-resource" class="bg-primary-600 text-white py-2 px-6 rounded-lg font-medium hover:bg-primary-700 transition-colors">
@@ -441,1194 +400,148 @@
     </div>
 </div>
 
-<!-- Confirmation Modal -->
+<!-- View Resource Details Modal (initially hidden) -->
+<div id="view-resource-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden modal">
+    <div class="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto mx-4 modal-content">
+        <div class="flex justify-between items-center border-b border-gray-200 px-6 py-4">
+            <h2 id="view-modal-title" class="text-xl font-semibold text-gray-800">Resource Details</h2>
+            <button id="close-view-modal" class="text-gray-400 hover:text-gray-500 focus:outline-none">
+                <i class='bx bx-x text-2xl'></i>
+            </button>
+        </div>
+        <div class="p-6">
+            <div class="mb-6">
+                <div id="view-image-container" class="w-full h-64 rounded-lg bg-gray-100 mb-4 flex items-center justify-center overflow-hidden">
+                    <!-- Image will be displayed here -->
+                    <div id="view-no-image" class="text-center text-gray-400">
+                        <i class='bx bx-image-alt text-4xl'></i>
+                        <p>No image available</p>
+                    </div>
+                    <img id="view-image" class="hidden max-h-full object-contain" src="" alt="Resource image">
+                </div>
+                <h3 id="view-name" class="text-xl font-semibold text-gray-900">Resource Name</h3>
+                <div class="flex items-center gap-2 mt-1">
+                    <span id="view-type" class="type-badge solar">Solar</span>
+                    <span id="view-status" class="status-badge active">Active</span>
+                </div>
+                <p id="view-description" class="mt-2 text-gray-600">Resource description goes here...</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-8 mb-6">
+                <div>
+                    <h4 class="text-xs font-medium text-gray-500 uppercase mb-2">Location Information</h4>
+                    <div class="space-y-3">
+                        <div>
+                            <p class="text-sm text-gray-500">Area</p>
+                            <p id="view-area" class="text-sm font-medium text-gray-900">Area Name</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500">Address</p>
+                            <p id="view-address" class="text-sm font-medium text-gray-900">123 Main St, City, Country</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500">Coordinates</p>
+                            <p id="view-coordinates" class="text-sm font-medium text-gray-900">7.8731, 80.6337</p>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <h4 class="text-xs font-medium text-gray-500 uppercase mb-2">Contact Information</h4>
+                    <div class="space-y-3">
+                        <div>
+                            <p class="text-sm text-gray-500">Contact Number</p>
+                            <p id="view-contact" class="text-sm font-medium text-gray-900">+94 71 234 5678</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500">Operating Hours</p>
+                            <p id="view-operating" class="text-sm font-medium text-gray-900">Mon-Fri: 9AM-5PM</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Confirmation Modal (initially hidden) -->
 <div id="confirm-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden modal">
     <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-6 modal-content">
         <div class="text-center mb-4">
-            <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-red-100 text-red-600 mb-4">
-                <i class='bx bx-trash text-2xl'></i>
+            <div id="confirm-icon-container" class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-red-100 text-red-600 mb-4">
+                <i id="confirm-icon" class='bx bx-trash text-2xl'></i>
             </div>
-            <h3 class="text-lg font-medium text-gray-900">Delete Resource</h3>
-            <p class="mt-2 text-sm text-gray-500">Are you sure you want to delete this resource? This action cannot be undone.</p>
+            <h3 id="confirm-title" class="text-lg font-medium text-gray-900">Delete Resource</h3>
+            <p id="confirm-message" class="mt-2 text-sm text-gray-500">Are you sure you want to delete this resource? This action cannot be undone.</p>
         </div>
         <div class="flex justify-center gap-3 mt-4">
             <button id="cancel-confirm" class="px-4 py-2 bg-white text-gray-700 border border-gray-300 rounded-md font-medium hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
                 Cancel
             </button>
-            <button id="confirm-delete" class="px-4 py-2 bg-red-600 text-white rounded-md font-medium hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+            <button id="confirm-action" class="px-4 py-2 bg-red-600 text-white rounded-md font-medium hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
                 Delete
             </button>
         </div>
     </div>
 </div>
 
-<footer class="bg-white border-t border-gray-200 mt-8">
-    <div class="container mx-auto px-4 py-8">
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div class="md:col-span-1">
-                <div class="flex items-center mb-4">
-                    <i class='bx bxs-bolt text-xl text-primary-600 mr-2'></i>
-                    <span class="font-semibold text-gray-900">Power Alert</span>
-                </div>
-                <p class="text-gray-600 text-sm">
-                    Reliable power outage monitoring and notifications for Sri Lanka.
-                </p>
+<footer class="footer-container-pages">
+    <div class="footer-content">
+        <div class="footer-brand">
+            <div class="footer-logo">
+                <i class='bx bxs-bolt text-xl'></i>
+                <span>Power Alert</span>
             </div>
-            <div class="md:col-span-3 grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div>
-                    <h3 class="font-medium text-gray-900 mb-4">Quick Links</h3>
-                    <ul class="space-y-2 text-sm">
-                        <li><a href="dashboard.html" class="text-gray-600 hover:text-primary-600">Dashboard</a></li>
-                        <li><a href="outages/view.html" class="text-gray-600 hover:text-primary-600">Outages</a></li>
-                        <li><a href="areaManagement.html" class="text-gray-600 hover:text-primary-600">Areas</a></li>
-                        <li><a href="reports.html" class="text-gray-600 hover:text-primary-600">Reports</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h3 class="font-medium text-gray-900 mb-4">Resources</h3>
-                    <ul class="space-y-2 text-sm">
-                        <li><a href="#" class="text-gray-600 hover:text-primary-600">Documentation</a></li>
-                        <li><a href="#" class="text-gray-600 hover:text-primary-600">API</a></li>
-                        <li><a href="#" class="text-gray-600 hover:text-primary-600">Help Center</a></li>
-                        <li><a href="#" class="text-gray-600 hover:text-primary-600">Contact Support</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h3 class="font-medium text-gray-900 mb-4">Legal</h3>
-                    <ul class="space-y-2 text-sm">
-                        <li><a href="#" class="text-gray-600 hover:text-primary-600">Privacy Policy</a></li>
-                        <li><a href="#" class="text-gray-600 hover:text-primary-600">Terms of Service</a></li>
-                        <li><a href="#" class="text-gray-600 hover:text-primary-600">Data Policy</a></li>
-                        <li><a href="#" class="text-gray-600 hover:text-primary-600">Cookie Settings</a></li>
-                    </ul>
-                </div>
+            <p class="footer-description">
+                Reliable power outage monitoring and notifications for Sri Lanka.
+            </p>
+        </div>
+
+        <div class="footer-links">
+            <div class="footer-section">
+                <h3>Quick Links</h3>
+                <ul>
+                    <li><a href="dashboard.html">Dashboard</a></li>
+                    <li><a href="outages/view.html">Outages</a></li>
+                    <li><a href="areaManagement.html">Areas</a></li>
+                    <li><a href="reports.html">Reports</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-section">
+                <h3>Resources</h3>
+                <ul>
+                    <li><a href="#">Documentation</a></li>
+                    <li><a href="#">API</a></li>
+                    <li><a href="#">Help Center</a></li>
+                    <li><a href="#">Contact Support</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-section">
+                <h3>Legal</h3>
+                <ul>
+                    <li><a href="#">Privacy Policy</a></li>
+                    <li><a href="#">Terms of Service</a></li>
+                    <li><a href="#">Data Policy</a></li>
+                    <li><a href="#">Cookie Settings</a></li>
+                </ul>
             </div>
         </div>
-        <div class="border-t border-gray-200 mt-8 pt-6 flex flex-col md:flex-row justify-between items-center">
-            <p class="text-sm text-gray-600 mb-4 md:mb-0">&copy; 2025 Power Alert. All rights reserved.</p>
-            <div class="flex space-x-4">
-                <a href="#" aria-label="Facebook" class="text-gray-500 hover:text-primary-600">
-                    <i class='bx bxl-facebook text-xl'></i>
-                </a>
-                <a href="#" aria-label="Twitter" class="text-gray-500 hover:text-primary-600">
-                    <i class='bx bxl-twitter text-xl'></i>
-                </a>
-                <a href="#" aria-label="Instagram" class="text-gray-500 hover:text-primary-600">
-                    <i class='bx bxl-instagram text-xl'></i>
-                </a>
-            </div>
+    </div>
+
+    <div class="footer-bottom">
+        <div class="copyright">
+            <p>&copy; 2025 Power Alert. All rights reserved.</p>
+        </div>
+        <div class="social-links">
+            <a href="#" aria-label="Facebook"><i class='bx bxl-facebook'></i></a>
+            <a href="#" aria-label="Twitter"><i class='bx bxl-twitter'></i></a>
+            <a href="#" aria-label="Instagram"><i class='bx bxl-instagram'></i></a>
         </div>
     </div>
 </footer>
 
-<!-- JavaScript -->
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Global variables
-        let isAdmin = false;
-        let map = null;
-        let markers = [];
-        let resources = [];
-        let currentResourceId = null;
-
-        // Check user role and authentication
-        function checkUserRole() {
-            const token = localStorage.getItem('auth_token');
-
-            if (token) {
-                try {
-                    const base64Url = token.split('.')[1];
-                    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-                    const payload = JSON.parse(window.atob(base64));
-
-                    if (payload.role === 'ADMIN') {
-                        isAdmin = true;
-                        document.querySelectorAll('.admin-controls').forEach(el => {
-                            el.style.display = 'flex';
-                        });
-                    }
-                } catch (error) {
-                    console.error('Error parsing token:', error);
-                }
-            }
-        }
-
-        // Initialize map
-        function initializeMap() {
-            mapboxgl.accessToken = CONFIG.MAPBOX_TOKEN;
-
-            map = new mapboxgl.Map({
-                container: 'map',
-                style: 'mapbox://styles/mapbox/streets-v11',
-                center: CONFIG.DEFAULT_MAP_CENTER,
-                zoom: CONFIG.DEFAULT_MAP_ZOOM
-            });
-
-            map.addControl(new mapboxgl.NavigationControl());
-            map.addControl(new mapboxgl.GeolocateControl({
-                positionOptions: {
-                    enableHighAccuracy: true
-                },
-                trackUserLocation: true
-            }));
-
-            map.on('load', function() {
-                fetchResources();
-
-                if (isAdmin) {
-                    map.on('click', function(e) {
-                        if (!document.getElementById('resource-form-modal').classList.contains('hidden')) {
-                            const coords = e.lngLat;
-
-                            document.getElementById('resource-latitude-input').value = coords.lat.toFixed(6);
-                            document.getElementById('resource-longitude-input').value = coords.lng.toFixed(6);
-
-                            findAreaByCoordinates(coords.lat, coords.lng);
-                        }
-                    });
-                }
-            });
-        }
-
-        // Find area based on coordinates
-        function findAreaByCoordinates(lat, lng) {
-            fetch(`${CONFIG.API_BASE_URL}/api/public/areas/by-coordinates?latitude=${lat}&longitude=${lng}`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.code === "00" && data.data) {
-                        document.getElementById('resource-area-input').value = data.data.id;
-                        document.getElementById('area-display').textContent = data.data.name || `Area ${data.data.id}`;
-                        document.getElementById('area-display').className = 'mt-2 text-sm text-gray-600 font-medium';
-                    } else {
-                        document.getElementById('resource-area-input').value = '';
-                        document.getElementById('area-display').textContent = 'No area found for this location';
-                        document.getElementById('area-display').className = 'mt-2 text-sm text-red-500';
-                    }
-                })
-                .catch(error => {
-                    document.getElementById('resource-area-input').value = '';
-                    document.getElementById('area-display').textContent = 'Error determining area';
-                    document.getElementById('area-display').className = 'mt-2 text-sm text-red-500';
-                });
-        }
-
-        // Fetch all resources from API
-        function fetchResources() {
-            const loadingElement = document.getElementById('loading-resources');
-            const emptyElement = document.getElementById('empty-resources');
-            const resourcesGrid = document.getElementById('resources-grid');
-
-            loadingElement.style.display = 'block';
-            emptyElement.style.display = 'none';
-            resourcesGrid.innerHTML = '';
-
-            fetch(`${CONFIG.API_BASE_URL}/api/public/alternative-resources`)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    loadingElement.style.display = 'none';
-
-                    if (data.code === "00" && data.data) {
-                        resources = data.data;
-
-                        if (resources.length === 0) {
-                            emptyElement.style.display = 'block';
-                        } else {
-                            renderResources(resources);
-                            addMarkersToMap(resources);
-                            document.getElementById('resource-count').textContent = resources.length;
-                        }
-                    } else {
-                        showToast('Error fetching resources', 'error');
-                        emptyElement.style.display = 'block';
-                        document.getElementById('empty-resources-message').textContent = 'Failed to load resources. Please try again later.';
-                    }
-                })
-                .catch(error => {
-                    loadingElement.style.display = 'none';
-                    emptyElement.style.display = 'block';
-                    document.getElementById('empty-resources-message').textContent = 'Failed to load resources. Please try again later.';
-                    showToast('Error: ' + error.message, 'error');
-                });
-        }
-
-        // Render resources in grid
-        function renderResources(resources) {
-            const resourcesGrid = document.getElementById('resources-grid');
-            resourcesGrid.innerHTML = '';
-
-            resources.forEach(resource => {
-                const card = createResourceCard(resource);
-                resourcesGrid.appendChild(card);
-            });
-        }
-
-        // Create a resource card element
-        function createResourceCard(resource) {
-            const card = document.createElement('div');
-            card.className = 'resource-card bg-white rounded-lg shadow-sm overflow-hidden border border-gray-200';
-            card.setAttribute('data-id', resource.id);
-
-            // Get appropriate badge color based on resource type
-            let badgeClass = 'bg-gray-100 text-gray-800';
-            let typeLabel = 'Other';
-
-            switch(resource.type) {
-                case 'CHARGING_STATION':
-                    badgeClass = 'bg-blue-100 text-blue-800';
-                    typeLabel = 'EV Charging';
-                    icon = 'bx-plug';
-                    break;
-                case 'GENERATOR':
-                    badgeClass = 'bg-yellow-100 text-yellow-800';
-                    typeLabel = 'Generator';
-                    icon = 'bx-power-off';
-                    break;
-                case 'WATER_SUPPLY':
-                    badgeClass = 'bg-green-100 text-green-800';
-                    typeLabel = 'Water Supply';
-                    icon = 'bx-droplet';
-                    break;
-                default:
-                    badgeClass = 'bg-gray-100 text-gray-800';
-                    typeLabel = 'Other';
-                    icon = 'bx-map-pin';
-            }
-
-            // Image section
-            let imageHtml = `
-            <div class="h-40 bg-gray-100 flex items-center justify-center">
-                <i class='bx bx-map-pin text-4xl text-gray-400'></i>
-            </div>
-        `;
-
-            if (resource.hasImage) {
-                imageHtml = `
-                <div class="h-40 bg-gray-100 relative overflow-hidden">
-                    <img src="${CONFIG.API_BASE_URL}/api/public/alternative-resources/${resource.id}/image"
-                         alt="${resource.name}"
-                         class="w-full h-full object-cover">
-                </div>
-            `;
-            }
-
-            card.innerHTML = `
-            ${imageHtml}
-            <span class="resource-badge ${badgeClass} px-2 py-1 text-xs font-semibold rounded-full">${typeLabel}</span>
-            <div class="p-4">
-                <h3 class="font-semibold text-gray-900 mb-1">${resource.name}</h3>
-                <p class="text-gray-500 text-sm mb-2 flex items-center">
-                    <i class='bx bx-map-pin mr-1'></i> ${resource.address}
-                </p>
-                <p class="text-gray-600 text-sm line-clamp-2 mb-4">${resource.description || 'No description available'}</p>
-                <button class="view-resource-btn w-full bg-primary-50 text-primary-600 py-2 px-4 rounded font-medium hover:bg-primary-100 transition-colors"
-                        data-id="${resource.id}">
-                    View Details
-                </button>
-            </div>
-        `;
-
-            // Add event listener to view button
-            card.querySelector('.view-resource-btn').addEventListener('click', function() {
-                const resourceId = this.getAttribute('data-id');
-                openResourceDetails(resourceId);
-            });
-
-            return card;
-        }
-
-        // Add markers to map
-        function addMarkersToMap(resources) {
-            // Clear existing markers
-            markers.forEach(marker => marker.remove());
-            markers = [];
-
-            resources.forEach(resource => {
-                // Create custom marker element
-                const el = document.createElement('div');
-                el.className = 'w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-md border-2 border-primary-500 cursor-pointer';
-
-                // Set icon based on resource type
-                let icon = 'bx-map-pin';
-
-                switch(resource.type) {
-                    case 'CHARGER':
-                        icon = 'bx-plug';
-                        break;
-                    case 'GENERATOR':
-                        icon = 'bx-power-off';
-                        break;
-                    case 'SOLAR':
-                        icon = 'bx-sun';
-                        break;
-                    case 'BACKUP':
-                        icon = 'bx-battery';
-                        break;
-                }
-
-                el.innerHTML = `<i class='bx ${icon} text-primary-500'></i>`;
-
-                // Create popup
-                const popup = new mapboxgl.Popup({ offset: 25 })
-                    .setHTML(`
-                    <div class="p-2">
-                        <h3 class="font-semibold text-gray-900">${resource.name}</h3>
-                        <p class="text-gray-500 text-sm">${resource.address}</p>
-                        <button class="mt-2 w-full bg-primary-50 text-primary-600 py-1 px-2 rounded text-sm font-medium hover:bg-primary-100 transition-colors view-from-map"
-                                data-id="${resource.id}">
-                            View Details
-                        </button>
-                    </div>
-                `);
-
-                // Create and add marker
-                const marker = new mapboxgl.Marker(el)
-                    .setLngLat([resource.longitude, resource.latitude])
-                    .setPopup(popup)
-                    .addTo(map);
-
-                markers.push(marker);
-
-                // Add event listener to popup button
-                marker.getElement().addEventListener('click', () => {
-                    setTimeout(() => {
-                        const popupButton = document.querySelector('.view-from-map');
-                        if (popupButton) {
-                            popupButton.addEventListener('click', function() {
-                                const resourceId = this.getAttribute('data-id');
-                                openResourceDetails(resourceId);
-                            });
-                        }
-                    }, 100);
-                });
-            });
-
-            // Adjust map bounds to fit all markers if there are any
-            if (resources.length > 0) {
-                const bounds = new mapboxgl.LngLatBounds();
-
-                resources.forEach(resource => {
-                    bounds.extend([resource.longitude, resource.latitude]);
-                });
-
-                map.fitBounds(bounds, {
-                    padding: 50,
-                    maxZoom: 15
-                });
-            }
-        }
-
-        // Open resource details modal
-        function openResourceDetails(id) {
-            currentResourceId = id;
-            const resource = resources.find(r => r.id == id);
-
-            if (!resource) return;
-
-            // Populate modal with resource details
-            document.getElementById('resource-modal-title').textContent = resource.name;
-            document.getElementById('resource-name').textContent = resource.name;
-
-            // Set type badge
-            const typeBadge = document.getElementById('resource-type-badge');
-            let badgeClass = 'bg-gray-100 text-gray-800';
-            let typeLabel = 'Other';
-
-            switch(resource.type) {
-                case 'CHARGER':
-                    badgeClass = 'bg-blue-100 text-blue-800';
-                    typeLabel = 'EV Charging Station';
-                    break;
-                case 'GENERATOR':
-                    badgeClass = 'bg-yellow-100 text-yellow-800';
-                    typeLabel = 'Generator';
-                    break;
-                case 'SOLAR':
-                    badgeClass = 'bg-green-100 text-green-800';
-                    typeLabel = 'Solar Power';
-                    break;
-                case 'BACKUP':
-                    badgeClass = 'bg-purple-100 text-purple-800';
-                    typeLabel = 'Backup Power';
-                    break;
-            }
-
-            typeBadge.className = `inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${badgeClass}`;
-            typeBadge.textContent = typeLabel;
-
-            // Set area name
-            let areaName = "Unknown Area";
-            if (resource.areaId && window.areaData) {
-                const area = window.areaData.find(a => a.id == resource.areaId);
-                if (area) {
-                    areaName = area.name;
-                } else {
-                    areaName = `Area ${resource.areaId}`;
-                }
-            }
-
-            // Set other details
-            document.getElementById('resource-area').textContent = areaName;
-            document.getElementById('resource-address').textContent = resource.address || 'Not available';
-            document.getElementById('resource-contact').textContent = resource.contactNumber || 'Not available';
-            document.getElementById('resource-hours').textContent = resource.operatingHours || 'Not available';
-            document.getElementById('resource-coordinates').textContent = `${resource.latitude}, ${resource.longitude}`;
-            document.getElementById('resource-description').textContent = resource.description || 'No description available.';
-
-            // Handle image
-            const resourceImage = document.getElementById('resource-image');
-            const imagePlaceholder = document.getElementById('resource-image-placeholder');
-
-            if (resource.hasImage) {
-                resourceImage.src = `${CONFIG.API_BASE_URL}/api/public/alternative-resources/${resource.id}/image`;
-                resourceImage.classList.remove('hidden');
-                imagePlaceholder.classList.add('hidden');
-            } else {
-                resourceImage.classList.add('hidden');
-                imagePlaceholder.classList.remove('hidden');
-            }
-
-            // Initialize mini map
-            setTimeout(() => {
-                const miniMap = new mapboxgl.Map({
-                    container: 'resource-mini-map',
-                    style: 'mapbox://styles/mapbox/streets-v11',
-                    center: [resource.longitude, resource.latitude],
-                    zoom: 14,
-                    interactive: false
-                });
-
-                miniMap.on('load', function() {
-                    // Add resource marker
-                    new mapboxgl.Marker({
-                        color: '#4f46e5'
-                    })
-                        .setLngLat([resource.longitude, resource.latitude])
-                        .addTo(miniMap);
-
-                    // Add area boundary if available
-                    if (resource.areaId && window.areaData) {
-                        const area = window.areaData.find(a => a.id == resource.areaId);
-                        if (area && area.boundaryJson) {
-                            try {
-                                const boundary = JSON.parse(area.boundaryJson);
-
-                                miniMap.addSource('area-boundary', {
-                                    type: 'geojson',
-                                    data: {
-                                        type: 'Feature',
-                                        geometry: boundary
-                                    }
-                                });
-
-                                // Add fill layer
-                                miniMap.addLayer({
-                                    id: 'area-fill',
-                                    type: 'fill',
-                                    source: 'area-boundary',
-                                    paint: {
-                                        'fill-color': '#6366f1',
-                                        'fill-opacity': 0.2
-                                    }
-                                });
-
-                                // Add outline layer
-                                miniMap.addLayer({
-                                    id: 'area-outline',
-                                    type: 'line',
-                                    source: 'area-boundary',
-                                    paint: {
-                                        'line-color': '#4f46e5',
-                                        'line-width': 2
-                                    }
-                                });
-
-                                // Fit map to include both marker and boundary
-                                if (boundary.coordinates && boundary.coordinates[0] && boundary.coordinates[0].length > 0) {
-                                    const bounds = boundary.coordinates[0].reduce((bounds, coord) => {
-                                        return bounds.extend(coord);
-                                    }, new mapboxgl.LngLatBounds(boundary.coordinates[0][0], boundary.coordinates[0][0]));
-
-                                    bounds.extend([resource.longitude, resource.latitude]);
-
-                                    miniMap.fitBounds(bounds, {
-                                        padding: 40
-                                    });
-                                }
-                            } catch (e) {
-                                console.error('Error displaying area boundary on mini map');
-                            }
-                        }
-                    }
-                });
-            }, 300);
-
-            // Show the modal
-            document.getElementById('resource-details-modal').classList.remove('hidden');
-        }
-
-        // Filter resources
-        function filterResources() {
-            const searchQuery = document.getElementById('search-resources-field').value.toLowerCase();
-            const typeFilter = document.getElementById('filter-type-select').value;
-            const areaFilter = document.getElementById('filter-area-select').value;
-
-            // Get selected areas
-            const selectedAreaIds = [];
-            const allAreasCheckbox = document.getElementById('area-checkbox-all');
-            const allAreasSelected = allAreasCheckbox && allAreasCheckbox.checked;
-
-            if (!allAreasSelected) {
-                document.querySelectorAll('.area-checkbox:not(#area-checkbox-all):checked').forEach(checkbox => {
-                    selectedAreaIds.push(parseInt(checkbox.value));
-                });
-            }
-
-            const filteredResources = resources.filter(resource => {
-                // Search query filter
-                const matchesSearch = searchQuery === '' ||
-                    resource.name.toLowerCase().includes(searchQuery) ||
-                    resource.address.toLowerCase().includes(searchQuery) ||
-                    (resource.description && resource.description.toLowerCase().includes(searchQuery));
-
-                // Area filter from dropdown
-                const matchesAreaDropdown = areaFilter === '' || resource.areaId == areaFilter;
-
-                // Area filter from checkboxes
-                const matchesAreaCheckboxes = allAreasSelected || selectedAreaIds.includes(resource.areaId);
-
-                // Type filter
-                const matchesType = typeFilter === '' || resource.type === typeFilter;
-
-                return matchesSearch && matchesAreaDropdown && matchesAreaCheckboxes && matchesType;
-            });
-
-            // Update UI
-            renderResources(filteredResources);
-            addMarkersToMap(filteredResources);
-            document.getElementById('resource-count').textContent = filteredResources.length;
-
-            // Show/hide empty state
-            const emptyElement = document.getElementById('empty-resources');
-            if (filteredResources.length === 0) {
-                emptyElement.style.display = 'block';
-                document.getElementById('empty-resources-message').textContent = 'No resources match your search criteria.';
-            } else {
-                emptyElement.style.display = 'none';
-            }
-        }
-
-        // Fetch areas for the area checkboxes and dropdown
-        function fetchAreas() {
-            return new Promise((resolve, reject) => {
-                fetch(`${CONFIG.API_BASE_URL}/api/public/areas`)
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error('Network response was not ok');
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        if (!data || !data.data) {
-                            throw new Error('Invalid response from API');
-                        }
-
-                        const areas = data.data;
-
-                        // Populate area checkboxes
-                        const checkboxContainer = document.getElementById('area-checkboxes');
-                        checkboxContainer.innerHTML = '';
-
-                        // Populate area dropdown
-                        const areaSelect = document.getElementById('filter-area-select');
-
-                        // Add "All Areas" option
-                        const allAreasCheckbox = document.createElement('div');
-                        allAreasCheckbox.className = 'flex items-center';
-                        allAreasCheckbox.innerHTML = `
-                        <input type="checkbox" id="area-checkbox-all" class="area-checkbox form-checkbox h-4 w-4 text-primary-600 rounded focus:ring-primary-500" checked>
-                        <label for="area-checkbox-all" class="ml-2 text-sm text-gray-700 cursor-pointer">All Areas</label>
-                    `;
-                        checkboxContainer.appendChild(allAreasCheckbox);
-
-                        // Add event listener to All Areas checkbox
-                        document.getElementById('area-checkbox-all').addEventListener('change', function() {
-                            const isChecked = this.checked;
-                            document.querySelectorAll('.area-checkbox:not(#area-checkbox-all)').forEach(checkbox => {
-                                checkbox.checked = isChecked;
-                            });
-                            filterResources();
-                        });
-
-                        // Add individual area checkboxes and dropdown options
-                        areas.forEach(area => {
-                            if (!area.id) return;
-
-                            // Add checkbox
-                            const checkbox = document.createElement('div');
-                            checkbox.className = 'flex items-center';
-                            checkbox.innerHTML = `
-                            <input type="checkbox" id="area-checkbox-${area.id}" class="area-checkbox form-checkbox h-4 w-4 text-primary-600 rounded focus:ring-primary-500"
-                                   value="${area.id}" checked>
-                            <label for="area-checkbox-${area.id}" class="ml-2 text-sm text-gray-700 cursor-pointer">${area.name || `Area ${area.id}`}</label>
-                        `;
-                            checkboxContainer.appendChild(checkbox);
-
-                            // Add dropdown option
-                            const option = document.createElement('option');
-                            option.value = area.id;
-                            option.textContent = area.name || `Area ${area.id}`;
-                            areaSelect.appendChild(option);
-
-                            // Add event listener to this checkbox
-                            document.getElementById(`area-checkbox-${area.id}`).addEventListener('change', function() {
-                                const allAreasCheckbox = document.getElementById('area-checkbox-all');
-                                const allChecked = Array.from(document.querySelectorAll('.area-checkbox:not(#area-checkbox-all)')).every(cb => cb.checked);
-                                const anyChecked = Array.from(document.querySelectorAll('.area-checkbox:not(#area-checkbox-all)')).some(cb => cb.checked);
-
-                                allAreasCheckbox.checked = allChecked;
-
-                                if (!anyChecked) {
-                                    allAreasCheckbox.checked = true;
-                                    document.querySelectorAll('.area-checkbox').forEach(checkbox => {
-                                        checkbox.checked = true;
-                                    });
-                                }
-
-                                filterResources();
-                            });
-                        });
-
-                        // Populate the area dropdown in the resource form
-                        populateAreaFormDropdown(areas);
-
-                        // Store the areas data for later use with boundaries
-                        window.areaData = areas;
-
-                        resolve(areas);
-                    })
-                    .catch(error => {
-                        const checkboxContainer = document.getElementById('area-checkboxes');
-                        checkboxContainer.innerHTML = '<p class="text-sm text-gray-500">Error loading areas</p>';
-                        reject(error);
-                    });
-            });
-        }
-
-        // Populate the area dropdown in the resource form
-        function populateAreaFormDropdown(areas) {
-            const areaFormSelect = document.getElementById('resource-area-input');
-            if (!areaFormSelect) return;
-
-            // Clear existing options
-            areaFormSelect.innerHTML = '';
-
-            // Add default option
-            const defaultOption = document.createElement('option');
-            defaultOption.value = '';
-            defaultOption.textContent = 'Select an area';
-            areaFormSelect.appendChild(defaultOption);
-
-            // Add options for each area
-            areas.forEach(area => {
-                if (!area.id) return;
-
-                const option = document.createElement('option');
-                option.value = area.id;
-                option.textContent = area.name || `Area ${area.id}`;
-                if (area.boundaryJson) {
-                    option.dataset.boundary = area.boundaryJson;
-                }
-                areaFormSelect.appendChild(option);
-            });
-
-            // Add change event listener to show boundary on map when area is selected
-            areaFormSelect.addEventListener('change', function() {
-                const areaId = this.value;
-                if (!areaId) return;
-
-                if (!window.areaData) return;
-
-                const area = window.areaData.find(a => a.id == areaId);
-                if (!area) return;
-
-                if (area.boundaryJson) {
-                    showAreaBoundaryOnMap(area);
-                }
-            });
-        }
-
-        // Show area boundary on the selection map
-        function showAreaBoundaryOnMap(area) {
-            const locationMap = window.locationMap;
-            if (!locationMap) return;
-
-            // Wait for map to be ready
-            if (!locationMap.loaded()) {
-                locationMap.once('load', function() {
-                    showAreaBoundaryHelper(locationMap, area);
-                });
-            } else {
-                showAreaBoundaryHelper(locationMap, area);
-            }
-        }
-
-        function showAreaBoundaryHelper(map, area) {
-            // Clear any existing boundary layers
-            if (map.getLayer('area-fill')) map.removeLayer('area-fill');
-            if (map.getLayer('area-outline')) map.removeLayer('area-outline');
-            if (map.getSource('area-boundary')) map.removeSource('area-boundary');
-
-            if (!area.boundaryJson) return;
-
-            try {
-                const boundary = JSON.parse(area.boundaryJson);
-
-                // Add source and layers for the boundary
-                map.addSource('area-boundary', {
-                    type: 'geojson',
-                    data: {
-                        type: 'Feature',
-                        geometry: boundary
-                    }
-                });
-
-                // Add fill layer
-                map.addLayer({
-                    id: 'area-fill',
-                    type: 'fill',
-                    source: 'area-boundary',
-                    paint: {
-                        'fill-color': '#6366f1',
-                        'fill-opacity': 0.2
-                    }
-                });
-
-                // Add outline layer
-                map.addLayer({
-                    id: 'area-outline',
-                    type: 'line',
-                    source: 'area-boundary',
-                    paint: {
-                        'line-color': '#4f46e5',
-                        'line-width': 2
-                    }
-                });
-
-                // Fit map to boundary
-                if (boundary.coordinates && boundary.coordinates[0] && boundary.coordinates[0].length > 0) {
-                    const bounds = boundary.coordinates[0].reduce((bounds, coord) => {
-                        return bounds.extend(coord);
-                    }, new mapboxgl.LngLatBounds(boundary.coordinates[0][0], boundary.coordinates[0][0]));
-
-                    map.fitBounds(bounds, {
-                        padding: 20
-                    });
-
-                    // Set a default point in the center of the area
-                    const center = map.getCenter();
-                    updateMarkerPosition(center.lng, center.lat);
-                }
-            } catch (e) {
-                console.error('Error parsing boundary JSON for area');
-            }
-        }
-
-        // Update marker position
-        function updateMarkerPosition(lng, lat) {
-            document.getElementById('resource-longitude-input').value = lng.toFixed(6);
-            document.getElementById('resource-latitude-input').value = lat.toFixed(6);
-
-            const locationMap = window.locationMap;
-            if (!locationMap) return;
-
-            // Update or create the point source
-            if (locationMap.getSource('point')) {
-                locationMap.getSource('point').setData({
-                    type: 'Point',
-                    coordinates: [lng, lat]
-                });
-            } else {
-                locationMap.addSource('point', {
-                    type: 'geojson',
-                    data: {
-                        type: 'Point',
-                        coordinates: [lng, lat]
-                    }
-                });
-
-                locationMap.addLayer({
-                    id: 'point',
-                    type: 'circle',
-                    source: 'point',
-                    paint: {
-                        'circle-radius': 6,
-                        'circle-color': '#4f46e5',
-                        'circle-stroke-width': 2,
-                        'circle-stroke-color': 'white'
-                    }
-                });
-            }
-        }
-
-        // Helper function to show toast messages
-        function showToast(message, type = 'success') {
-            const backgroundColor = type === 'success' ? '#4338ca' : '#dc2626';
-
-            Toastify({
-                text: message,
-                duration: 3000,
-                gravity: "top",
-                position: "right",
-                backgroundColor,
-                stopOnFocus: true
-            }).showToast();
-        }
-
-        // Event listeners
-        function setupEventListeners() {
-            // Search and filter inputs
-            document.getElementById('search-resources-field').addEventListener('input', filterResources);
-            document.getElementById('filter-area-select').addEventListener('change', filterResources);
-            document.getElementById('filter-type-select').addEventListener('change', filterResources);
-
-            // Reset filters button
-            document.getElementById('reset-filters-btn').addEventListener('click', function() {
-                document.getElementById('search-resources-field').value = '';
-                document.getElementById('filter-type-select').value = '';
-                document.getElementById('filter-area-select').value = '';
-
-                // Reset area checkboxes to all checked
-                const allAreasCheckbox = document.getElementById('area-checkbox-all');
-                if (allAreasCheckbox) {
-                    allAreasCheckbox.checked = true;
-                    document.querySelectorAll('.area-checkbox:not(#area-checkbox-all)').forEach(checkbox => {
-                        checkbox.checked = true;
-                    });
-                }
-
-                filterResources();
-            });
-
-            // Clear search button (in empty state)
-            document.getElementById('clear-resource-search-btn').addEventListener('click', function() {
-                document.getElementById('search-resources-field').value = '';
-                document.getElementById('filter-type-select').value = '';
-                document.getElementById('filter-area-select').value = '';
-
-                // Reset area checkboxes to all checked
-                const allAreasCheckbox = document.getElementById('area-checkbox-all');
-                if (allAreasCheckbox) {
-                    allAreasCheckbox.checked = true;
-                    document.querySelectorAll('.area-checkbox:not(#area-checkbox-all)').forEach(checkbox => {
-                        checkbox.checked = true;
-                    });
-                }
-
-                filterResources();
-            });
-
-            // Close resource details modal
-            document.getElementById('close-resource-modal').addEventListener('click', function() {
-                document.getElementById('resource-details-modal').classList.add('hidden');
-            });
-
-            // Add new resource button (admin only)
-            document.getElementById('add-resource-btn').addEventListener('click', function() {
-                // Reset form
-                document.getElementById('resource-form').reset();
-                document.getElementById('resource-id').value = '';
-                document.getElementById('form-modal-title').textContent = 'Add New Resource';
-
-                // Show modal
-                document.getElementById('resource-form-modal').classList.remove('hidden');
-
-                // Initialize location selection map
-                setTimeout(() => {
-                    window.locationMap = new mapboxgl.Map({
-                        container: 'location-selection-map',
-                        style: 'mapbox://styles/mapbox/streets-v11',
-                        center: CONFIG.DEFAULT_MAP_CENTER,
-                        zoom: 8
-                    });
-
-                    // Add navigation control
-                    window.locationMap.addControl(new mapboxgl.NavigationControl({
-                        showCompass: false
-                    }));
-
-                    // Add click event to set marker
-                    window.locationMap.on('click', function(e) {
-                        updateMarkerPosition(e.lngLat.lng, e.lngLat.lat);
-                    });
-                }, 300);
-            });
-
-            // Close form modal
-            document.getElementById('close-form-modal').addEventListener('click', function() {
-                document.getElementById('resource-form-modal').classList.add('hidden');
-            });
-
-            // Cancel form button
-            document.getElementById('cancel-resource-form').addEventListener('click', function() {
-                document.getElementById('resource-form-modal').classList.add('hidden');
-            });
-
-            // Edit resource button
-            document.getElementById('edit-resource-btn').addEventListener('click', function() {
-                const resource = resources.find(r => r.id == currentResourceId);
-                if (!resource) return;
-
-                // Populate form
-                document.getElementById('resource-id').value = resource.id;
-                document.getElementById('resource-name-input').value = resource.name;
-                document.getElementById('resource-type-input').value = resource.type;
-                document.getElementById('resource-description-input').value = resource.description || '';
-                document.getElementById('resource-address-input').value = resource.address;
-                document.getElementById('resource-area-input').value = resource.areaId;
-                document.getElementById('resource-latitude-input').value = resource.latitude;
-                document.getElementById('resource-longitude-input').value = resource.longitude;
-                document.getElementById('resource-contact-input').value = resource.contactNumber || '';
-                document.getElementById('resource-hours-input').value = resource.operatingHours || '';
-                document.getElementById('resource-active').checked = resource.isActive;
-
-                // Set title
-                document.getElementById('form-modal-title').textContent = 'Edit Resource';
-
-                // Close details modal and show form modal
-                document.getElementById('resource-details-modal').classList.add('hidden');
-                document.getElementById('resource-form-modal').classList.remove('hidden');
-
-                // Initialize location selection map
-                setTimeout(() => {
-                    window.locationMap = new mapboxgl.Map({
-                        container: 'location-selection-map',
-                        style: 'mapbox://styles/mapbox/streets-v11',
-                        center: [resource.longitude, resource.latitude],
-                        zoom: 13
-                    });
-
-                    // Add navigation control
-                    window.locationMap.addControl(new mapboxgl.NavigationControl({
-                        showCompass: false
-                    }));
-
-                    // Add current location marker
-                    updateMarkerPosition(resource.longitude, resource.latitude);
-
-                    // Show area boundary if area exists
-                    if (resource.areaId && window.areaData) {
-                        const area = window.areaData.find(a => a.id == resource.areaId);
-                        if (area) {
-                            window.locationMap.on('load', function() {
-                                showAreaBoundaryOnMap(area);
-                            });
-                        }
-                    }
-
-                    // Add click event to update marker
-                    window.locationMap.on('click', function(e) {
-                        updateMarkerPosition(e.lngLat.lng, e.lngLat.lat);
-                    });
-                }, 300);
-            });
-
-            // Delete resource button
-            document.getElementById('delete-resource-btn').addEventListener('click', function() {
-                // Show confirmation modal
-                document.getElementById('resource-details-modal').classList.add('hidden');
-                document.getElementById('confirm-modal').classList.remove('hidden');
-            });
-
-            // Cancel delete
-            document.getElementById('cancel-confirm').addEventListener('click', function() {
-                document.getElementById('confirm-modal').classList.add('hidden');
-                document.getElementById('resource-details-modal').classList.remove('hidden');
-            });
-
-            // Confirm delete
-            document.getElementById('confirm-delete').addEventListener('click', function() {
-                if (!currentResourceId) return;
-
-                const token = localStorage.getItem('auth_token');
-
-                fetch(`${CONFIG.API_BASE_URL}/api/admin/alternative-resources/${currentResourceId}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                })
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error('Failed to delete resource');
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        if (data.code === "00") {
-                            showToast('Resource deleted successfully', 'success');
-                            document.getElementById('confirm-modal').classList.add('hidden');
-                            fetchResources(); // Refresh the list
-                        } else {
-                            showToast('Error: ' + data.message, 'error');
-                        }
-                    })
-                    .catch(error => {
-                        showToast('Error: ' + error.message, 'error');
-                    });
-            });
-
-            // Form submission
-            document.getElementById('resource-form').addEventListener('submit', function(e) {
-                e.preventDefault();
-
-                const resourceId = document.getElementById('resource-id').value;
-                const isEdit = resourceId !== '';
-
-                // Create form data object
-                const formData = {
-                    name: document.getElementById('resource-name-input').value,
-                    type: document.getElementById('resource-type-input').value,
-                    description: document.getElementById('resource-description-input').value,
-                    address: document.getElementById('resource-address-input').value,
-                    areaId: parseInt(document.getElementById('resource-area-input').value),
-                    latitude: parseFloat(document.getElementById('resource-latitude-input').value),
-                    longitude: parseFloat(document.getElementById('resource-longitude-input').value),
-                    contactNumber: document.getElementById('resource-contact-input').value,
-                    operatingHours: document.getElementById('resource-hours-input').value,
-                    isActive: document.getElementById('resource-active').checked
-                };
-
-                if (isEdit) {
-                    formData.id = parseInt(resourceId);
-                }
-
-                const token = localStorage.getItem('auth_token');
-
-                // API endpoint and method based on whether it's an edit or add
-                const endpoint = isEdit
-                    ? `${CONFIG.API_BASE_URL}/api/admin/alternative-resources/${resourceId}`
-                    : `${CONFIG.API_BASE_URL}/api/admin/alternative-resources`;
-
-                const method = isEdit ? 'PUT' : 'POST';
-
-                // Send request
-                fetch(endpoint, {
-                    method: method,
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify(formData)
-                })
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error('Network response was not ok');
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        if (data.code === "00") {
-                            const savedResource = data.data;
-
-                            // Check if there's an image to upload
-                            const imageFile = document.getElementById('resource-image-upload').files[0];
-
-                            if (imageFile) {
-                                // Upload image
-                                const imageFormData = new FormData();
-                                imageFormData.append('file', imageFile);
-
-                                return fetch(`${CONFIG.API_BASE_URL}/api/admin/alternative-resources/${savedResource.id}/image`, {
-                                    method: 'POST',
-                                    headers: {
-                                        'Authorization': `Bearer ${token}`
-                                    },
-                                    body: imageFormData
-                                }).then(response => {
-                                    if (!response.ok) {
-                                        throw new Error('Failed to upload image');
-                                    }
-                                    return response.json();
-                                });
-                            }
-
-                            return data;
-                        } else {
-                            throw new Error(data.message || 'Failed to save resource');
-                        }
-                    })
-                    .then(() => {
-                        showToast(isEdit ? 'Resource updated successfully' : 'Resource added successfully', 'success');
-                        document.getElementById('resource-form-modal').classList.add('hidden');
-                        fetchResources(); // Refresh the list
-                    })
-                    .catch(error => {
-                        showToast('Error: ' + error.message, 'error');
-                    });
-            });
-
-            // Image preview functionality
-            document.getElementById('resource-image-upload').addEventListener('change', function(e) {
-                const file = e.target.files[0];
-                if (!file) return;
-
-                const previewContainer = document.getElementById('image-preview-container');
-                const preview = document.getElementById('image-preview');
-
-                // Check file type and size
-                if (!file.type.match('image.*')) {
-                    showToast('Please select an image file', 'error');
-                    return;
-                }
-
-                if (file.size > 2 * 1024 * 1024) { // 2MB max
-                    showToast('Image size should be less than 2MB', 'error');
-                    return;
-                }
-
-                // Read and display the image
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    preview.src = e.target.result;
-                    previewContainer.classList.remove('hidden');
-                };
-                reader.readAsDataURL(file);
-            });
-
-            // Remove image preview
-            document.getElementById('remove-image').addEventListener('click', function() {
-                document.getElementById('resource-image-upload').value = '';
-                document.getElementById('image-preview-container').classList.add('hidden');
-            });
-        }
-
-        // Initialize the page
-        function init() {
-            checkUserRole();
-            initializeMap();
-
-            // Fetch areas first, then resources
-            fetchAreas()
-                .then(() => {
-                    fetchResources();
-                })
-                .catch(error => {
-                    // Still try to fetch resources even if areas fail
-                    fetchResources();
-                });
-
-            setupEventListeners();
-        }
-
-        // Start the application
-        init();
-    });
-</script>
+<script src="../js/alternativeResources.js"></script>
 <script src="../js/error-handler.js"></script>
 </body>
 </html>
