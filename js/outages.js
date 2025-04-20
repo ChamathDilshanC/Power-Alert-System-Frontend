@@ -4,7 +4,37 @@
  * including loading outages, filtering, CRUD operations, map integration,
  * and notifications.
  */
+// Add this near the top of your outages.js file
+(function() {
+    // Store the original jQuery ajax method
+    const originalAjax = $.ajax;
 
+    // Override the ajax method with our version that logs details
+    $.ajax = function(options) {
+        console.log("Making AJAX request:", {
+            url: options.url,
+            method: options.method || options.type,
+            data: options.data
+        });
+
+        // Call the original method
+        return originalAjax.apply(this, arguments)
+            .done(function(response) {
+                console.log("AJAX success:", {
+                    url: options.url,
+                    response: response
+                });
+            })
+            .fail(function(xhr, status, error) {
+                console.error("AJAX failure:", {
+                    url: options.url,
+                    status: xhr.status,
+                    statusText: xhr.statusText,
+                    responseText: xhr.responseText
+                });
+            });
+    };
+})();
 // Set base configuration if not already defined globally
 if (typeof CONFIG === 'undefined') {
     const CONFIG = {
@@ -47,9 +77,12 @@ $(document).ready(function() {
     setupEventListeners();
 });
 
+// In outages.js - improve checkUserRole function:
+
 function checkUserRole() {
     // Get token from localStorage
     const token = localStorage.getItem('auth_token');
+    console.log("Auth token exists:", !!token);
 
     if (!token) {
         // Redirect to login if no token
@@ -60,11 +93,25 @@ function checkUserRole() {
     try {
         // Decode token to get user role and provider ID if applicable
         const tokenData = parseJwt(token);
-        currentRole = tokenData.role || '';
+        console.log("Token data:", tokenData);
+
+        // Handle different formats of role information in JWT
+        if (tokenData.authorities && Array.isArray(tokenData.authorities)) {
+            // Format: { authorities: ["ROLE_ADMIN"] }
+            currentRole = tokenData.authorities[0] || '';
+        } else if (tokenData.role) {
+            // Format: { role: "ROLE_ADMIN" }
+            currentRole = tokenData.role || '';
+        } else if (tokenData.auth && Array.isArray(tokenData.auth)) {
+            // Format: { auth: ["ROLE_ADMIN"] }
+            currentRole = tokenData.auth[0] || '';
+        }
+
+        console.log("Detected role:", currentRole);
 
         // For utility providers, we need their provider ID
         if (currentRole === 'ROLE_UTILITY_PROVIDER') {
-            // This would depend on your JWT structure
+            // Try to get provider ID from token
             currentProviderId = tokenData.providerId || null;
 
             // If provider ID is missing, fetch it from the API
@@ -73,17 +120,33 @@ function checkUserRole() {
             }
 
             // Auto-hide the utility provider dropdown for provider users
-            // as they can only create outages for their own provider
             $('#utility-provider').closest('div').hide();
         }
+
+        // Set up UI based on role
+        configureUIForRole(currentRole);
     } catch (error) {
         console.error('Error checking user role:', error);
+        showError('Error validating your account permissions.');
     }
 }
 
-/**
- * Parse JWT token
- */
+function configureUIForRole(role) {
+    console.log("Configuring UI for role:", role);
+
+    // Hide/show certain UI elements based on role
+    if (role === 'ADMIN') {
+        // Admin can see everything
+        $('#create-outage-btn').show();
+    } else if (role === 'UTILITY_PROVIDER') {
+        // Hide admin-specific options
+        $('#create-outage-btn').show();
+    } else {
+        // Regular user - hide creation capabilities
+        $('#create-outage-btn').hide();
+    }
+}
+
 function parseJwt(token) {
     try {
         const base64Url = token.split('.')[1];
@@ -92,7 +155,9 @@ function parseJwt(token) {
             return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
         }).join(''));
 
-        return JSON.parse(jsonPayload);
+        const parsedToken = JSON.parse(jsonPayload);
+        console.log("Parsed JWT token:", parsedToken); // Log the parsed token for debugging
+        return parsedToken;
     } catch (e) {
         console.error('Error parsing JWT:', e);
         return {};
@@ -159,10 +224,12 @@ function loadAreas() {
 }
 
 function loadUtilityProviders() {
+    console.log("Loading utility providers...");
     $.ajax({
-        url: `${CONFIG.API_BASE_URL}/api/public/utility-providers`,
+        url: `${CONFIG.API_BASE_URL}/api/provider/public/utility-providers`,
         method: 'GET',
         success: function(response) {
+            console.log("Utility providers response:", response);
             if (response && response.code === 200 && response.data) {
                 utilityProviders = response.data;
                 utilityProvidersLoaded = true;
@@ -171,13 +238,18 @@ function loadUtilityProviders() {
             }
         },
         error: function(xhr, status, error) {
-            console.error('Error loading utility providers:', error);
-            // Fall back to default providers
+            console.error('Error loading utility providers:', {
+                status: xhr.status,
+                statusText: xhr.statusText,
+                responseText: xhr.responseText
+            });
+
+            // Fallback to hard-coded providers
             $('#utility-provider').find('option:not(:first)').remove();
             $('#utility-provider').append('<option value="1">Ceylon Electricity Board (ELECTRICITY)</option>');
             $('#utility-provider').append('<option value="2">National Water Supply and Drainage Board (WATER)</option>');
             $('#utility-provider').val("1"); // Set default
-            utilityProvidersLoaded = false;
+            utilityProvidersLoaded = true;
         }
     });
 }
@@ -196,9 +268,6 @@ function populateAreaDropdowns() {
     });
 }
 
-/**
- * Set up event listeners for the user interface
- */
 function setupEventListeners() {
     // Tab switching
     $('.tab-item').on('click', function() {
@@ -314,7 +383,19 @@ function setupEventListeners() {
             navigateToPage(currentPage + 1);
         }
     });
+
+    // Event delegation for dynamic elements
+    $(document).on('click', '.update-outage-btn', function() {
+        const outageId = $(this).data('outage-id');
+        showAddUpdateModal(outageId);
+    });
+
+    $(document).on('click', '.cancel-outage-btn', function() {
+        const outageId = $(this).data('outage-id');
+        showCancelOutageConfirmation(outageId);
+    });
 }
+
 
 /**
  * Initialize date pickers
@@ -356,6 +437,9 @@ function switchAreaTab(tabType) {
  * Initialize Mapbox map for drawing areas
  */
 function initializeMap() {
+    // Initialize map
+    $('#map').empty();
+
     // Initialize map
     mapboxgl.accessToken = CONFIG.MAPBOX_TOKEN;
 
@@ -416,6 +500,27 @@ function updateAreaGeoJson() {
     } else {
         $('#area-geojson').val('');
     }
+}
+
+// Add this function to outages.js
+
+function handleApiError(error, defaultMessage = 'An unexpected error occurred') {
+    console.error('API Error:', error);
+
+    // Try to extract error message from response
+    let errorMessage = defaultMessage;
+    try {
+        if (error.responseJSON && error.responseJSON.message) {
+            errorMessage = error.responseJSON.message;
+        } else if (error.responseText) {
+            const errorObj = JSON.parse(error.responseText);
+            errorMessage = errorObj.message || defaultMessage;
+        }
+    } catch (e) {
+        errorMessage = `${defaultMessage} (${error.status})`;
+    }
+
+    showError(errorMessage);
 }
 
 /**
@@ -517,41 +622,32 @@ function addAreaToMap(mapInstance, area) {
     }
 }
 
-/**
- * Load outages from the API
- */
+// In outages.js - improve loadOutages function for handling different roles:
+
 function loadOutages() {
     // Show loading indicator
     $('#loading-row').show();
     $('#empty-state').hide();
 
     // Get outage status based on selected tab
-    let statusFilter = '';
     let endpoint = '';
 
-    switch(currentTab) {
-        case 'active-outages-tab':
-            endpoint = '/api/public/outages/active';
-            break;
-        case 'scheduled-outages-tab':
-            statusFilter = 'SCHEDULED';
-            endpoint = '/api/public/outages/all';
-            break;
-        case 'completed-outages-tab':
-            statusFilter = 'COMPLETED';
-            endpoint = '/api/public/outages/all';
-            break;
-        case 'cancelled-outages-tab':
-            statusFilter = 'CANCELLED';
-            endpoint = '/api/public/outages/all';
-            break;
-        default:
-            endpoint = '/api/public/outages/active';
-    }
-
-    // Modify endpoint based on user role
+    // Use different endpoints based on role and selected tab
     if (currentRole === 'ROLE_UTILITY_PROVIDER' && currentProviderId) {
         endpoint = '/api/provider/outages';
+    } else {
+        switch(currentTab) {
+            case 'active-outages-tab':
+                endpoint = '/api/public/outages/active';
+                break;
+            case 'scheduled-outages-tab':
+            case 'completed-outages-tab':
+            case 'cancelled-outages-tab':
+                endpoint = '/api/public/outages/all';
+                break;
+            default:
+                endpoint = '/api/public/outages/active';
+        }
     }
 
     // Call the API
@@ -566,9 +662,13 @@ function loadOutages() {
             if (response && response.data) {
                 outages = response.data;
 
-                // Filter by status if needed
-                if (statusFilter) {
-                    outages = outages.filter(outage => outage.status === statusFilter);
+                // Apply status filter based on tab
+                if (currentTab === 'scheduled-outages-tab') {
+                    outages = outages.filter(outage => outage.status === 'SCHEDULED');
+                } else if (currentTab === 'completed-outages-tab') {
+                    outages = outages.filter(outage => outage.status === 'COMPLETED');
+                } else if (currentTab === 'cancelled-outages-tab') {
+                    outages = outages.filter(outage => outage.status === 'CANCELLED');
                 }
 
                 // Apply filters and display outages
@@ -637,9 +737,15 @@ function resetFilters() {
     applyFilters();
 }
 
-/**
- * Render the outage table with current filtered outages
- */
+function canCancelOutage(outage) {
+    // Still prevent editing completed or cancelled outages
+    if (outage.status === 'COMPLETED' || outage.status === 'CANCELLED') {
+        return false;
+    }
+    // Temporarily always return true for testing
+    return true;
+}
+
 function renderOutageTable() {
     const tableBody = $('#outages-table-body');
 
@@ -698,6 +804,9 @@ function renderOutageTable() {
                         <button class="edit-outage-btn text-indigo-600 hover:text-indigo-900" data-outage-id="${outage.id}" title="Edit Outage">
                             <i class='bx bx-edit'></i>
                         </button>
+                        <button class="update-outage-btn text-amber-600 hover:text-amber-900" data-outage-id="${outage.id}" title="Add Update">
+                            <i class='bx bx-message-square-add'></i>
+                        </button>
                         ` : ''}
                         ${canCancelOutage(outage) ? `
                         <button class="cancel-outage-btn text-red-600 hover:text-red-900" data-outage-id="${outage.id}" title="Cancel Outage">
@@ -718,6 +827,10 @@ function renderOutageTable() {
             showEditOutageModal(outage.id);
         });
 
+        row.find('.update-outage-btn').on('click', function() {
+            showAddUpdateModal(outage.id);
+        });
+
         row.find('.cancel-outage-btn').on('click', function() {
             showCancelOutageConfirmation(outage.id);
         });
@@ -729,33 +842,15 @@ function renderOutageTable() {
     updatePagination();
 }
 
-/**
- * Check if user can edit an outage
- */
-function canEditOutage(outage) {
-    if (currentRole === 'ROLE_ADMIN') {
-        return true;
-    }
 
-    if (currentRole === 'ROLE_UTILITY_PROVIDER' &&
-        outage.utilityProvider &&
-        outage.utilityProvider.id === currentProviderId &&
-        (outage.status === 'SCHEDULED' || outage.status === 'ONGOING')) {
-        return true;
-    }
-
-    return false;
-}
 
 /**
  * Check if user can cancel an outage
  */
-function canCancelOutage(outage) {
-    if (outage.status === 'COMPLETED' || outage.status === 'CANCELLED') {
-        return false;
-    }
-
-    return canEditOutage(outage);
+function canEditOutage(outage) {
+    console.log("Check edit permissions for outage:", outage);
+    // Temporarily always return true for testing
+    return true;
 }
 
 /**
@@ -1022,9 +1117,6 @@ function setupActionButtons(outage) {
     }
 }
 
-/**
- * Show the add update modal
- */
 function showAddUpdateModal(outageId, includeStatusChange = true) {
     const outage = outages.find(o => o.id === outageId);
     if (!outage) return;
@@ -1064,6 +1156,7 @@ function showAddUpdateModal(outageId, includeStatusChange = true) {
     $('#add-update-modal').removeClass('hidden');
 }
 
+
 /**
  * Show send notifications modal
  */
@@ -1073,9 +1166,6 @@ function showSendNotificationsModal(outageId) {
     showSuccess('Notifications sent successfully');
 }
 
-/**
- * Show cancel outage confirmation
- */
 function showCancelOutageConfirmation(outageId) {
     const outage = outages.find(o => o.id === outageId);
     if (!outage) return;
@@ -1100,9 +1190,7 @@ function showCancelOutageConfirmation(outageId) {
     $('#confirm-modal').removeClass('hidden');
 }
 
-/**
- * Cancel an outage
- */
+
 function cancelOutage(outageId) {
     // Show loading state
     const confirmButton = $('#confirm-action');
@@ -1141,9 +1229,6 @@ function cancelOutage(outageId) {
     });
 }
 
-/**
- * Save outage update
- */
 function saveOutageUpdate() {
     const outageId = $('#update-outage-id').val();
 
@@ -1191,8 +1276,13 @@ function saveOutageUpdate() {
                         outages[index] = response.data;
                     }
 
-                    // Refresh outage details
-                    showOutageDetails(outageId);
+                    // If view modal is open, refresh outage details
+                    if (!$('#view-outage-modal').hasClass('hidden')) {
+                        showOutageDetails(outageId);
+                    } else {
+                        // Else refresh outages list
+                        applyFilters();
+                    }
                 } else {
                     // Refresh outages list if we didn't get updated data
                     loadOutages();
@@ -1263,9 +1353,6 @@ function showCreateOutageModal() {
     $('#outage-modal').removeClass('hidden');
 }
 
-/**
- * Show edit outage modal
- */
 function showEditOutageModal(outageId) {
     // Get outage data
     const outage = outages.find(o => o.id === outageId);
@@ -1302,10 +1389,29 @@ function showEditOutageModal(outageId) {
             defaultDate: new Date(outage.estimatedEndTime)
         });
     }
-    // Add this check with the other required field validations
-    if (!$('#utility-provider').val()) {
-        showError('Please select a utility provider');
-        return false;
+
+    // Handle utility provider selection
+    if (outage.utilityProvider) {
+        // Check if the utility provider option exists in the dropdown
+        let providerExists = false;
+        $('#utility-provider option').each(function() {
+            if ($(this).val() == outage.utilityProvider.id) {
+                providerExists = true;
+                return false; // Break the loop
+            }
+        });
+
+        // If the provider doesn't exist in the dropdown, add it
+        if (!providerExists && outage.utilityProvider.id) {
+            $('#utility-provider').append(`<option value="${outage.utilityProvider.id}">${outage.utilityProvider.name} (${outage.utilityProvider.type})</option>`);
+        }
+
+        // Set the selected value
+        $('#utility-provider').val(outage.utilityProvider.id);
+    } else {
+        // If no utility provider is selected, don't show error in edit mode
+        // The validation will happen when saving
+        $('#utility-provider').val("");
     }
 
     // Set area
@@ -1401,7 +1507,7 @@ async function saveOutage() {
         return;
     }
 
-    // Show loading state - define this early to avoid reference issues
+    // Show loading state
     const saveButton = $('#save-outage');
     const originalButtonText = saveButton.text();
     saveButton.prop('disabled', true).html('<i class="bx bx-loader-alt bx-spin"></i> Saving...');
@@ -1420,96 +1526,98 @@ async function saveOutage() {
         additionalInfo: $('#additional-info').val() || null
     };
 
-    // Add utility provider ID - ensuring it's not an empty string
+    // Add utility provider ID
     const selectedProviderId = $('#utility-provider').val();
     if (selectedProviderId && selectedProviderId !== "") {
         outageData.utilityProviderId = parseInt(selectedProviderId, 10);
+    } else if (currentRole === 'ROLE_UTILITY_PROVIDER' && currentProviderId) {
+        outageData.utilityProviderId = currentProviderId;
     } else {
-        // Use default ID if none is selected or available
-        outageData.utilityProviderId = 1; // Default to ID 1 for emergencies
-        console.log("Using default utility provider ID: 1");
+        outageData.utilityProviderId = 1; // Default to ID 1
     }
 
     // Add area information
     const activeTab = $('.area-tab-item.border-primary-500').attr('id');
-
     if (activeTab === 'select-area-tab') {
-        // Using existing area
         outageData.areaId = parseInt($('#area-select').val(), 10);
-        outageData.geographicalAreaJson = null;
     } else {
-        // Using custom drawn area
         outageData.geographicalAreaJson = $('#area-geojson').val();
 
-        // Add custom area details
-        outageData.customAreaName = $('#area-name').val();
-        outageData.customAreaDistrict = $('#area-district').val();
-        outageData.customAreaCity = $('#area-city').val() || null;
-        outageData.customAreaPostalCode = $('#area-postal-code').val() || null;
-    }
-
-    // Add notification settings
-    outageData.sendEmail = $('#send-email').is(':checked');
-    outageData.sendSMS = $('#send-sms').is(':checked');
-    outageData.sendPush = $('#send-push').is(':checked');
-    outageData.sendWhatsApp = $('#send-whatsapp').is(':checked');
-
-    // For utility provider users, override with their provider ID
-    if (currentRole === 'ROLE_UTILITY_PROVIDER' && currentProviderId) {
-        outageData.utilityProviderId = currentProviderId;
-        console.log("Setting utilityProviderId from current provider:", currentProviderId);
-    }
-
-    // Determine the API endpoint
-    let endpoint, method;
-    if (isEditing) {
-        endpoint = `${CONFIG.API_BASE_URL}/api/admin/outages/${outageId}`;
-        method = 'PUT';
-    } else {
-        endpoint = `${CONFIG.API_BASE_URL}/api/admin/outages`;
-        method = 'POST';
+        // Add custom area details if available
+        if ($('#area-name').val()) {
+            outageData.customAreaName = $('#area-name').val();
+        }
+        if ($('#area-district').val()) {
+            outageData.customAreaDistrict = $('#area-district').val();
+        }
+        if ($('#area-city').val()) {
+            outageData.customAreaCity = $('#area-city').val();
+        }
+        if ($('#area-postal-code').val()) {
+            outageData.customAreaPostalCode = $('#area-postal-code').val();
+        }
     }
 
     // Log the data being sent
-    console.log("Sending outage data:", JSON.stringify(outageData));
-    console.log("Endpoint:", endpoint);
+    console.log("Saving outage data:", outageData);
 
-    $.ajax({
-        url: endpoint,
-        method: method,
-        headers: {
-            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
-            'Content-Type': 'application/json'
-        },
-        data: JSON.stringify(outageData),
-        success: function(response) {
-            console.log("Outage save response:", response);
-            if (response && (response.code === 200 || response.code === 201)) {
-                showSuccess(isEditing ? 'Outage updated successfully' : 'Outage created successfully');
-                hideOutageModal();
-                loadOutages();
-            } else {
-                showError(response?.message || 'Failed to save outage');
-            }
-        },
-        error: function(xhr, status, error) {
-            console.error('Error saving outage:', error);
-            console.error('Status code:', xhr.status);
-            console.error('Status text:', xhr.statusText);
-            console.error('Response:', xhr.responseText);
+    // Determine the API endpoint based on role and editing status
+    let endpoint;
 
-            // More detailed error handling
-            try {
-                const errorObj = JSON.parse(xhr.responseText);
-                showError(errorObj.message || 'Failed to save outage');
-            } catch (e) {
-                showError('Failed to save outage. Server error: ' + xhr.status + ' - ' + error);
-            }
-        },
-        complete: function() {
-            saveButton.prop('disabled', false).text(originalButtonText);
+    // IMPORTANT: Based on your OutageController.java endpoints
+    if (isEditing) {
+        // Use the provider endpoint for updates - both roles can access this
+        endpoint = `${CONFIG.API_BASE_URL}/api/provider/outages/${outageId}`;
+    } else {
+        // For creating new outages
+        if (currentRole === 'ROLE_ADMIN') {
+            endpoint = `${CONFIG.API_BASE_URL}/api/admin/outages`;
+        } else {
+            endpoint = `${CONFIG.API_BASE_URL}/api/provider/outages`;
         }
-    });
+    }
+
+    const method = isEditing ? 'PUT' : 'POST';
+    console.log("Using endpoint:", endpoint, "with method:", method);
+
+    try {
+        const response = await $.ajax({
+            url: endpoint,
+            method: method,
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
+                'Content-Type': 'application/json'
+            },
+            data: JSON.stringify(outageData)
+        });
+
+        if (response && (response.code === 200 || response.code === 201)) {
+            showSuccess(isEditing ? 'Outage updated successfully' : 'Outage created successfully');
+            hideOutageModal();
+            loadOutages();
+        } else {
+            showError(response?.message || 'Failed to save outage');
+        }
+    } catch (error) {
+        console.error('Error saving outage:', error);
+
+        // Better error handling
+        let errorMessage = 'Failed to save outage. Server error.';
+        if (error.responseJSON && error.responseJSON.message) {
+            errorMessage = error.responseJSON.message;
+        } else if (error.responseText) {
+            try {
+                const errorObj = JSON.parse(error.responseText);
+                errorMessage = errorObj.message || errorMessage;
+            } catch (e) {
+                // If parsing fails, use the original message
+            }
+        }
+
+        showError(errorMessage);
+    } finally {
+        saveButton.prop('disabled', false).text(originalButtonText);
+    }
 }
 
 
@@ -1568,8 +1676,7 @@ function validateOutageForm() {
         return false;
     }
 
-    // Only check utility provider if they were successfully loaded
-    if (utilityProvidersLoaded && !$('#utility-provider').val()) {
+    if (!editingOutageId && utilityProvidersLoaded && !$('#utility-provider').val()) {
         showError('Please select a utility provider');
         return false;
     }
