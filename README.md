@@ -13,6 +13,15 @@ The PowerAlert frontend provides an intuitive, responsive interface built with m
 - **JavaScript** - Interactive features and asynchronous API communication
 - **Tailwind CSS** - Utility-first CSS framework for rapid UI development
 
+## 🎬 Demo Video
+
+<div align="center">
+  <a href="https://youtu.be/bxJTsn6AoK0">
+    <img src="https://img.youtube.com/vi/bxJTsn6AoK0/maxresdefault.jpg" alt="PowerAlert Demo Video" width="600" />
+  </a>
+  <p>Click the image above to watch the demo video</p>
+</div>
+
 ## ✨ Key Frontend Features
 
 - **Responsive Design**: Optimized for all devices from mobile to desktop
