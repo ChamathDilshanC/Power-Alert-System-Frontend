@@ -13,5 +13,12 @@
     <orderEntry type="library" name="tailwindcss" level="application" />
     <orderEntry type="library" name="fullcalendar" level="application" />
     <orderEntry type="library" name="moment.js" level="application" />
+    <orderEntry type="library" name="apexcharts" level="application" />
+    <orderEntry type="library" name="jspdf" level="application" />
+    <orderEntry type="library" name="jspdf-autotable" level="application" />
+    <orderEntry type="library" name="moment" level="application" />
+    <orderEntry type="library" name="daterangepicker" level="application" />
+    <orderEntry type="library" name="sockjs-client" level="application" />
+    <orderEntry type="library" name="stompjs" level="application" />
   </component>
 </module>

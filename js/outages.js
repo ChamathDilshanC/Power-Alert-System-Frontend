@@ -4,6 +4,23 @@
  * including loading outages, filtering, CRUD operations, map integration,
  * and notifications.
  */
+
+
+//if user loged hide edi,create,delete buttons
+
+document.addEventListener('DOMContentLoaded', function() {
+    let role = localStorage.getItem("user_role");
+    console.log("User role:", role);
+    if (role === "USER") {
+        // Hide edit, create, and delete buttons
+        const buttons = document.querySelectorAll('.edit-outage-btn, .create-outage-btn, .cancel-outage-btn');
+        buttons.forEach(button => {
+            button.style.display = 'none';
+        });
+    }
+
+});
+
 // Add this near the top of your outages.js file
 (function() {
     // Store the original jQuery ajax method
@@ -850,7 +867,7 @@ function renderOutageTable() {
 function canEditOutage(outage) {
     console.log("Check edit permissions for outage:", outage);
     // Temporarily always return true for testing
-    return true;
+    return false;
 }
 
 /**
